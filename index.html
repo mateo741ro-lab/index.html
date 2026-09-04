@@ -1,39 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <h1>⚽ Fútbol 5 Durazno</h1>
-    <p>Encontrá rival. Jugá. Competí.</p>
+<title>⚽ Fútbol 5 Durazno</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#f1f3f5;
+  color:#222;
+  padding-bottom:80px;
+}
+
+header{
+  background:#07883f;
+  color:white;
+  text-align:center;
+  padding:22px 15px;
+}
+
+header h1{
+  font-size:27px;
+}
+
+header p{
+  margin-top:6px;
+}
+
+.page{
+  display:none;
+  padding:20px;
+}
+
+.page.active{
+  display:block;
+}
+
+.hero{
+  background:white;
+  padding:25px 18px;
+  border-radius:18px;
+  text-align:center;
+  box-shadow:0 3px 10px #0002;
+  margin-bottom:22px;
+}
+
+.hero h2{
+  margin-bottom:10px;
+}
+
+.hero p{
+  color:#666;
+  margin-bottom:15px;
+}
+
+.btn{
+  border:0;
+  background:#07883f;
+  color:white;
+  padding:13px 18px;
+  border-radius:11px;
+  font-size:15px;
+  cursor:pointer;
+  margin:5px;
+}
+
+.btn:active{
+  transform:scale(.97);
+}
+
+.btn.dark{
+  background:#222;
+}
+
+.card{
+  background:white;
+  border-radius:15px;
+  padding:17px;
+  margin:12px 0;
+  box-shadow:0 2px 8px #0001;
+}
+
+.card h3{
+  margin-bottom:8px;
+}
+
+.card p{
+  color:#555;
+  margin:5px 0;
+}
+
+input,select{
+  width:100%;
+  padding:13px;
+  border:1px solid #ccc;
+  border-radius:10px;
+  margin:7px 0 15px;
+  font-size:15px;
+}
+
+label{
+  font-weight:bold;
+}
+
+.search{
+  margin-top:15px;
+}
+
+.ranking{
+  display:flex;
+  justify-content:space-between;
+  padding:14px 4px;
+  border-bottom:1px solid #eee;
+}
+
+.points{
+  color:#07883f;
+  font-weight:bold;
+}
+
+.message{
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+  display:none;
+}
+
+.success{
+  background:#d8f5df;
+  color:#126b2c;
+}
+
+.error{
+  background:#ffdede;
+  color:#a00000;
+}
+
+.loading{
+  text-align:center;
+  padding:20px;
+  color:#777;
+}
+
+.bottom-nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:70px;
+  background:white;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  box-shadow:0 -2px 10px #0002;
+  z-index:100;
+}
+
+.nav-btn{
+  border:0;
+  background:none;
+  color:#555;
+  font-size:11px;
+  cursor:pointer;
+}
+
+.nav-btn span{
+  display:block;
+  font-size:22px;
+  margin-bottom:3px;
+}
+
+.empty{
+  text-align:center;
+  padding:20px;
+  color:#777;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>⚽ Fútbol 5 Durazno</h1>
+  <p>Encontrá rival. Jugá. Competí.</p>
 </header>
+
 
 <!-- INICIO -->
 <section id="inicio" class="page active">
 
-    <div class="hero">
-        <h2>⚽ ¿Buscás rival?</h2>
-        <p>Encontrá equipos de fútbol 5 en Durazno.</p>
+  <div class="hero">
 
-        <button class="btn" onclick="mostrar('rivales')">
-            🔎 Buscar rival
-        </button>
+    <h2>⚽ ¿Buscás rival?</h2>
 
-        <button class="btn secondary" onclick="mostrar('crear')">
-            👥 Crear equipo
-        </button>
+    <p>
+      Encontrá equipos de fútbol 5 en Durazno.
+    </p>
+
+    <button class="btn" onclick="mostrar('rivales')">
+      🔎 Buscar rival
+    </button>
+
+    <button class="btn dark" onclick="mostrar('crear')">
+      👥 Crear equipo
+    </button>
+
+  </div>
+
+  <h2>🔥 Próximos partidos</h2>
+
+  <div id="inicioPartidos">
+    <div class="card">
+      <h3>Los Pibes FC 🆚 La Banda</h3>
+      <p>📅 Sábado</p>
+      <p>🕘 20:00</p>
+      <p>📍 Cancha El Parque</p>
     </div>
-
-    <h2>🔥 Próximos partidos</h2>
 
     <div class="card">
-        <h3>Los Pibes FC 🆚 La Banda</h3>
-        <p>📅 Sábado</p>
-        <p>🕘 20:00</p>
-        <p>📍 Cancha El Parque</p>
+      <h3>Sport 5 🆚 Los Gurises</h3>
+      <p>📅 Domingo</p>
+      <p>🕘 19:00</p>
+      <p>📍 Fútbol 5 Durazno</p>
     </div>
-
-    <div class="card">
-        <h3>Sport 5 🆚 Los Gurises</h3>
-        <p>📅 Domingo</p>
-        <p>🕘 19:00</p>
-        <p>📍 Fútbol 5 Durazno</p>
-    </div>
+  </div>
 
 </section>
 
@@ -41,22 +241,702 @@
 <!-- RIVALES -->
 <section id="rivales" class="page">
 
-    <h2>⚔️ Buscar rivales</h2>
+  <h2>⚔️ Buscar rivales</h2>
 
+  <input
+    id="buscar"
+    class="search"
+    type="text"
+    placeholder="🔎 Buscar equipo..."
+    oninput="filtrarEquipos()"
+  >
+
+  <div id="listaEquipos">
+
+    <div class="card equipo">
+      <h3>Los Pibes FC</h3>
+      <p>🏆 Nivel: Avanzado</p>
+      <p>📍 Centro</p>
+      <p>⭐ 850 puntos</p>
+
+      <button
+        class="btn"
+        onclick="desafiar('Los Pibes FC')">
+        ⚔️ Desafiar
+      </button>
+    </div>
+
+    <div class="card equipo">
+      <h3>Sport 5</h3>
+      <p>🏆 Nivel: Intermedio</p>
+      <p>📍 Centro</p>
+      <p>⭐ 730 puntos</p>
+
+      <button
+        class="btn"
+        onclick="desafiar('Sport 5')">
+        ⚔️ Desafiar
+      </button>
+    </div>
+
+    <div class="card equipo">
+      <h3>La Banda</h3>
+      <p>🏆 Nivel: Intermedio</p>
+      <p>📍 Barrio</p>
+      <p>⭐ 690 puntos</p>
+
+      <button
+        class="btn"
+        onclick="desafiar('La Banda')">
+        ⚔️ Desafiar
+      </button>
+    </div>
+
+    <div class="card equipo">
+      <h3>Los Gurises</h3>
+      <p>🏆 Nivel: Principiante</p>
+      <p>📍 Centro</p>
+      <p>⭐ 540 puntos</p>
+
+      <button
+        class="btn"
+        onclick="desafiar('Los Gurises')">
+        ⚔️ Desafiar
+      </button>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- CREAR EQUIPO -->
+<section id="crear" class="page">
+
+  <div class="card">
+
+    <h2>👥 Crear equipo</h2>
+
+    <br>
+
+    <label>Nombre del equipo</label>
     <input
-        class="search"
-        id="buscar"
-        type="text"
-        placeholder="Buscar equipo..."
-        oninput="filtrarEquipos()"
+      id="nombreEquipo"
+      type="text"
+      placeholder="Ej: Los Pibes FC"
     >
 
-    <div id="listaEquipos">
+    <label>Capitán</label>
+    <input
+      id="capitan"
+      type="text"
+      placeholder="Nombre del capitán"
+    >
 
-        <div class="card equipo">
-            <h3>Los Pibes FC</h3>
-            <p>🏆 Nivel: Avanzado</p>
-            <p>📍 Centro</p>
-            <p>⭐ 850 puntos</p>
-            <button class="btn">⚔️ Desafiar</button>
-        </div>
+    <label>Nivel</label>
+
+    <select id="nivel">
+      <option>Principiante</option>
+      <option selected>Intermedio</option>
+      <option>Avanzado</option>
+    </select>
+
+    <label>Barrio / zona</label>
+
+    <input
+      id="zona"
+      type="text"
+      placeholder="Ej: Centro"
+    >
+
+    <button class="btn" onclick="crearEquipo()">
+      ✅ Crear equipo
+    </button>
+
+    <div id="mensajeEquipo" class="message success">
+      ✅ ¡Equipo creado correctamente!
+    </div>
+
+    <div id="errorEquipo" class="message error"></div>
+
+  </div>
+
+</section>
+
+
+<!-- CANCHAS -->
+<section id="canchas" class="page">
+
+  <h2>🏟️ Canchas</h2>
+
+  <div class="card">
+
+    <h3>🏟️ Cancha El Parque</h3>
+    <p>📍 Durazno</p>
+    <p>⚽ Cancha de fútbol 5</p>
+
+    <button
+      class="btn"
+      onclick="reservar('Cancha El Parque')">
+      📲 Reservar
+    </button>
+
+  </div>
+
+  <div class="card">
+
+    <h3>🏟️ Fútbol 5 Durazno</h3>
+    <p>📍 Durazno</p>
+    <p>⚽ Cancha de fútbol 5</p>
+
+    <button
+      class="btn"
+      onclick="reservar('Fútbol 5 Durazno')">
+      📲 Reservar
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- PARTIDOS -->
+<section id="partidos" class="page">
+
+  <h2>📅 Partidos</h2>
+
+  <div id="listaPartidos">
+
+    <div class="card">
+      <h3>Los Pibes FC 🆚 La Banda</h3>
+      <p>📅 Sábado</p>
+      <p>🕘 20:00</p>
+      <p>📍 Cancha El Parque</p>
+      <p>🟡 Pendiente</p>
+    </div>
+
+    <div class="card">
+      <h3>Sport 5 🆚 Los Gurises</h3>
+      <p>📅 Domingo</p>
+      <p>🕘 19:00</p>
+      <p>📍 Fútbol 5 Durazno</p>
+      <p>🟡 Pendiente</p>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- RANKING -->
+<section id="ranking" class="page">
+
+  <h2>🏆 Ranking</h2>
+
+  <div class="card">
+
+    <div id="listaRanking">
+
+      <div class="ranking">
+        <span>🥇 Los Pibes FC</span>
+        <span class="points">850 pts</span>
+      </div>
+
+      <div class="ranking">
+        <span>🥈 Sport 5</span>
+        <span class="points">730 pts</span>
+      </div>
+
+      <div class="ranking">
+        <span>🥉 La Banda</span>
+        <span class="points">690 pts</span>
+      </div>
+
+      <div class="ranking">
+        <span>4️⃣ Los Gurises</span>
+        <span class="points">540 pts</span>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- NAVEGACIÓN -->
+<nav class="bottom-nav">
+
+  <button class="nav-btn" onclick="mostrar('inicio')">
+    <span>🏠</span>
+    Inicio
+  </button>
+
+  <button class="nav-btn" onclick="mostrar('rivales')">
+    <span>⚔️</span>
+    Rivales
+  </button>
+
+  <button class="nav-btn" onclick="mostrar('canchas')">
+    <span>🏟️</span>
+    Canchas
+  </button>
+
+  <button class="nav-btn" onclick="mostrar('partidos')">
+    <span>📅</span>
+    Partidos
+  </button>
+
+  <button class="nav-btn" onclick="mostrar('ranking')">
+    <span>🏆</span>
+    Ranking
+  </button>
+
+</nav>
+
+
+<script>
+
+/* =========================
+   SUPABASE
+========================= */
+
+const SUPABASE_URL =
+"https://nuafobsmfqbbqsblelfb.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_3b3Wnf7RUbZkjx3dzqUrMA_nUFK4rTq";
+
+const db =
+window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* =========================
+   CAMBIAR SECCIÓN
+========================= */
+
+function mostrar(nombre){
+
+  document
+    .querySelectorAll(".page")
+    .forEach(function(pagina){
+
+      pagina.classList.remove("active");
+
+    });
+
+  const pagina =
+    document.getElementById(nombre);
+
+  if(pagina){
+    pagina.classList.add("active");
+  }
+
+  window.scrollTo(0,0);
+}
+
+
+/* =========================
+   CREAR EQUIPO
+========================= */
+
+async function crearEquipo(){
+
+  const nombre =
+    document.getElementById("nombreEquipo")
+    .value
+    .trim();
+
+  const capitan =
+    document.getElementById("capitan")
+    .value
+    .trim();
+
+  const nivel =
+    document.getElementById("nivel")
+    .value;
+
+  const barrio =
+    document.getElementById("zona")
+    .value
+    .trim();
+
+  const ok =
+    document.getElementById("mensajeEquipo");
+
+  const error =
+    document.getElementById("errorEquipo");
+
+
+  ok.style.display="none";
+  error.style.display="none";
+
+
+  if(!nombre || !capitan){
+
+    error.textContent =
+      "⚠️ Completá el nombre y el capitán.";
+
+    error.style.display="block";
+
+    return;
+  }
+
+
+  try{
+
+    const resultado =
+      await db
+        .from("equipos")
+        .insert([{
+          nombre:nombre,
+          capitan:capitan,
+          nivel:nivel,
+          barrio:barrio
+        }]);
+
+
+    if(resultado.error){
+
+      throw resultado.error;
+
+    }
+
+
+    ok.textContent =
+      "✅ ¡Equipo creado y guardado en Supabase!";
+
+    ok.style.display="block";
+
+
+    document.getElementById("nombreEquipo").value="";
+    document.getElementById("capitan").value="";
+    document.getElementById("zona").value="";
+
+
+    cargarEquipos();
+    cargarRanking();
+
+  }catch(e){
+
+    console.error(e);
+
+    error.textContent =
+      "❌ No se pudo guardar: " + e.message;
+
+    error.style.display="block";
+
+  }
+
+}
+
+
+/* =========================
+   CARGAR EQUIPOS
+========================= */
+
+async function cargarEquipos(){
+
+  const contenedor =
+    document.getElementById("listaEquipos");
+
+  try{
+
+    const resultado =
+      await db
+        .from("equipos")
+        .select("*")
+        .order("puntos",{ascending:false});
+
+
+    if(resultado.error){
+      throw resultado.error;
+    }
+
+
+    if(!resultado.data ||
+       resultado.data.length===0){
+
+      return;
+
+    }
+
+
+    contenedor.innerHTML="";
+
+
+    resultado.data.forEach(function(equipo){
+
+      const card =
+        document.createElement("div");
+
+      card.className="card equipo";
+
+
+      card.innerHTML=`
+
+        <h3>${limpiar(equipo.nombre)}</h3>
+
+        <p>🏆 Nivel: ${limpiar(equipo.nivel)}</p>
+
+        <p>📍 ${limpiar(equipo.barrio || "Sin zona")}</p>
+
+        <p>⭐ ${equipo.puntos || 0} puntos</p>
+
+        <button
+          class="btn"
+          onclick="desafiar('${String(equipo.nombre).replace(/'/g,"\\'")}')">
+
+          ⚔️ Desafiar
+
+        </button>
+
+      `;
+
+
+      contenedor.appendChild(card);
+
+    });
+
+  }catch(e){
+
+    console.log(
+      "Supabase todavía no pudo cargar equipos:",
+      e
+    );
+
+  }
+
+}
+
+
+/* =========================
+   BUSCAR
+========================= */
+
+function filtrarEquipos(){
+
+  const texto =
+    document.getElementById("buscar")
+    .value
+    .toLowerCase();
+
+
+  document
+    .querySelectorAll(".equipo")
+    .forEach(function(card){
+
+      const nombre =
+        card.querySelector("h3")
+        .textContent
+        .toLowerCase();
+
+
+      card.style.display =
+        nombre.includes(texto)
+        ? "block"
+        : "none";
+
+    });
+
+}
+
+
+/* =========================
+   DESAFIAR
+========================= */
+
+function desafiar(equipo){
+
+  const fecha =
+    prompt(
+      "⚔️ ¿Para qué fecha querés desafiar a " +
+      equipo +
+      "?\nEjemplo: 2026-09-10"
+    );
+
+
+  if(!fecha){
+    return;
+  }
+
+
+  const hora =
+    prompt(
+      "🕘 ¿A qué hora?\nEjemplo: 20:00"
+    );
+
+
+  if(!hora){
+    return;
+  }
+
+
+  alert(
+    "⚔️ Desafío preparado para " +
+    equipo +
+    "\n📅 " + fecha +
+    "\n🕘 " + hora
+  );
+
+}
+
+
+/* =========================
+   RESERVAR
+========================= */
+
+function reservar(cancha){
+
+  const fecha =
+    prompt(
+      "📅 ¿Qué día querés reservar " +
+      cancha +
+      "?\nEjemplo: 2026-09-10"
+    );
+
+
+  if(!fecha){
+    return;
+  }
+
+
+  const hora =
+    prompt(
+      "🕘 ¿A qué hora?\nEjemplo: 20:00"
+    );
+
+
+  if(!hora){
+    return;
+  }
+
+
+  alert(
+    "📲 Reserva solicitada\n\n" +
+    "🏟️ " + cancha +
+    "\n📅 " + fecha +
+    "\n🕘 " + hora
+  );
+
+}
+
+
+/* =========================
+   RANKING DESDE SUPABASE
+========================= */
+
+async function cargarRanking(){
+
+  try{
+
+    const resultado =
+      await db
+        .from("equipos")
+        .select(
+          "nombre,puntos,victorias,derrotas,empates"
+        )
+        .order("puntos",{ascending:false});
+
+
+    if(resultado.error){
+      throw resultado.error;
+    }
+
+
+    if(!resultado.data ||
+       resultado.data.length===0){
+
+      return;
+
+    }
+
+
+    const contenedor =
+      document.getElementById("listaRanking");
+
+    contenedor.innerHTML="";
+
+
+    resultado.data.forEach(function(equipo,index){
+
+      let medalla="";
+
+      if(index===0) medalla="🥇";
+      else if(index===1) medalla="🥈";
+      else if(index===2) medalla="🥉";
+      else medalla="⚽";
+
+
+      const fila =
+        document.createElement("div");
+
+      fila.className="ranking";
+
+
+      fila.innerHTML=`
+
+        <span>
+          ${medalla}
+          ${index+1}. 
+          ${limpiar(equipo.nombre)}
+        </span>
+
+        <span class="points">
+          ${equipo.puntos || 0} pts
+        </span>
+
+      `;
+
+
+      contenedor.appendChild(fila);
+
+    });
+
+  }catch(e){
+
+    console.log(
+      "No se pudo actualizar el ranking:",
+      e
+    );
+
+  }
+
+}
+
+
+/* =========================
+   LIMPIAR TEXTO
+========================= */
+
+function limpiar(texto){
+
+  return String(texto)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================
+   INICIAR
+========================= */
+
+window.addEventListener("load",function(){
+
+  cargarEquipos();
+
+  cargarRanking();
+
+});
+
+</script>
+
+</body>
+</html>
