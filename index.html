@@ -1,942 +1,1161 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO & Meta Etiquetas -->
+    <title>Deportivo Durazno | Fútbol, Resultados, Tablas y Noticias de Durazno</title>
+    <meta name="description" content="El portal del fútbol de Durazno, Uruguay. Consulta resultados en vivo, próximos partidos, tabla de posiciones, planteles y noticias locales.">
+    <meta name="keywords" content="Deportivo Durazno, fútbol Durazno, partidos Durazno, resultados fútbol Durazno, tabla Durazno, fútbol de Durazno Uruguay">
+    <meta name="robots" content="index, follow">
 
-<title>⚽ Fútbol 5 Durazno</title>
+    <!-- Open Graph (Redes Sociales y WhatsApp) -->
+    <meta property="og:title" content="Deportivo Durazno | Portal de Fútbol de Durazno">
+    <meta property="og:description" content="Toda la información del fútbol duraznense: tablas, partidos, fixtures y noticias.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_UY">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Fonts & Iconos FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<style>
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  font-family:Arial,sans-serif;
-}
+    <!-- Estilos CSS3 Integrados -->
+    <style>
+        :root {
+            --primary: #D32F2F;        /* Rojo deportivo */
+            --primary-dark: #9A0007;   /* Rojo oscuro */
+            --accent: #FFC107;         /* Amarillo / Dorado */
+            --bg-dark: #121820;        /* Fondo oscuro encabezado/footer */
+            --bg-card: #FFFFFF;        /* Fondo tarjetas */
+            --bg-body: #F4F6F9;        /* Fondo general */
+            --text-main: #1E293B;      /* Texto principal */
+            --text-muted: #64748B;     /* Texto secundario */
+            --border-color: #E2E8F0;   /* Bordes */
+            --success: #16A34A;        /* En vivo / Positivo */
+            --radius: 10px;
+            --shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
 
-body{
-  background:#f1f3f5;
-  color:#222;
-  padding-bottom:80px;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Open Sans', sans-serif;
+        }
 
-header{
-  background:#07883f;
-  color:white;
-  text-align:center;
-  padding:22px 15px;
-}
+        h1, h2, h3, h4, .logo, .btn, th {
+            font-family: 'Montserrat', sans-serif;
+        }
 
-header h1{
-  font-size:27px;
-}
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding-top: 70px;
+            line-height: 1.5;
+        }
 
-header p{
-  margin-top:6px;
-}
+        /* --- NAVBAR --- */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--bg-dark);
+            height: 70px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
 
-.page{
-  display:none;
-  padding:20px;
-}
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-.page.active{
-  display:block;
-}
+        .logo {
+            color: #FFFFFF;
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-.hero{
-  background:white;
-  padding:25px 18px;
-  border-radius:18px;
-  text-align:center;
-  box-shadow:0 3px 10px #0002;
-  margin-bottom:22px;
-}
+        .logo i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
 
-.hero h2{
-  margin-bottom:10px;
-}
+        .logo span {
+            color: var(--primary);
+        }
 
-.hero p{
-  color:#666;
-  margin-bottom:15px;
-}
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            list-style: none;
+        }
 
-.btn{
-  border:0;
-  background:#07883f;
-  color:white;
-  padding:13px 18px;
-  border-radius:11px;
-  font-size:15px;
-  cursor:pointer;
-  margin:5px;
-}
+        .nav-link {
+            color: #CBD5E1;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            text-transform: uppercase;
+        }
 
-.btn:active{
-  transform:scale(.97);
-}
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+        }
 
-.btn.dark{
-  background:#222;
-}
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
 
-.card{
-  background:white;
-  border-radius:15px;
-  padding:17px;
-  margin:12px 0;
-  box-shadow:0 2px 8px #0001;
-}
+        .search-box input {
+            background-color: #1E293B;
+            border: 1px solid #334155;
+            padding: 7px 12px 7px 32px;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.85rem;
+            outline: none;
+            width: 160px;
+            transition: width 0.3s;
+        }
 
-.card h3{
-  margin-bottom:8px;
-}
+        .search-box input:focus {
+            width: 210px;
+            border-color: var(--primary);
+        }
 
-.card p{
-  color:#555;
-  margin:5px 0;
-}
+        .search-box i {
+            position: absolute;
+            left: 10px;
+            color: #94A3B8;
+            font-size: 0.85rem;
+        }
 
-input,select{
-  width:100%;
-  padding:13px;
-  border:1px solid #ccc;
-  border-radius:10px;
-  margin:7px 0 15px;
-  font-size:15px;
-}
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
 
-label{
-  font-weight:bold;
-}
+        /* --- HERO / PORTADA DESTACADA --- */
+        .hero {
+            background: linear-gradient(135deg, rgba(18, 24, 32, 0.92), rgba(154, 0, 7, 0.85)), 
+                        url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+        }
 
-.search{
-  margin-top:15px;
-}
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
-.ranking{
-  display:flex;
-  justify-content:space-between;
-  padding:14px 4px;
-  border-bottom:1px solid #eee;
-}
+        .hero-tag {
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
 
-.points{
-  color:#07883f;
-  font-weight:bold;
-}
+        .hero h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
 
-.message{
-  padding:12px;
-  border-radius:10px;
-  margin-top:10px;
-  display:none;
-}
+        .hero p {
+            font-size: 1rem;
+            color: #E2E8F0;
+            margin-bottom: 20px;
+        }
 
-.success{
-  background:#d8f5df;
-  color:#126b2c;
-}
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 22px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: background 0.3s, transform 0.2s;
+        }
 
-.error{
-  background:#ffdede;
-  color:#a00000;
-}
+        .btn-action:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
 
-.loading{
-  text-align:center;
-  padding:20px;
-  color:#777;
-}
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
 
-.bottom-nav{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  height:70px;
-  background:white;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  box-shadow:0 -2px 10px #0002;
-  z-index:100;
-}
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
 
-.nav-btn{
-  border:0;
-  background:none;
-  color:#555;
-  font-size:11px;
-  cursor:pointer;
-}
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--bg-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 8px;
+        }
 
-.nav-btn span{
-  display:block;
-  font-size:22px;
-  margin-bottom:3px;
-}
+        .section-title i {
+            color: var(--primary);
+        }
 
-.empty{
-  text-align:center;
-  padding:20px;
-  color:#777;
-}
-</style>
+        /* --- TARJETAS DE PARTIDOS --- */
+        .match-card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+
+        .match-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .badge-status {
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        .badge-status.finalizado { background-color: #E2E8F0; color: #475569; }
+        .badge-status.proximo { background-color: #FEF3C7; color: #D97706; }
+        .badge-status.envivo { background-color: #DC2626; color: white; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .match-body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .team-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 38%;
+            text-align: center;
+        }
+
+        .team-shield {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .team-name {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .score-box {
+            text-align: center;
+            width: 24%;
+        }
+
+        .score-num {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--bg-dark);
+            letter-spacing: 2px;
+        }
+
+        .match-time {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .match-footer {
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* --- TABLA DE POSICIONES --- */
+        .table-container {
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            margin-bottom: 35px;
+        }
+
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 0.88rem;
+        }
+
+        .standings-table th {
+            background-color: var(--bg-dark);
+            color: white;
+            padding: 12px 10px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .standings-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .standings-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .standings-table tbody tr:nth-child(even) {
+            background-color: #F8FAFC;
+        }
+
+        .standings-table tr:first-child td {
+            background-color: rgba(220, 38, 38, 0.05);
+        }
+
+        .team-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .team-cell .mini-shield {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            color: white;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .pts-col {
+            font-weight: 900;
+            color: var(--primary-dark);
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        /* --- SECCIÓN NOTICIAS --- */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .news-card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .news-img {
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .news-category {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: var(--primary);
+            color: white;
+            padding: 3px 8px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .news-content {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .news-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .news-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--bg-dark);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .news-excerpt {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            flex-grow: 1;
+        }
+
+        /* --- SECCIÓN EQUIPOS --- */
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+
+        .team-card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .team-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .team-card .team-shield {
+            width: 55px;
+            height: 55px;
+            margin: 0 auto 10px auto;
+            font-size: 1.2rem;
+        }
+
+        .team-card h4 {
+            font-size: 0.9rem;
+            color: var(--bg-dark);
+            margin-bottom: 4px;
+        }
+
+        .team-card p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* --- MODAL DETALLE DE EQUIPO --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--radius);
+            max-width: 500px;
+            width: 100%;
+            padding: 20px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .roster-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .roster-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            background-color: var(--bg-dark);
+            color: #94A3B8;
+            padding: 40px 20px 20px 20px;
+            font-size: 0.85rem;
+            border-top: 3px solid var(--primary);
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .footer-col p {
+            line-height: 1.6;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+
+        .footer-links a {
+            color: #CBD5E1;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #334155;
+            font-size: 0.8rem;
+        }
+
+        /* --- RESPONSIVIDAD (MOBILE) --- */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background-color: var(--bg-dark);
+                flex-direction: column;
+                padding: 20px;
+                gap: 15px;
+                box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+
+            .search-box input {
+                width: 120px;
+            }
+
+            .search-box input:focus {
+                width: 150px;
+            }
+
+            .hide-mobile {
+                display: none;
+            }
+
+            .team-name {
+                font-size: 0.78rem;
+            }
+
+            .score-num {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
 </head>
-
 <body>
 
-<header>
-  <h1>⚽ Fútbol 5 Durazno</h1>
-  <p>Encontrá rival. Jugá. Competí.</p>
-</header>
+    <!-- REPRODUCTOR / ENCABEZADO FIJO -->
+    <header class="header">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-futbol"></i> Deportivo <span>Durazno</span>
+            </a>
 
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Buscar equipo, noticia..." onkeyup="filtrarContenido()">
+            </div>
 
-<!-- INICIO -->
-<section id="inicio" class="page active">
+            <button class="mobile-toggle" onclick="toggleMenu()" aria-label="Menú">
+                <i class="fa-solid fa-bars"></i>
+            </button>
 
-  <div class="hero">
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#inicio" class="nav-link active" onclick="closeMenu()">Inicio</a></li>
+                <li><a href="#resultados" class="nav-link" onclick="closeMenu()">Resultados</a></li>
+                <li><a href="#proximos" class="nav-link" onclick="closeMenu()">Próximos</a></li>
+                <li><a href="#tabla" class="nav-link" onclick="closeMenu()">Tabla</a></li>
+                <li><a href="#noticias" class="nav-link" onclick="closeMenu()">Noticias</a></li>
+                <li><a href="#equipos" class="nav-link" onclick="closeMenu()">Equipos</a></li>
+            </ul>
+        </div>
+    </header>
 
-    <h2>⚽ ¿Buscás rival?</h2>
+    <!-- PORTADA / HERO -->
+    <section id="inicio" class="hero">
+        <div class="hero-content">
+            <span class="hero-tag">Liga Departamental de Durazno</span>
+            <h1>Fútbol Duraznense en Tiempo Real</h1>
+            <p>Resultados, estadísticas, tabla de posiciones y toda la información del deporte de nuestro departamento.</p>
+            <a href="#tabla" class="btn-action">
+                <i class="fa-solid fa-trophy"></i> Ver Tabla Posiciones
+            </a>
+        </div>
+    </section>
 
-    <p>
-      Encontrá equipos de fútbol 5 en Durazno.
-    </p>
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="main-container">
 
-    <button class="btn" onclick="mostrar('rivales')">
-      🔎 Buscar rival
-    </button>
+        <!-- PARTIDOS: RESULTADOS Y PRÓXIMOS -->
+        <div class="grid-2col">
+            <!-- ÚLTIMOS RESULTADOS -->
+            <section id="resultados">
+                <h2 class="section-title"><i class="fa-solid fa-square-check"></i> Últimos Resultados</h2>
+                <div id="resultados-list">
+                    <!-- Se genera dinámicamente -->
+                </div>
+            </section>
 
-    <button class="btn dark" onclick="mostrar('crear')">
-      👥 Crear equipo
-    </button>
+            <!-- PRÓXIMOS ENCUENTROS -->
+            <section id="proximos">
+                <h2 class="section-title"><i class="fa-solid fa-calendar-days"></i> Próximos Partidos</h2>
+                <div id="proximos-list">
+                    <!-- Se genera dinámicamente -->
+                </div>
+            </section>
+        </div>
 
-  </div>
+        <!-- TABLA DE POSICIONES AUTOMÁTICA -->
+        <section id="tabla">
+            <h2 class="section-title"><i class="fa-solid fa-list-ol"></i> Tabla de Posiciones</h2>
+            <div class="table-container">
+                <table class="standings-table">
+                    <thead>
+                        <tr>
+                            <th title="Posición">#</th>
+                            <th style="text-align: left;">Equipo</th>
+                            <th title="Partidos Jugados">PJ</th>
+                            <th title="Partidos Ganados">PG</th>
+                            <th title="Partidos Empatados">PE</th>
+                            <th title="Partidos Perdidos">PP</th>
+                            <th title="Goles a Favor" class="hide-mobile">GF</th>
+                            <th title="Goles en Contra" class="hide-mobile">GC</th>
+                            <th title="Diferencia de Goles">DG</th>
+                            <th title="Puntos Totales" class="pts-col">PTS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body">
+                        <!-- Se calcula dinámicamente con JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-  <h2>🔥 Próximos partidos</h2>
+        <!-- ÚLTIMAS NOTICIAS -->
+        <section id="noticias">
+            <h2 class="section-title"><i class="fa-solid fa-newspaper"></i> Últimas Noticias</h2>
+            <div class="news-grid" id="noticias-grid">
+                <!-- Se genera dinámicamente -->
+            </div>
+        </section>
 
-  <div id="inicioPartidos">
-    <div class="card">
-      <h3>Los Pibes FC 🆚 La Banda</h3>
-      <p>📅 Sábado</p>
-      <p>🕘 20:00</p>
-      <p>📍 Cancha El Parque</p>
+        <!-- SECCIÓN DE EQUIPOS -->
+        <section id="equipos">
+            <h2 class="section-title"><i class="fa-solid fa-shield-halved"></i> Equipos de Durazno</h2>
+            <div class="teams-grid" id="equipos-grid">
+                <!-- Se genera dinámicamente -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL DE DETALLE DE EQUIPO -->
+    <div class="modal" id="teamModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div id="modalBody">
+                <!-- Contenido dinámico del equipo -->
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-      <h3>Sport 5 🆚 Los Gurises</h3>
-      <p>📅 Domingo</p>
-      <p>🕘 19:00</p>
-      <p>📍 Fútbol 5 Durazno</p>
-    </div>
-  </div>
-
-</section>
-
-
-<!-- RIVALES -->
-<section id="rivales" class="page">
-
-  <h2>⚔️ Buscar rivales</h2>
-
-  <input
-    id="buscar"
-    class="search"
-    type="text"
-    placeholder="🔎 Buscar equipo..."
-    oninput="filtrarEquipos()"
-  >
-
-  <div id="listaEquipos">
-
-    <div class="card equipo">
-      <h3>Los Pibes FC</h3>
-      <p>🏆 Nivel: Avanzado</p>
-      <p>📍 Centro</p>
-      <p>⭐ 850 puntos</p>
-
-      <button
-        class="btn"
-        onclick="desafiar('Los Pibes FC')">
-        ⚔️ Desafiar
-      </button>
-    </div>
-
-    <div class="card equipo">
-      <h3>Sport 5</h3>
-      <p>🏆 Nivel: Intermedio</p>
-      <p>📍 Centro</p>
-      <p>⭐ 730 puntos</p>
-
-      <button
-        class="btn"
-        onclick="desafiar('Sport 5')">
-        ⚔️ Desafiar
-      </button>
-    </div>
-
-    <div class="card equipo">
-      <h3>La Banda</h3>
-      <p>🏆 Nivel: Intermedio</p>
-      <p>📍 Barrio</p>
-      <p>⭐ 690 puntos</p>
-
-      <button
-        class="btn"
-        onclick="desafiar('La Banda')">
-        ⚔️ Desafiar
-      </button>
-    </div>
-
-    <div class="card equipo">
-      <h3>Los Gurises</h3>
-      <p>🏆 Nivel: Principiante</p>
-      <p>📍 Centro</p>
-      <p>⭐ 540 puntos</p>
-
-      <button
-        class="btn"
-        onclick="desafiar('Los Gurises')">
-        ⚔️ Desafiar
-      </button>
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- CREAR EQUIPO -->
-<section id="crear" class="page">
-
-  <div class="card">
-
-    <h2>👥 Crear equipo</h2>
-
-    <br>
-
-    <label>Nombre del equipo</label>
-    <input
-      id="nombreEquipo"
-      type="text"
-      placeholder="Ej: Los Pibes FC"
-    >
-
-    <label>Capitán</label>
-    <input
-      id="capitan"
-      type="text"
-      placeholder="Nombre del capitán"
-    >
-
-    <label>Nivel</label>
-
-    <select id="nivel">
-      <option>Principiante</option>
-      <option selected>Intermedio</option>
-      <option>Avanzado</option>
-    </select>
-
-    <label>Barrio / zona</label>
-
-    <input
-      id="zona"
-      type="text"
-      placeholder="Ej: Centro"
-    >
-
-    <button class="btn" onclick="crearEquipo()">
-      ✅ Crear equipo
-    </button>
-
-    <div id="mensajeEquipo" class="message success">
-      ✅ ¡Equipo creado correctamente!
-    </div>
-
-    <div id="errorEquipo" class="message error"></div>
-
-  </div>
-
-</section>
-
-
-<!-- CANCHAS -->
-<section id="canchas" class="page">
-
-  <h2>🏟️ Canchas</h2>
-
-  <div class="card">
-
-    <h3>🏟️ Cancha El Parque</h3>
-    <p>📍 Durazno</p>
-    <p>⚽ Cancha de fútbol 5</p>
-
-    <button
-      class="btn"
-      onclick="reservar('Cancha El Parque')">
-      📲 Reservar
-    </button>
-
-  </div>
-
-  <div class="card">
-
-    <h3>🏟️ Fútbol 5 Durazno</h3>
-    <p>📍 Durazno</p>
-    <p>⚽ Cancha de fútbol 5</p>
-
-    <button
-      class="btn"
-      onclick="reservar('Fútbol 5 Durazno')">
-      📲 Reservar
-    </button>
-
-  </div>
-
-</section>
-
-
-<!-- PARTIDOS -->
-<section id="partidos" class="page">
-
-  <h2>📅 Partidos</h2>
-
-  <div id="listaPartidos">
-
-    <div class="card">
-      <h3>Los Pibes FC 🆚 La Banda</h3>
-      <p>📅 Sábado</p>
-      <p>🕘 20:00</p>
-      <p>📍 Cancha El Parque</p>
-      <p>🟡 Pendiente</p>
-    </div>
-
-    <div class="card">
-      <h3>Sport 5 🆚 Los Gurises</h3>
-      <p>📅 Domingo</p>
-      <p>🕘 19:00</p>
-      <p>📍 Fútbol 5 Durazno</p>
-      <p>🟡 Pendiente</p>
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- RANKING -->
-<section id="ranking" class="page">
-
-  <h2>🏆 Ranking</h2>
-
-  <div class="card">
-
-    <div id="listaRanking">
-
-      <div class="ranking">
-        <span>🥇 Los Pibes FC</span>
-        <span class="points">850 pts</span>
-      </div>
-
-      <div class="ranking">
-        <span>🥈 Sport 5</span>
-        <span class="points">730 pts</span>
-      </div>
-
-      <div class="ranking">
-        <span>🥉 La Banda</span>
-        <span class="points">690 pts</span>
-      </div>
-
-      <div class="ranking">
-        <span>4️⃣ Los Gurises</span>
-        <span class="points">540 pts</span>
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- NAVEGACIÓN -->
-<nav class="bottom-nav">
-
-  <button class="nav-btn" onclick="mostrar('inicio')">
-    <span>🏠</span>
-    Inicio
-  </button>
-
-  <button class="nav-btn" onclick="mostrar('rivales')">
-    <span>⚔️</span>
-    Rivales
-  </button>
-
-  <button class="nav-btn" onclick="mostrar('canchas')">
-    <span>🏟️</span>
-    Canchas
-  </button>
-
-  <button class="nav-btn" onclick="mostrar('partidos')">
-    <span>📅</span>
-    Partidos
-  </button>
-
-  <button class="nav-btn" onclick="mostrar('ranking')">
-    <span>🏆</span>
-    Ranking
-  </button>
-
-</nav>
-
-
-<script>
-
-/* =========================
-   SUPABASE
-========================= */
-
-const SUPABASE_URL =
-"https://nuafobsmfqbbqsblelfb.supabase.co";
-
-const SUPABASE_KEY =
-"sb_publishable_3b3Wnf7RUbZkjx3dzqUrMA_nUFK4rTq";
-
-const db =
-window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
-
-
-/* =========================
-   CAMBIAR SECCIÓN
-========================= */
-
-function mostrar(nombre){
-
-  document
-    .querySelectorAll(".page")
-    .forEach(function(pagina){
-
-      pagina.classList.remove("active");
-
-    });
-
-  const pagina =
-    document.getElementById(nombre);
-
-  if(pagina){
-    pagina.classList.add("active");
-  }
-
-  window.scrollTo(0,0);
-}
-
-
-/* =========================
-   CREAR EQUIPO
-========================= */
-
-async function crearEquipo(){
-
-  const nombre =
-    document.getElementById("nombreEquipo")
-    .value
-    .trim();
-
-  const capitan =
-    document.getElementById("capitan")
-    .value
-    .trim();
-
-  const nivel =
-    document.getElementById("nivel")
-    .value;
-
-  const barrio =
-    document.getElementById("zona")
-    .value
-    .trim();
-
-  const ok =
-    document.getElementById("mensajeEquipo");
-
-  const error =
-    document.getElementById("errorEquipo");
-
-
-  ok.style.display="none";
-  error.style.display="none";
-
-
-  if(!nombre || !capitan){
-
-    error.textContent =
-      "⚠️ Completá el nombre y el capitán.";
-
-    error.style.display="block";
-
-    return;
-  }
-
-
-  try{
-
-    const resultado =
-      await db
-        .from("equipos")
-        .insert([{
-          nombre:nombre,
-          capitan:capitan,
-          nivel:nivel,
-          barrio:barrio
-        }]);
-
-
-    if(resultado.error){
-
-      throw resultado.error;
-
-    }
-
-
-    ok.textContent =
-      "✅ ¡Equipo creado y guardado en Supabase!";
-
-    ok.style.display="block";
-
-
-    document.getElementById("nombreEquipo").value="";
-    document.getElementById("capitan").value="";
-    document.getElementById("zona").value="";
-
-
-    cargarEquipos();
-    cargarRanking();
-
-  }catch(e){
-
-    console.error(e);
-
-    error.textContent =
-      "❌ No se pudo guardar: " + e.message;
-
-    error.style.display="block";
-
-  }
-
-}
-
-
-/* =========================
-   CARGAR EQUIPOS
-========================= */
-
-async function cargarEquipos(){
-
-  const contenedor =
-    document.getElementById("listaEquipos");
-
-  try{
-
-    const resultado =
-      await db
-        .from("equipos")
-        .select("*")
-        .order("puntos",{ascending:false});
-
-
-    if(resultado.error){
-      throw resultado.error;
-    }
-
-
-    if(!resultado.data ||
-       resultado.data.length===0){
-
-      return;
-
-    }
-
-
-    contenedor.innerHTML="";
-
-
-    resultado.data.forEach(function(equipo){
-
-      const card =
-        document.createElement("div");
-
-      card.className="card equipo";
-
-
-      card.innerHTML=`
-
-        <h3>${limpiar(equipo.nombre)}</h3>
-
-        <p>🏆 Nivel: ${limpiar(equipo.nivel)}</p>
-
-        <p>📍 ${limpiar(equipo.barrio || "Sin zona")}</p>
-
-        <p>⭐ ${equipo.puntos || 0} puntos</p>
-
-        <button
-          class="btn"
-          onclick="desafiar('${String(equipo.nombre).replace(/'/g,"\\'")}')">
-
-          ⚔️ Desafiar
-
-        </button>
-
-      `;
-
-
-      contenedor.appendChild(card);
-
-    });
-
-  }catch(e){
-
-    console.log(
-      "Supabase todavía no pudo cargar equipos:",
-      e
-    );
-
-  }
-
-}
-
-
-/* =========================
-   BUSCAR
-========================= */
-
-function filtrarEquipos(){
-
-  const texto =
-    document.getElementById("buscar")
-    .value
-    .toLowerCase();
-
-
-  document
-    .querySelectorAll(".equipo")
-    .forEach(function(card){
-
-      const nombre =
-        card.querySelector("h3")
-        .textContent
-        .toLowerCase();
-
-
-      card.style.display =
-        nombre.includes(texto)
-        ? "block"
-        : "none";
-
-    });
-
-}
-
-
-/* =========================
-   DESAFIAR
-========================= */
-
-function desafiar(equipo){
-
-  const fecha =
-    prompt(
-      "⚔️ ¿Para qué fecha querés desafiar a " +
-      equipo +
-      "?\nEjemplo: 2026-09-10"
-    );
-
-
-  if(!fecha){
-    return;
-  }
-
-
-  const hora =
-    prompt(
-      "🕘 ¿A qué hora?\nEjemplo: 20:00"
-    );
-
-
-  if(!hora){
-    return;
-  }
-
-
-  alert(
-    "⚔️ Desafío preparado para " +
-    equipo +
-    "\n📅 " + fecha +
-    "\n🕘 " + hora
-  );
-
-}
-
-
-/* =========================
-   RESERVAR
-========================= */
-
-function reservar(cancha){
-
-  const fecha =
-    prompt(
-      "📅 ¿Qué día querés reservar " +
-      cancha +
-      "?\nEjemplo: 2026-09-10"
-    );
-
-
-  if(!fecha){
-    return;
-  }
-
-
-  const hora =
-    prompt(
-      "🕘 ¿A qué hora?\nEjemplo: 20:00"
-    );
-
-
-  if(!hora){
-    return;
-  }
-
-
-  alert(
-    "📲 Reserva solicitada\n\n" +
-    "🏟️ " + cancha +
-    "\n📅 " + fecha +
-    "\n🕘 " + hora
-  );
-
-}
-
-
-/* =========================
-   RANKING DESDE SUPABASE
-========================= */
-
-async function cargarRanking(){
-
-  try{
-
-    const resultado =
-      await db
-        .from("equipos")
-        .select(
-          "nombre,puntos,victorias,derrotas,empates"
-        )
-        .order("puntos",{ascending:false});
-
-
-    if(resultado.error){
-      throw resultado.error;
-    }
-
-
-    if(!resultado.data ||
-       resultado.data.length===0){
-
-      return;
-
-    }
-
-
-    const contenedor =
-      document.getElementById("listaRanking");
-
-    contenedor.innerHTML="";
-
-
-    resultado.data.forEach(function(equipo,index){
-
-      let medalla="";
-
-      if(index===0) medalla="🥇";
-      else if(index===1) medalla="🥈";
-      else if(index===2) medalla="🥉";
-      else medalla="⚽";
-
-
-      const fila =
-        document.createElement("div");
-
-      fila.className="ranking";
-
-
-      fila.innerHTML=`
-
-        <span>
-          ${medalla}
-          ${index+1}. 
-          ${limpiar(equipo.nombre)}
-        </span>
-
-        <span class="points">
-          ${equipo.puntos || 0} pts
-        </span>
-
-      `;
-
-
-      contenedor.appendChild(fila);
-
-    });
-
-  }catch(e){
-
-    console.log(
-      "No se pudo actualizar el ranking:",
-      e
-    );
-
-  }
-
-}
-
-
-/* =========================
-   LIMPIAR TEXTO
-========================= */
-
-function limpiar(texto){
-
-  return String(texto)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-
-}
-
-
-/* =========================
-   INICIAR
-========================= */
-
-window.addEventListener("load",function(){
-
-  cargarEquipos();
-
-  cargarRanking();
-
-});
-
-</script>
-
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h4><i class="fa-solid fa-futbol" style="color:var(--primary)"></i> Deportivo Durazno</h4>
+                <p>El portal deportivo independiente referente del fútbol del departamento de Durazno, Uruguay. Cobertura completa de la liga local y juvenil.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Navegación Rápida</h4>
+                <ul class="footer-links">
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#resultados">Resultados Recientes</a></li>
+                    <li><a href="#tabla">Tabla de Posiciones</a></li>
+                    <li><a href="#noticias">Noticias y Crónicas</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contacto & Redes</h4>
+                <p><i class="fa-solid fa-location-dot"></i> Durazno, Uruguay</p>
+                <p><i class="fa-solid fa-envelope"></i> contacto@deportivodurazno.com</p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2026 Deportivo Durazno - Portal de prueba estático para la Liga de Fútbol de Durazno.</p>
+        </div>
+    </footer>
+
+    <!-- LÓGICA JAVASCRIPT (ESTRUCURA COMPATIBLE CON SUPABASE) -->
+    <script>
+        // =======================================================
+        // DATOS DE EJEMPLO (ESTRUCTURA DE TABLAS TIPO BASE DE DATOS)
+        // =======================================================
+        
+        const db = {
+            campeonatos: [
+                { id: 1, nombre: "Torneo Departamental de Durazno 2026" }
+            ],
+
+            equipos: [
+                { id: "e1", nombre: "Atlético Yí", color: "#D32F2F", fundacion: "1940", barrio: "Barrio Yí" },
+                { id: "e2", nombre: "Sportivo Central", color: "#1E293B", fundacion: "1923", barrio: "Centro" },
+                { id: "e3", nombre: "Villa del Carmen FC", color: "#0284C7", fundacion: "1952", barrio: "Villa del Carmen" },
+                { id: "e4", nombre: "Sarandí Wanderers", color: "#16A34A", fundacion: "1931", barrio: "Sarandí del Yí" },
+                { id: "e5", nombre: "Defensor Durazno", color: "#9333EA", fundacion: "1960", barrio: "Barrio Varona" },
+                { id: "e6", nombre: "Nacional de Durazno", color: "#2563EB", fundacion: "1915", barrio: "Santa Bernardina" }
+            ],
+
+            partidos: [
+                {
+                    id: 1, campeonatoId: 1,
+                    equipoLocal: "e1", equipoVisitante: "e2",
+                    golesLocal: 2, golesVisitante: 1,
+                    fecha: "08/09/2026", hora: "15:30", cancha: "Estadio Silvestre O. Landoni",
+                    estado: "Finalizado"
+                },
+                {
+                    id: 2, campeonatoId: 1,
+                    equipoLocal: "e3", equipoVisitante: "e4",
+                    golesLocal: 0, golesVisitante: 0,
+                    fecha: "08/09/2026", hora: "17:30", cancha: "Parque de la Hispanidad",
+                    estado: "Finalizado"
+                },
+                {
+                    id: 3, campeonatoId: 1,
+                    equipoLocal: "e5", equipoVisitante: "e6",
+                    golesLocal: 1, golesVisitante: 3,
+                    fecha: "09/09/2026", hora: "20:00", cancha: "Estadio Silvestre O. Landoni",
+                    estado: "Finalizado"
+                },
+                {
+                    id: 4, campeonatoId: 1,
+                    equipoLocal: "e2", equipoVisitante: "e3",
+                    golesLocal: null, golesVisitante: null,
+                    fecha: "13/09/2026", hora: "15:00", cancha: "Cancha de Central",
+                    estado: "Próximo"
+                },
+                {
+                    id: 5, campeonatoId: 1,
+                    equipoLocal: "e6", equipoVisitante: "e1",
+                    golesLocal: null, golesVisitante: null,
+                    fecha: "13/09/2026", hora: "17:00", cancha: "Estadio Silvestre O. Landoni",
+                    estado: "Próximo"
+                }
+            ],
+
+            jugadores: [
+                { id: "j1", equipoId: "e1", nombre: "Martín Rodríguez", posicion: "Delantero", numero: 9 },
+                { id: "j2", equipoId: "e1", nombre: "Gonzalo Castro", posicion: "Mediocampista", numero: 10 },
+                { id: "j3", equipoId: "e2", nombre: "Lucas Fernández", posicion: "Arquero", numero: 1 },
+                { id: "j4", equipoId: "e3", nombre: "Mateo Silva", posicion: "Defensa", numero: 4 }
+            ],
+
+            noticias: [
+                {
+                    id: 1,
+                    titulo: "Atlético Yí logró un valioso triunfo en el debut clásico",
+                    fecha: "09 de Septiembre, 2026",
+                    categoria: "Liga Mayor",
+                    imagen: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=600&q=80",
+                    resumen: "Con goles en el segundo tiempo, el rojinegro se quedó con los tres puntos en el Estadio Landoni frente a Sportivo Central."
+                },
+                {
+                    id: 2,
+                    titulo: "Obras de reacondicionamiento en las canchas de Durazno",
+                    fecha: "07 de Septiembre, 2026",
+                    categoria: "Infraestructura",
+                    imagen: "https://images.unsplash.com/photo-1551280857-2b9bbe520442?auto=format&fit=crop&w=600&q=80",
+                    resumen: "Se instalaron nuevos focos LED y se mejoró el piso del Parque de la Hispanidad para los partidos nocturnos."
+                },
+                {
+                    id: 3,
+                    titulo: "Nacional de Durazno demuestra autoridad de visitante",
+                    fecha: "10 de Septiembre, 2026",
+                    categoria: "Primera División",
+                    imagen: "https://images.unsplash.com/photo-1518605368461-1ee7c532066d?auto=format&fit=crop&w=600&q=80",
+                    resumen: "Tres goles determinantes le dieron la victoria holgada a la tricolor en la primera fecha del torneo local."
+                }
+            ]
+        };
+
+        // =======================================================
+        // FUNCIONES DE RENDERIZADO Y CÁLCULO
+        // =======================================================
+
+        // Obtener objeto equipo por ID
+        function getEquipo(id) {
+            return db.equipos.find(e => e.id === id) || { nombre: "Desconocido", color: "#666" };
+        }
+
+        // Obtener iniciales para el escudo textual/visual
+        function getIniciales(nombre) {
+            return nombre.split(" ").map(word => word[0]).join("").substring(0, 2).toUpperCase();
+        }
+
+        // Renderizar Partidos (Resultados y Próximos)
+        function renderPartidos() {
+            const resContainer = document.getElementById("resultados-list");
+            const proxContainer = document.getElementById("proximos-list");
+
+            resContainer.innerHTML = "";
+            proxContainer.innerHTML = "";
+
+            db.partidos.forEach(p => {
+                const local = getEquipo(p.equipoLocal);
+                const visitante = getEquipo(p.equipoVisitante);
+
+                const cardHTML = `
+                    <div class="match-card">
+                        <div class="match-header">
+                            <span><i class="fa-solid fa-trophy"></i> Liga Durazno</span>
+                            <span class="badge-status ${p.estado.toLowerCase().replace(" ", "")}">${p.estado}</span>
+                        </div>
+                        <div class="match-body">
+                            <div class="team-box">
+                                <div class="team-shield" style="background-color: ${local.color}">
+                                    ${getIniciales(local.nombre)}
+                                </div>
+                                <span class="team-name">${local.nombre}</span>
+                            </div>
+                            <div class="score-box">
+                                ${p.estado === 'Finalizado' 
+                                    ? `<div class="score-num">${p.golesLocal} - ${p.golesVisitante}</div>`
+                                    : `<div class="match-time">${p.hora}</div>`
+                                }
+                            </div>
+                            <div class="team-box">
+                                <div class="team-shield" style="background-color: ${visitante.color}">
+                                    ${getIniciales(visitante.nombre)}
+                                </div>
+                                <span class="team-name">${visitante.nombre}</span>
+                            </div>
+                        </div>
+                        <div class="match-footer">
+                            <i class="fa-solid fa-location-dot"></i> ${p.cancha} &bull; ${p.fecha}
+                        </div>
+                    </div>
+                `;
+
+                if (p.estado === "Finalizado") {
+                    resContainer.innerHTML += cardHTML;
+                } else {
+                    proxContainer.innerHTML += cardHTML;
+                }
+            });
+        }
+
+        // CÁLCULO AUTOMÁTICO DE LA TABLA DE POSICIONES
+        function calcularTabla() {
+            // Inicializar tabla para cada equipo
+            let tabla = db.equipos.map(eq => ({
+                id: eq.id,
+                nombre: eq.nombre,
+                color: eq.color,
+                pj: 0, pg: 0, pe: 0, pp: 0,
+                gf: 0, gc: 0, dg: 0, pts: 0
+            }));
+
+            // Procesar solo partidos finalizados
+            db.partidos.filter(p => p.estado === "Finalizado").forEach(p => {
+                const loc = tabla.find(t => t.id === p.equipoLocal);
+                const vis = tabla.find(t => t.id === p.equipoVisitante);
+
+                if (loc && vis) {
+                    loc.pj++; vis.pj++;
+                    loc.gf += p.golesLocal; loc.gc += p.golesVisitante;
+                    vis.gf += p.golesVisitante; vis.gc += p.golesLocal;
+
+                    if (p.golesLocal > p.golesVisitante) {
+                        loc.pg++; vis.pp++;
+                        loc.pts += 3;
+                    } else if (p.golesLocal < p.golesVisitante) {
+                        vis.pg++; loc.pp++;
+                        vis.pts += 3;
+                    } else {
+                        loc.pe++; vis.pe++;
+                        loc.pts += 1; vis.pts += 1;
+                    }
+                }
+            });
+
+            // Calcular diferencia de goles y ordenar por PTS > DG > GF
+            tabla.forEach(t => t.dg = t.gf - t.gc);
+            tabla.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+
+            // Renderizar tabla HTML
+            const tbody = document.getElementById("tabla-body");
+            tbody.innerHTML = "";
+
+            tabla.forEach((t, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${index + 1}</strong></td>
+                        <td>
+                            <div class="team-cell">
+                                <div class="mini-shield" style="background-color: ${t.color}">
+                                    ${getIniciales(t.nombre)}
+                                </div>
+                                <span>${t.nombre}</span>
+                            </div>
+                        </td>
+                        <td>${t.pj}</td>
+                        <td>${t.pg}</td>
+                        <td>${t.pe}</td>
+                        <td>${t.pp}</td>
+                        <td class="hide-mobile">${t.gf}</td>
+                        <td class="hide-mobile">${t.gc}</td>
+                        <td>${t.dg > 0 ? '+' + t.dg : t.dg}</td>
+                        <td class="pts-col">${t.pts}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Renderizar Noticias
+        function renderNoticias() {
+            const container = document.getElementById("noticias-grid");
+            container.innerHTML = "";
+
+            db.noticias.forEach(n => {
+                container.innerHTML += `
+                    <article class="news-card">
+                        <div class="news-img" style="background-image: url('${n.imagen}')">
+                            <span class="news-category">${n.categoria}</span>
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date"><i class="fa-regular fa-clock"></i> ${n.fecha}</div>
+                            <h3 class="news-title">${n.titulo}</h3>
+                            <p class="news-excerpt">${n.resumen}</p>
+                        </div>
+                    </article>
+                `;
+            });
+        }
+
+        // Renderizar Equipos
+        function renderEquipos() {
+            const container = document.getElementById("equipos-grid");
+            container.innerHTML = "";
+
+            db.equipos.forEach(eq => {
+                container.innerHTML += `
+                    <div class="team-card" onclick="verDetalleEquipo('${eq.id}')">
+                        <div class="team-shield" style="background-color: ${eq.color}">
+                            ${getIniciales(eq.nombre)}
+                        </div>
+                        <h4>${eq.nombre}</h4>
+                        <p>${eq.barrio}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // Mostrar Plantel y Detalle del Equipo en Modal
+        function verDetalleEquipo(equipoId) {
+            const eq = getEquipo(equipoId);
+            const plantilla = db.jugadores.filter(j => j.equipoId === equipoId);
+            const modal = document.getElementById("teamModal");
+            const modalBody = document.getElementById("modalBody");
+
+            let jugadoresHTML = plantilla.length > 0 
+                ? plantilla.map(j => `<li class="roster-item"><span><strong>#${j.numero}</strong> ${j.nombre}</span> <span>${j.posicion}</span></li>`).join("")
+                : `<p style="font-size:0.85rem; color:var(--text-muted); margin-top:10px;">No hay plantilla registrada para este equipo aún.</p>`;
+
+            modalBody.innerHTML = `
+                <div style="text-align:center; margin-bottom:15px;">
+                    <div class="team-shield" style="background-color: ${eq.color}; width:65px; height:65px; font-size:1.4rem; margin:0 auto 10px auto;">
+                        ${getIniciales(eq.nombre)}
+                    </div>
+                    <h2 style="font-size:1.3rem;">${eq.nombre}</h2>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">Fundación: ${eq.fundacion} &bull; Barrio: ${eq.barrio}</p>
+                </div>
+                <h3 style="font-size:1rem; border-bottom:2px solid var(--primary); padding-bottom:5px;">Plantel Principal</h3>
+                <ul class="roster-list">
+                    ${jugadoresHTML}
+                </ul>
+            `;
+
+            modal.classList.add("active");
+        }
+
+        function closeModal() {
+            document.getElementById("teamModal").classList.remove("active");
+        }
+
+        // Filtro de búsqueda global
+        function filtrarContenido() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const cards = document.querySelectorAll(".news-card, .match-card, .team-card");
+
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? "" : "none";
+            });
+        }
+
+        // Toggle Menú Móvil
+        function toggleMenu() {
+            document.getElementById("navMenu").classList.toggle("active");
+        }
+
+        function closeMenu() {
+            document.getElementById("navMenu").classList.remove("active");
+        }
+
+        // Inicializar aplicación
+        window.onload = function() {
+            renderPartidos();
+            calcularTabla();
+            renderNoticias();
+            renderEquipos();
+        };
+    </script>
 </body>
 </html>
+
