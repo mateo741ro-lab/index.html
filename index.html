@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- SEO & Meta Etiquetas -->
     <title>Deportivo Durazno | Fútbol Sub-17 - Resultados, Próxima Fecha y Posiciones</title>
-    <meta name="description" content="Portal oficial de Deportivo Durazno. Resultados de la Liga de Fútbol de Durazno Sub-17: Fecha 1, Fecha 2, Próxima Fecha 3, Tabla de Posiciones y cobertura con Cañona Marca Registrada.">
-    <meta name="keywords" content="Deportivo Durazno, fútbol Durazno, Sub 17 Durazno, Cañona Marca Registrada, Sport Durazno, resultados fútbol Durazno, tabla Sub 17 Durazno, fixture fecha 3 Sub 17">
+    <meta name="description" content="Portal oficial de Deportivo Durazno. Resultados de la Liga de Fútbol de Durazno Sub-17. Tabla de Posiciones y cobertura con Canona Marca Registrada.">
+    <meta name="keywords" content="Deportivo Durazno, fútbol Durazno, Sub 17 Durazno, Canona Marca Registrada, Sport Durazno, resultados fútbol Durazno">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph (Redes Sociales y WhatsApp) -->
     <meta property="og:title" content="Deportivo Durazno | Fútbol Sub-17 de Durazno">
-    <meta property="og:description" content="Toda la información de la Liga Sub-17 de Durazno: Fecha 3 este fin de semana, resultados anteriores y tabla de posiciones.">
+    <meta property="og:description" content="Toda la información de la Liga Sub-17 de Durazno: Resultados, fixture completo y tabla de posiciones.">
     <meta property="og:type" content="website">
 
     <!-- Google Fonts & Iconos FontAwesome -->
@@ -32,638 +32,128 @@
             --text-main: #1E293B;      /* Texto principal */
             --text-muted: #64748B;     /* Texto secundario */
             --border-color: #E2E8F0;   /* Bordes */
-            --facebook-blue: #1877F2;  /* Azul Cañona Facebook */
+            --facebook-blue: #1877F2;  /* Azul Facebook */
             --radius: 10px;
             --shadow: 0 4px 15px rgba(0,0,0,0.06);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Open Sans', sans-serif;
-        }
-
-        h1, h2, h3, h4, .logo, .btn, th, .badge-category, .tab-btn {
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            padding-top: 70px;
-            line-height: 1.5;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Open Sans', sans-serif; }
+        h1, h2, h3, h4, .logo, .btn, th, .badge-category, .tab-btn { font-family: 'Montserrat', sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); padding-top: 70px; line-height: 1.5; }
 
         /* --- NAVBAR FIJO --- */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: var(--bg-dark);
-            height: 70px;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            color: #FFFFFF;
-            text-decoration: none;
-            font-size: 1.3rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logo i {
-            color: var(--primary);
-            font-size: 1.5rem;
-        }
-
-        .logo span {
-            color: var(--primary);
-        }
-
-        .nav-menu {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            list-style: none;
-        }
-
-        .nav-link {
-            color: #CBD5E1;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.88rem;
-            transition: color 0.2s;
-            text-transform: uppercase;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            color: var(--primary);
-        }
-
-        .search-box {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .search-box input {
-            background-color: #1E293B;
-            border: 1px solid #334155;
-            padding: 7px 12px 7px 32px;
-            border-radius: 20px;
-            color: white;
-            font-size: 0.85rem;
-            outline: none;
-            width: 150px;
-            transition: width 0.3s;
-        }
-
-        .search-box input:focus {
-            width: 190px;
-            border-color: var(--primary);
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 10px;
-            color: #94A3B8;
-            font-size: 0.85rem;
-        }
-
-        .mobile-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
+        .header { position: fixed; top: 0; left: 0; width: 100%; background-color: var(--bg-dark); height: 70px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 0 15px; height: 100%; display: flex; align-items: center; justify-content: space-between; }
+        .logo { color: #FFFFFF; text-decoration: none; font-size: 1.3rem; font-weight: 900; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .logo i { color: var(--primary); font-size: 1.5rem; }
+        .logo span { color: var(--primary); }
+        .nav-menu { display: flex; align-items: center; gap: 20px; list-style: none; }
+        .nav-link { color: #CBD5E1; text-decoration: none; font-weight: 600; font-size: 0.88rem; transition: color 0.2s; text-transform: uppercase; }
+        .nav-link:hover, .nav-link.active { color: var(--primary); }
+        
+        .search-box { position: relative; display: flex; align-items: center; }
+        .search-box input { background-color: #1E293B; border: 1px solid #334155; padding: 7px 12px 7px 32px; border-radius: 20px; color: white; font-size: 0.85rem; outline: none; width: 150px; transition: width 0.3s; }
+        .search-box input:focus { width: 190px; border-color: var(--primary); }
+        .search-box i { position: absolute; left: 10px; color: #94A3B8; font-size: 0.85rem; }
+        .mobile-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
 
         /* --- HERO PORTADA DEPORTIVA --- */
-        .hero {
-            background: linear-gradient(135deg, rgba(18, 24, 32, 0.92), rgba(154, 0, 7, 0.88)), 
-                        url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
-            color: white;
-            padding: 45px 20px;
-            text-align: center;
-            border-bottom: 4px solid var(--primary);
-        }
-
-        .hero-content {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .hero-tag {
-            background-color: var(--primary);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-
-        .hero h1 {
-            font-size: 2.1rem;
-            font-weight: 900;
-            margin-bottom: 8px;
-        }
-
-        .hero p {
-            font-size: 0.95rem;
-            color: #E2E8F0;
-            margin-bottom: 20px;
-        }
-
-        .btn-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background-color: var(--primary);
-            color: white;
-            padding: 10px 22px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.88rem;
-            transition: background 0.3s;
-        }
-
-        .btn-action:hover {
-            background-color: var(--primary-dark);
-        }
+        .hero { background: linear-gradient(135deg, rgba(18, 24, 32, 0.92), rgba(154, 0, 7, 0.88)), url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat; color: white; padding: 45px 20px; text-align: center; border-bottom: 4px solid var(--primary); }
+        .hero-content { max-width: 800px; margin: 0 auto; }
+        .hero-tag { background-color: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 12px; }
+        .hero h1 { font-size: 2.1rem; font-weight: 900; margin-bottom: 8px; }
+        .hero p { font-size: 0.95rem; color: #E2E8F0; margin-bottom: 20px; }
+        .btn-action { display: inline-flex; align-items: center; gap: 8px; background-color: var(--primary); color: white; padding: 10px 22px; border-radius: 25px; text-decoration: none; font-weight: 700; font-size: 0.88rem; transition: background 0.3s; }
+        .btn-action:hover { background-color: var(--primary-dark); }
 
         /* --- LAYOUT PRINCIPAL --- */
-        .main-container {
-            max-width: 1200px;
-            margin: 25px auto;
-            padding: 0 15px;
-        }
+        .main-container { max-width: 1200px; margin: 25px auto; padding: 0 15px; }
+        .section-title { font-size: 1.25rem; font-weight: 800; color: var(--bg-dark); margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 8px; }
+        .section-title .title-left { display: flex; align-items: center; gap: 10px; }
+        .section-title i { color: var(--primary); }
 
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--bg-dark);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 3px solid var(--primary);
-            padding-bottom: 8px;
+        /* PESTAÑAS DE FECHAS SCROLLEABLES */
+        .date-tabs { 
+            display: flex; gap: 8px; margin-bottom: 18px; 
+            overflow-x: auto; white-space: nowrap; padding-bottom: 10px;
+            scrollbar-width: thin; scrollbar-color: var(--primary) #E2E8F0;
         }
-
-        .section-title .title-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-title i {
-            color: var(--primary);
-        }
-
-        /* PESTAÑAS DE FECHAS (FECHA 1, FECHA 2, FECHA 3) */
-        .date-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background-color: #E2E8F0;
-            border: none;
-            padding: 9px 18px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .tab-btn.active {
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
-        }
-
-        .tab-btn .badge-live {
-            background-color: #22C55E;
-            color: white;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 8px;
-            text-transform: uppercase;
-        }
+        .date-tabs::-webkit-scrollbar { height: 6px; }
+        .date-tabs::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
+        .date-tabs::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        
+        .tab-btn { background-color: #E2E8F0; border: none; padding: 9px 18px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; color: var(--text-main); display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .tab-btn.active { background-color: var(--primary); color: white; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3); }
+        .tab-btn .badge-live { background-color: #22C55E; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 8px; text-transform: uppercase; }
 
         /* --- TARJETAS DE PARTIDOS --- */
-        .matches-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 15px;
-            margin-bottom: 35px;
-        }
-
-        .match-card {
-            background-color: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 14px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            transition: transform 0.2s;
-        }
-
-        .match-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .match-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-            border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 6px;
-        }
-
-        .badge-status {
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 10px;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-        }
-
+        .matches-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; margin-bottom: 35px; }
+        .match-card { background-color: var(--bg-card); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: transform 0.2s; }
+        .match-card:hover { transform: translateY(-2px); }
+        .match-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; }
+        .badge-status { font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; font-size: 0.7rem; }
         .badge-status.finalizado { background-color: #DCFCE7; color: #15803D; }
         .badge-status.suspendido { background-color: #FEE2E2; color: #B91C1C; }
-        .badge-status.proximo { background-color: #FEF3C7; color: #D97706; }
+        .badge-status.próximo { background-color: #FEF3C7; color: #D97706; }
 
-        .match-body {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .team-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 38%;
-            text-align: center;
-        }
-
-        .team-shield {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            color: white;
-            font-size: 0.9rem;
-            margin-bottom: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-        }
-
-        .team-name {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-main);
-            line-height: 1.2;
-        }
-
-        .score-box {
-            text-align: center;
-            width: 24%;
-        }
-
-        .score-num {
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: var(--bg-dark);
-            letter-spacing: 1px;
-        }
-
-        .match-time {
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .match-footer {
-            margin-top: 8px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-align: center;
-        }
+        .match-body { display: flex; align-items: center; justify-content: space-between; }
+        .team-box { display: flex; flex-direction: column; align-items: center; width: 38%; text-align: center; }
+        .team-shield { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; font-size: 0.9rem; margin-bottom: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+        .team-name { font-size: 0.85rem; font-weight: 700; color: var(--text-main); line-height: 1.2; }
+        .score-box { text-align: center; width: 24%; }
+        .score-num { font-size: 1.5rem; font-weight: 900; color: var(--bg-dark); letter-spacing: 1px; }
+        .match-time { font-size: 0.95rem; font-weight: 800; color: var(--primary); }
+        .match-footer { margin-top: 8px; font-size: 0.75rem; color: var(--text-muted); text-align: center; }
 
         /* --- TABLA DE POSICIONES AUTOMÁTICA --- */
-        .table-container {
-            background-color: var(--bg-card);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
-            margin-bottom: 35px;
-        }
+        .table-container { background-color: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); overflow-x: auto; margin-bottom: 35px; }
+        .standings-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.88rem; }
+        .standings-table th { background-color: var(--bg-dark); color: white; padding: 12px 10px; font-size: 0.8rem; text-transform: uppercase; }
+        .standings-table td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+        .standings-table tbody tr:nth-child(even) { background-color: #F8FAFC; }
+        .standings-table tr:first-child td { background-color: rgba(220, 38, 38, 0.05); }
+        .team-cell { display: flex; align-items: center; gap: 10px; text-align: left; font-weight: 700; }
+        .team-cell .mini-shield { width: 26px; height: 26px; border-radius: 50%; color: white; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+        .pts-col { font-weight: 900; color: var(--primary-dark); background-color: rgba(0,0,0,0.02); }
 
-        .standings-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-            font-size: 0.88rem;
-        }
+        /* --- BANNER DE CANONA MARCA REGISTRADA --- */
+        .canona-banner { background: linear-gradient(135deg, #1877F2, #0052B4); color: white; border-radius: var(--radius); padding: 22px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; box-shadow: var(--shadow); }
+        .canona-info { display: flex; align-items: center; gap: 15px; }
+        .canona-avatar { width: 55px; height: 55px; border-radius: 50%; background-color: white; color: #1877F2; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+        .canona-text h3 { font-size: 1.15rem; font-weight: 800; }
+        .canona-text p { font-size: 0.88rem; opacity: 0.95; }
+        .btn-facebook { background-color: white; color: #1877F2; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: 800; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; transition: transform 0.2s; }
+        .btn-facebook:hover { transform: scale(1.03); }
 
-        .standings-table th {
-            background-color: var(--bg-dark);
-            color: white;
-            padding: 12px 10px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        .standings-table td {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .standings-table tbody tr:nth-child(even) {
-            background-color: #F8FAFC;
-        }
-
-        .standings-table tr:first-child td {
-            background-color: rgba(220, 38, 38, 0.05);
-        }
-
-        .team-cell {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-align: left;
-            font-weight: 700;
-        }
-
-        .team-cell .mini-shield {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            color: white;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-        }
-
-        .pts-col {
-            font-weight: 900;
-            color: var(--primary-dark);
-            background-color: rgba(0,0,0,0.02);
-        }
-
-        /* --- BANNER DE @CAÑONA MARCA REGISTRADA --- */
-        .canona-banner {
-            background: linear-gradient(135deg, #1877F2, #0052B4);
-            color: white;
-            border-radius: var(--radius);
-            padding: 22px;
-            margin-bottom: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-            box-shadow: var(--shadow);
-        }
-
-        .canona-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .canona-avatar {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background-color: white;
-            color: #1877F2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-        }
-
-        .canona-text h3 {
-            font-size: 1.15rem;
-            font-weight: 800;
-        }
-
-        .canona-text p {
-            font-size: 0.88rem;
-            opacity: 0.95;
-        }
-
-        .btn-facebook {
-            background-color: white;
-            color: #1877F2;
-            padding: 10px 20px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: 800;
-            font-size: 0.88rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: transform 0.2s;
-        }
-
-        .btn-facebook:hover {
-            transform: scale(1.03);
-        }
-
-        /* --- NOTICIAS Y MEDIOS DE DURAZNO --- */
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 35px;
-        }
-
-        .news-card {
-            background-color: var(--bg-card);
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .news-img {
-            height: 160px;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-
-        .news-category {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: var(--primary);
-            color: white;
-            padding: 3px 8px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            border-radius: 4px;
-            text-transform: uppercase;
-        }
-
-        .news-content {
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .news-date {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-        }
-
-        .news-title {
-            font-size: 1rem;
-            font-weight: 800;
-            color: var(--bg-dark);
-            margin-bottom: 8px;
-            line-height: 1.3;
-        }
-
-        .news-excerpt {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            flex-grow: 1;
-        }
+        /* --- NOTICIAS --- */
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 35px; }
+        .news-card { background-color: var(--bg-card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .news-img { height: 160px; background-size: cover; background-position: center; position: relative; }
+        .news-category { position: absolute; top: 10px; left: 10px; background-color: var(--primary); color: white; padding: 3px 8px; font-size: 0.7rem; font-weight: 800; border-radius: 4px; text-transform: uppercase; }
+        .news-content { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+        .news-date { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; }
+        .news-title { font-size: 1rem; font-weight: 800; color: var(--bg-dark); margin-bottom: 8px; line-height: 1.3; }
+        .news-excerpt { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; flex-grow: 1; }
 
         /* --- FOOTER --- */
-        .footer {
-            background-color: var(--bg-dark);
-            color: #94A3B8;
-            padding: 40px 20px 20px 20px;
-            font-size: 0.85rem;
-            border-top: 3px solid var(--primary);
-        }
+        .footer { background-color: var(--bg-dark); color: #94A3B8; padding: 40px 20px 20px 20px; font-size: 0.85rem; border-top: 3px solid var(--primary); }
+        .footer-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-bottom: 30px; }
+        .footer-col h4 { color: white; margin-bottom: 15px; font-size: 1rem; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 8px; }
+        .footer-links a { color: #CBD5E1; text-decoration: none; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--primary); }
+        .copyright { text-align: center; padding-top: 20px; border-top: 1px solid #334155; font-size: 0.8rem; }
 
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .footer-col h4 {
-            color: white;
-            margin-bottom: 15px;
-            font-size: 1rem;
-        }
-
-        .footer-links {
-            list-style: none;
-        }
-
-        .footer-links li {
-            margin-bottom: 8px;
-        }
-
-        .footer-links a {
-            color: #CBD5E1;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .footer-links a:hover {
-            color: var(--primary);
-        }
-
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #334155;
-            font-size: 0.8rem;
-        }
-
-        /* --- RESPONSIVIDAD PARA CELULARES --- */
+        /* --- RESPONSIVIDAD --- */
         @media (max-width: 768px) {
-            .nav-menu {
-                display: none;
-                position: absolute;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                background-color: var(--bg-dark);
-                flex-direction: column;
-                padding: 20px;
-                gap: 15px;
-            }
-
-            .nav-menu.active {
-                display: flex;
-            }
-
-            .mobile-toggle {
-                display: block;
-            }
-
-            .hero h1 {
-                font-size: 1.5rem;
-            }
-
-            .hide-mobile {
-                display: none;
-            }
-
-            .canona-banner {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .canona-info {
-                flex-direction: column;
-            }
+            .nav-menu { display: none; position: absolute; top: 70px; left: 0; width: 100%; background-color: var(--bg-dark); flex-direction: column; padding: 20px; gap: 15px; }
+            .nav-menu.active { display: flex; }
+            .mobile-toggle { display: block; }
+            .hero h1 { font-size: 1.5rem; }
+            .hide-mobile { display: none; }
+            .canona-banner { flex-direction: column; text-align: center; }
+            .canona-info { flex-direction: column; }
         }
     </style>
 </head>
@@ -675,21 +165,18 @@
             <a href="#" class="logo">
                 <i class="fa-solid fa-futbol"></i> Deportivo <span>Durazno</span>
             </a>
-
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="searchInput" placeholder="Buscar equipo..." onkeyup="filtrarContenido()">
             </div>
-
             <button class="mobile-toggle" onclick="toggleMenu()" aria-label="Menú">
                 <i class="fa-solid fa-bars"></i>
             </button>
-
             <ul class="nav-menu" id="navMenu">
                 <li><a href="#inicio" class="nav-link active" onclick="closeMenu()">Inicio</a></li>
                 <li><a href="#partidos" class="nav-link" onclick="closeMenu()">Partidos Sub-17</a></li>
                 <li><a href="#tabla" class="nav-link" onclick="closeMenu()">Tabla Posiciones</a></li>
-                <li><a href="#noticias" class="nav-link" onclick="closeMenu()">Cañona & Prensa</a></li>
+                <li><a href="#noticias" class="nav-link" onclick="closeMenu()">Canona & Prensa</a></li>
             </ul>
         </div>
     </header>
@@ -699,9 +186,9 @@
         <div class="hero-content">
             <span class="hero-tag">Liga de Fútbol de Durazno</span>
             <h1>Categoría Sub-17 en Vivo</h1>
-            <p>Resultados oficiales de la Fecha 1, Fecha 2, fixture de la Fecha 3 de este fin de semana y posiciones en tiempo real.</p>
-            <a href="#partidos" class="btn-action">
-                <i class="fa-solid fa-calendar-check"></i> Ver Fecha 3 (Este Fin de Semana)
+            <p>Resultados oficiales, posiciones en tiempo real y el fixture completo del Torneo Clasificatorio.</p>
+            <a href="#partidos" class="btn-action" onclick="mostrarFecha(3)">
+                <i class="fa-solid fa-calendar-check"></i> Ver Fecha 3 (Este Finde)
             </a>
         </div>
     </section>
@@ -718,13 +205,9 @@
                 </div>
             </div>
 
-            <!-- BOTONES PESTAÑAS FECHA 3 (PRÓXIMA), FECHA 2, FECHA 1 -->
-            <div class="date-tabs">
-                <button class="tab-btn active" id="btnFecha3" onclick="mostrarFecha(3)">
-                    Fecha 3 <span class="badge-live">Este Fin de Semana</span>
-                </button>
-                <button class="tab-btn" id="btnFecha2" onclick="mostrarFecha(2)">Fecha 2</button>
-                <button class="tab-btn" id="btnFecha1" onclick="mostrarFecha(1)">Fecha 1</button>
+            <!-- CONTENEDOR DE PESTAÑAS DINÁMICO -->
+            <div class="date-tabs" id="tabs-container">
+                <!-- Se llena dinámicamente con JS -->
             </div>
 
             <!-- CONTENEDOR DE TARJETAS DE PARTIDOS -->
@@ -764,18 +247,18 @@
             </div>
         </section>
 
-        <!-- BANNER OFICIAL CAÑONA MARCA REGISTRADA (FACEBOOK) -->
+        <!-- BANNER OFICIAL CANONA MARCA REGISTRADA -->
         <div class="canona-banner">
             <div class="canona-info">
                 <div class="canona-avatar">
                     <i class="fa-solid fa-camera-retro"></i>
                 </div>
                 <div class="canona-text">
-                    <h3>Cañona Marca Registrada</h3>
+                    <h3>Canona Marca Registrada</h3>
                     <p>Página oficial de Facebook con las mejores fotos, resultados al instante y la información del fútbol duraznense.</p>
                 </div>
             </div>
-            <a href="https://www.facebook.com/search/top?q=Ca%C3%B1ona%20Marca%20Registrada" target="_blank" class="btn-facebook">
+            <a href="https://www.facebook.com/search/top?q=Canona%20Marca%20Registrada" target="_blank" class="btn-facebook">
                 <i class="fa-brands fa-facebook-f"></i> Visitar en Facebook
             </a>
         </div>
@@ -800,21 +283,21 @@
         <div class="footer-container">
             <div class="footer-col">
                 <h4>Deportivo Durazno</h4>
-                <p>El portal referente del fútbol juvenil y de mayores del departamento de Durazno, Uruguay. Cobertura completa de la Liga de Fútbol de Durazno.</p>
+                <p>El portal referente del fútbol juvenil y de mayores del departamento de Durazno, Uruguay. Cobertura completa de la Liga de Fútbol.</p>
             </div>
             <div class="footer-col">
                 <h4>Navegación</h4>
                 <ul class="footer-links">
                     <li><a href="#inicio">Inicio</a></li>
-                    <li><a href="#partidos">Fecha 3 (Próximos)</a></li>
-                    <li><a href="#tabla">Tabla de Posiciones Sub-17</a></li>
-                    <li><a href="#noticias">Noticias & Fotos</a></li>
+                    <li><a href="#partidos">Partidos Sub-17</a></li>
+                    <li><a href="#tabla">Tabla de Posiciones</a></li>
+                    <li><a href="#noticias">Canona & Prensa</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Fuentes & Colaboradores</h4>
                 <p><i class="fa-solid fa-location-dot"></i> Durazno, Uruguay</p>
-                <p><i class="fa-brands fa-facebook"></i> Cañona Marca Registrada</p>
+                <p><i class="fa-brands fa-facebook"></i> Canona Marca Registrada</p>
                 <p><i class="fa-solid fa-globe"></i> Sport Durazno / Durazno Hoy</p>
             </div>
         </div>
@@ -835,75 +318,131 @@
                 { id: "e5", nombre: "Wanderers", color: "#1E293B" },
                 { id: "e6", nombre: "Central", color: "#DC2626" },
                 { id: "e7", nombre: "Nacional", color: "#2563EB" },
-                { id: "e8", nombre: "Rampla", color: "#15803D" },
+                { id: "e8", nombre: "Rampla Jrs.", color: "#15803D" },
                 { id: "e9", nombre: "Artigas", color: "#B91C1C" },
                 { id: "e10", nombre: "Molles F.C", color: "#475569" },
-                { id: "e11", nombre: "Sportivo Yí", color: "#0D9488" },
+                { id: "e11", nombre: "Sportivo Yi", color: "#0D9488" },
                 { id: "e12", nombre: "Champagnat", color: "#D97706" }
             ],
 
             partidos: [
-                // --- FECHA 1 (RESULTADOS REALES) ---
-                { id: 101, fechaNum: 1, equipoLocal: "e1", equipoVisitante: "e2", golesLocal: 7, golesVisitante: 1, estado: "Finalizado", fecha: "Fecha 1", cancha: "Durazno" },
-                { id: 102, fechaNum: 1, equipoLocal: "e3", equipoVisitante: "e4", golesLocal: 4, golesVisitante: 1, estado: "Finalizado", fecha: "Fecha 1", cancha: "Durazno" },
-                { id: 103, fechaNum: 1, equipoLocal: "e5", equipoVisitante: "e6", golesLocal: 1, golesVisitante: 0, estado: "Finalizado", fecha: "Fecha 1", cancha: "Durazno" },
-                { id: 104, fechaNum: 1, equipoLocal: "e7", equipoVisitante: "e8", golesLocal: 26, golesVisitante: 0, estado: "Finalizado", fecha: "Fecha 1", cancha: "Campus Sta. Bernardina" },
-                { id: 105, fechaNum: 1, equipoLocal: "e9", equipoVisitante: "e10", golesLocal: 1, golesVisitante: 1, estado: "Finalizado", fecha: "Fecha 1", cancha: "Durazno" },
-                { id: 106, fechaNum: 1, equipoLocal: "e11", equipoVisitante: "e12", golesLocal: 4, golesVisitante: 0, estado: "Finalizado", fecha: "Fecha 1", cancha: "Dové García" },
+                // --- FECHA 1 ---
+                { id: 101, fechaNum: 1, equipoLocal: "e1", equipoVisitante: "e2", golesLocal: 7, golesVisitante: 1, estado: "Finalizado", fecha: "Fecha 1", cancha: "A confirmar" },
+                { id: 102, fechaNum: 1, equipoLocal: "e3", equipoVisitante: "e4", golesLocal: 4, golesVisitante: 1, estado: "Finalizado", fecha: "Fecha 1", cancha: "A confirmar" },
+                { id: 103, fechaNum: 1, equipoLocal: "e5", equipoVisitante: "e6", golesLocal: 1, golesVisitante: 0, estado: "Finalizado", fecha: "Fecha 1", cancha: "A confirmar" },
+                { id: 104, fechaNum: 1, equipoLocal: "e7", equipoVisitante: "e8", golesLocal: 26, golesVisitante: 0, estado: "Finalizado", fecha: "Fecha 1", cancha: "A confirmar" },
+                { id: 105, fechaNum: 1, equipoLocal: "e9", equipoVisitante: "e10", golesLocal: 1, golesVisitante: 1, estado: "Finalizado", fecha: "Fecha 1", cancha: "A confirmar" },
+                { id: 106, fechaNum: 1, equipoLocal: "e11", equipoVisitante: "e12", golesLocal: 4, golesVisitante: 0, estado: "Finalizado", fecha: "Fecha 1", cancha: "A confirmar" },
 
-                // --- FECHA 2 (RESULTADOS REALES) ---
+                // --- FECHA 2 ---
                 { id: 201, fechaNum: 2, equipoLocal: "e6", equipoVisitante: "e10", golesLocal: 3, golesVisitante: 0, estado: "Finalizado", fecha: "2026-09-05 11:00", cancha: "Manuel D. Souza" },
                 { id: 202, fechaNum: 2, equipoLocal: "e2", equipoVisitante: "e12", golesLocal: null, golesVisitante: null, estado: "Suspendido", fecha: "2026-09-05 14:45", cancha: "Dové García" },
                 { id: 203, fechaNum: 2, equipoLocal: "e5", equipoVisitante: "e9", golesLocal: 2, golesVisitante: 1, estado: "Finalizado", fecha: "2026-09-05 15:00", cancha: "Complejo Bohemio" },
                 { id: 204, fechaNum: 2, equipoLocal: "e11", equipoVisitante: "e1", golesLocal: 0, golesVisitante: 2, estado: "Finalizado", fecha: "2026-09-05 17:00", cancha: "Dové García" },
                 { id: 205, fechaNum: 2, equipoLocal: "e3", equipoVisitante: "e7", golesLocal: 2, golesVisitante: 2, estado: "Finalizado", fecha: "2026-09-06 16:45", cancha: "Campus Sta. Bernardina" },
-                { id: 206, fechaNum: 2, equipoLocal: "e4", equipoVisitante: "e8", golesLocal: 2, golesVisitante: 0, estado: "Finalizado", fecha: "2026-09-06 14:30", cancha: "Durazno" },
+                { id: 206, fechaNum: 2, equipoLocal: "e8", equipoVisitante: "e4", golesLocal: 1, golesVisitante: 16, estado: "Finalizado", fecha: "Fecha 2", cancha: "Cancha El Abrojal" },
 
-                // --- FECHA 3 (PRÓXIMA FECHA - ESTE FIN DE SEMANA) ---
-                { id: 301, fechaNum: 3, equipoLocal: "e6", equipoVisitante: "e1", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Sábado - 14:00 hs", cancha: "Estadio Silvestre O. Landoni" },
-                { id: 302, fechaNum: 3, equipoLocal: "e2", equipoVisitante: "e5", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Sábado - 16:00 hs", cancha: "Complejo Bohemio" },
-                { id: 303, fechaNum: 3, equipoLocal: "e7", equipoVisitante: "e12", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Sábado - 17:30 hs", cancha: "Campus Sta. Bernardina" },
-                { id: 304, fechaNum: 3, equipoLocal: "e11", equipoVisitante: "e4", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Domingo - 11:00 hs", cancha: "Cancha Dové García" },
-                { id: 305, fechaNum: 3, equipoLocal: "e3", equipoVisitante: "e9", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Domingo - 15:00 hs", cancha: "Parque de la Hispanidad" },
-                { id: 306, fechaNum: 3, equipoLocal: "e10", equipoVisitante: "e8", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Domingo - 17:00 hs", cancha: "Manuel D. Souza" }
+                // --- FECHA 3 (ESTE FIN DE SEMANA) ---
+                { id: 301, fechaNum: 3, equipoLocal: "e10", equipoVisitante: "e11", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Viernes 11 - 17:00 hs", cancha: "Jose P. Lujambio" },
+                { id: 302, fechaNum: 3, equipoLocal: "e1", equipoVisitante: "e6", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Sábado 12 - 14:00 hs", cancha: "14 de octubre" },
+                { id: 303, fechaNum: 3, equipoLocal: "e8", equipoVisitante: "e5", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Sábado 12 - 15:00 hs", cancha: "El Bohemio" },
+                { id: 304, fechaNum: 3, equipoLocal: "e12", equipoVisitante: "e4", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Sábado 12 - 16:15 hs", cancha: "14 de octubre" },
+                { id: 305, fechaNum: 3, equipoLocal: "e2", equipoVisitante: "e3", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Domingo 13 - 14:00 hs", cancha: "Cancha de Racing" },
+                { id: 306, fechaNum: 3, equipoLocal: "e9", equipoVisitante: "e7", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Domingo 13 - 17:15 hs", cancha: "14 de octubre" },
+
+                // --- FECHAS 4 A 11 (GENERADAS EN EL FIXTURE) ---
+                { fechaNum: 4, equipoLocal: "e8", equipoVisitante: "e12", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 4, equipoLocal: "e3", equipoVisitante: "e9", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 4, equipoLocal: "e7", equipoVisitante: "e5", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 4, equipoLocal: "e4", equipoVisitante: "e2", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 4, equipoLocal: "e1", equipoVisitante: "e10", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 4, equipoLocal: "e6", equipoVisitante: "e11", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                
+                { fechaNum: 5, equipoLocal: "e9", equipoVisitante: "e6", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 5, equipoLocal: "e12", equipoVisitante: "e1", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 5, equipoLocal: "e2", equipoVisitante: "e7", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 5, equipoLocal: "e5", equipoVisitante: "e4", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 5, equipoLocal: "e3", equipoVisitante: "e10", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 5, equipoLocal: "e11", equipoVisitante: "e8", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                
+                { fechaNum: 6, equipoLocal: "e10", equipoVisitante: "e12", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 6, equipoLocal: "e11", equipoVisitante: "e9", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 6, equipoLocal: "e4", equipoVisitante: "e7", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 6, equipoLocal: "e2", equipoVisitante: "e5", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 6, equipoLocal: "e6", equipoVisitante: "e3", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 6, equipoLocal: "e8", equipoVisitante: "e1", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+
+                { fechaNum: 7, equipoLocal: "e12", equipoVisitante: "e5", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 7, equipoLocal: "e9", equipoVisitante: "e2", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 7, equipoLocal: "e1", equipoVisitante: "e4", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 7, equipoLocal: "e7", equipoVisitante: "e6", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 7, equipoLocal: "e3", equipoVisitante: "e11", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 7, equipoLocal: "e10", equipoVisitante: "e8", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+
+                { fechaNum: 8, equipoLocal: "e4", equipoVisitante: "e9", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 8, equipoLocal: "e7", equipoVisitante: "e12", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 8, equipoLocal: "e11", equipoVisitante: "e2", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 8, equipoLocal: "e5", equipoVisitante: "e10", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 8, equipoLocal: "e3", equipoVisitante: "e1", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 8, equipoLocal: "e6", equipoVisitante: "e8", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+
+                { fechaNum: 9, equipoLocal: "e12", equipoVisitante: "e9", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 9, equipoLocal: "e11", equipoVisitante: "e4", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 9, equipoLocal: "e10", equipoVisitante: "e7", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 9, equipoLocal: "e8", equipoVisitante: "e3", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 9, equipoLocal: "e1", equipoVisitante: "e5", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 9, equipoLocal: "e2", equipoVisitante: "e6", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+
+                { fechaNum: 10, equipoLocal: "e1", equipoVisitante: "e9", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 10, equipoLocal: "e6", equipoVisitante: "e12", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 10, equipoLocal: "e2", equipoVisitante: "e8", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 10, equipoLocal: "e7", equipoVisitante: "e11", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 10, equipoLocal: "e4", equipoVisitante: "e10", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 10, equipoLocal: "e3", equipoVisitante: "e5", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+
+                { fechaNum: 11, equipoLocal: "e12", equipoVisitante: "e3", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 11, equipoLocal: "e9", equipoVisitante: "e8", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 11, equipoLocal: "e4", equipoVisitante: "e6", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 11, equipoLocal: "e7", equipoVisitante: "e1", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 11, equipoLocal: "e10", equipoVisitante: "e2", estado: "Próximo", fecha: "A definir", cancha: "A definir" },
+                { fechaNum: 11, equipoLocal: "e5", equipoVisitante: "e11", estado: "Próximo", fecha: "A definir", cancha: "A definir" }
             ],
 
             noticias: [
                 {
                     id: 1,
-                    titulo: "Se juega la Fecha 3 de la Sub-17 este fin de semana",
-                    fecha: "Edición Fin de Semana",
-                    categoria: "Liga Sub-17",
-                    imagen: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
-                    resumen: "Síguelo en vivo: Central recibe a Juvenil y Wanderers choca frente a Racing en los duelos más atractivos de la jornada."
+                    titulo: "Cobertura Completa por Canona Marca Registrada",
+                    fecha: "Facebook Oficial",
+                    categoria: "Prensa",
+                    imagen: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=600&q=80",
+                    resumen: "Reviví las mejores postales, marcadores y el minuto a minuto desde las canchas en la página oficial de Canona Marca Registrada."
                 },
                 {
                     id: 2,
-                    titulo: "Fotografías y Cobertura de Cañona Marca Registrada",
-                    fecha: "Facebook Oficial",
-                    categoria: "Prensa / Cañona",
-                    imagen: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=600&q=80",
-                    resumen: "Las imágenes de las canchas, planteles e incidencias publicadas minuto a minuto en la página de Facebook de Cañona Marca Registrada."
-                },
-                {
-                    id: 3,
-                    titulo: "Juvenil y Wanderers lideran la tabla con puntaje perfecto",
-                    fecha: "Tras Fecha 2",
-                    categoria: "Estadísticas",
-                    imagen: "https://images.unsplash.com/photo-1551280857-2b9bbe520442?auto=format&fit=crop&w=600&q=80",
-                    resumen: "Ambos equipos acumulan 6 unidades de 6 posibles tras ganar sus respectivos duelos en el inicio de la temporada."
+                    titulo: "Se juega la Fecha 3: ¿Quién asalta la punta?",
+                    fecha: "Previa Fin de Semana",
+                    categoria: "Liga Sub-17",
+                    imagen: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
+                    resumen: "Este fin de semana continúa el Clasificatorio. Destacan duelos en El Bohemio y el 14 de octubre."
                 }
             ]
         };
 
-        let fechaSeleccionada = 3; // Por defecto abre en Fecha 3 (Próxima)
+        let fechaSeleccionada = 3;
 
-        function getEquipo(id) {
-            return db.equipos.find(e => e.id === id) || { nombre: "Equipo", color: "#666" };
-        }
+        function getEquipo(id) { return db.equipos.find(e => e.id === id) || { nombre: "Equipo", color: "#666" }; }
+        function getIniciales(nombre) { return nombre.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase(); }
 
-        function getIniciales(nombre) {
-            return nombre.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase();
+        // Cargar botones de fechas dinámicamente del 1 al 11
+        function renderTabs() {
+            const container = document.getElementById("tabs-container");
+            let html = '';
+            for(let i = 1; i <= 11; i++) {
+                let badge = (i === 3) ? ' <span class="badge-live">Este Finde</span>' : '';
+                let activeClass = (i === 3) ? 'active' : '';
+                html += `<button class="tab-btn ${activeClass}" id="btnFecha${i}" onclick="mostrarFecha(${i})">Fecha ${i}${badge}</button>`;
+            }
+            container.innerHTML = html;
         }
 
         // Renderizar Lista de Partidos según la Fecha activa
@@ -921,7 +460,7 @@
                     <div class="match-card">
                         <div class="match-header">
                             <span><i class="fa-solid fa-trophy"></i> Sub-17 &bull; Fecha ${p.fechaNum}</span>
-                            <span class="badge-status ${p.estado.toLowerCase()}">${p.estado}</span>
+                            <span class="badge-status ${p.estado.toLowerCase().replace('ó','o')}">${p.estado}</span>
                         </div>
                         <div class="match-body">
                             <div class="team-box">
@@ -934,7 +473,7 @@
                                 ${p.estado === 'Finalizado' 
                                     ? `<div class="score-num">${p.golesLocal} - ${p.golesVisitante}</div>`
                                     : (p.estado === 'Suspendido' 
-                                        ? `<div style="font-weight:bold; color:var(--primary); font-size:0.8rem;">SUSPENDIDO</div>` 
+                                        ? `<div style="font-weight:bold; color:var(--primary); font-size:0.8rem;">SUSP.</div>` 
                                         : `<div class="match-time">VS</div>`)
                                 }
                             </div>
@@ -954,26 +493,26 @@
             });
         }
 
-        // Cambiar entre Fecha 1, Fecha 2 y Fecha 3
+        // Cambiar entre Fechas
         function mostrarFecha(num) {
             fechaSeleccionada = num;
-            document.getElementById("btnFecha1").classList.toggle("active", num === 1);
-            document.getElementById("btnFecha2").classList.toggle("active", num === 2);
-            document.getElementById("btnFecha3").classList.toggle("active", num === 3);
+            for(let i = 1; i <= 11; i++) {
+                const btn = document.getElementById("btnFecha" + i);
+                if(btn) {
+                    if(i === num) btn.classList.add("active");
+                    else btn.classList.remove("active");
+                }
+            }
             renderPartidos(num);
         }
 
-        // CÁLCULO AUTOMÁTICO DE LA TABLA CON LOS RESULTADOS REALES
+        // CÁLCULO AUTOMÁTICO DE LA TABLA
         function calcularTabla() {
             let tabla = db.equipos.map(eq => ({
-                id: eq.id,
-                nombre: eq.nombre,
-                color: eq.color,
-                pj: 0, pg: 0, pe: 0, pp: 0,
-                gf: 0, gc: 0, dg: 0, pts: 0
+                id: eq.id, nombre: eq.nombre, color: eq.color,
+                pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0
             }));
 
-            // Procesar únicamente partidos finalizados
             db.partidos.filter(p => p.estado === "Finalizado").forEach(p => {
                 const loc = tabla.find(t => t.id === p.equipoLocal);
                 const vis = tabla.find(t => t.id === p.equipoVisitante);
@@ -984,23 +523,19 @@
                     vis.gf += p.golesVisitante; vis.gc += p.golesLocal;
 
                     if (p.golesLocal > p.golesVisitante) {
-                        loc.pg++; vis.pp++;
-                        loc.pts += 3;
+                        loc.pg++; vis.pp++; loc.pts += 3;
                     } else if (p.golesLocal < p.golesVisitante) {
-                        vis.pg++; loc.pp++;
-                        vis.pts += 3;
+                        vis.pg++; loc.pp++; vis.pts += 3;
                     } else {
-                        loc.pe++; vis.pe++;
-                        loc.pts += 1; vis.pts += 1;
+                        loc.pe++; vis.pe++; loc.pts += 1; vis.pts += 1;
                     }
                 }
             });
 
-            // Ordenar automáticamente por Puntos > Diferencia de Goles > Goles a Favor
+            // Ordenar por Puntos > Diferencia de Goles > Goles a Favor
             tabla.forEach(t => t.dg = t.gf - t.gc);
             tabla.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
 
-            // Renderizar tabla en HTML
             const tbody = document.getElementById("tabla-body");
             tbody.innerHTML = "";
 
@@ -1010,9 +545,7 @@
                         <td><strong>${index + 1}</strong></td>
                         <td>
                             <div class="team-cell">
-                                <div class="mini-shield" style="background-color: ${t.color}">
-                                    ${getIniciales(t.nombre)}
-                                </div>
+                                <div class="mini-shield" style="background-color: ${t.color}">${getIniciales(t.nombre)}</div>
                                 <span>${t.nombre}</span>
                             </div>
                         </td>
@@ -1029,11 +562,9 @@
             });
         }
 
-        // Renderizar Noticias
         function renderNoticias() {
             const container = document.getElementById("noticias-grid");
             container.innerHTML = "";
-
             db.noticias.forEach(n => {
                 container.innerHTML += `
                     <article class="news-card">
@@ -1050,30 +581,31 @@
             });
         }
 
-        // Búsqueda rápida
         function filtrarContenido() {
             const query = document.getElementById("searchInput").value.toLowerCase();
             const cards = document.querySelectorAll(".match-card, .news-card");
-
             cards.forEach(card => {
-                const text = card.innerText.toLowerCase();
-                card.style.display = text.includes(query) ? "" : "none";
+                card.style.display = card.innerText.toLowerCase().includes(query) ? "" : "none";
             });
         }
 
-        function toggleMenu() {
-            document.getElementById("navMenu").classList.toggle("active");
-        }
+        function toggleMenu() { document.getElementById("navMenu").classList.toggle("active"); }
+        function closeMenu() { document.getElementById("navMenu").classList.remove("active"); }
 
-        function closeMenu() {
-            document.getElementById("navMenu").classList.remove("active");
-        }
-
-        // Carga al iniciar
+        // Inicializar
         window.onload = function() {
-            renderPartidos(fechaSeleccionada);
+            renderTabs();
+            mostrarFecha(fechaSeleccionada);
             calcularTabla();
             renderNoticias();
+            
+            // Scrollear automáticamente la barra de fechas hacia la Fecha 3
+            setTimeout(() => {
+                const btnF3 = document.getElementById('btnFecha3');
+                if (btnF3) {
+                    btnF3.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+            }, 100);
         };
     </script>
 </body>
