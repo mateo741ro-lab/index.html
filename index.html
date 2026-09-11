@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- SEO & Meta Etiquetas -->
-    <title>Deportivo Durazno | Liga Sub-17 - Resultados, Tabla y Noticias</title>
-    <meta name="description" content="Portal del fútbol de Durazno, Uruguay. Resultados de la Sub-17, Fecha 1 y 2, tabla de posiciones y cobertura con @Canona Marca Registrada.">
-    <meta name="keywords" content="Deportivo Durazno, fútbol Durazno, Sub 17 Durazno, Canona Marca Registrada, resultados fútbol Durazno, tabla Sub 17 Durazno">
+    <title>Deportivo Durazno | Fútbol Sub-17 - Resultados, Próxima Fecha y Posiciones</title>
+    <meta name="description" content="Portal oficial de Deportivo Durazno. Resultados de la Liga de Fútbol de Durazno Sub-17: Fecha 1, Fecha 2, Próxima Fecha 3, Tabla de Posiciones y cobertura con Cañona Marca Registrada.">
+    <meta name="keywords" content="Deportivo Durazno, fútbol Durazno, Sub 17 Durazno, Cañona Marca Registrada, Sport Durazno, resultados fútbol Durazno, tabla Sub 17 Durazno, fixture fecha 3 Sub 17">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph (Redes Sociales y WhatsApp) -->
     <meta property="og:title" content="Deportivo Durazno | Fútbol Sub-17 de Durazno">
-    <meta property="og:description" content="Toda la información del fútbol duraznense Sub-17: Fechas 1 y 2, posiciones y cobertura especial.">
+    <meta property="og:description" content="Toda la información de la Liga Sub-17 de Durazno: Fecha 3 este fin de semana, resultados anteriores y tabla de posiciones.">
     <meta property="og:type" content="website">
 
     <!-- Google Fonts & Iconos FontAwesome -->
@@ -32,7 +32,7 @@
             --text-main: #1E293B;      /* Texto principal */
             --text-muted: #64748B;     /* Texto secundario */
             --border-color: #E2E8F0;   /* Bordes */
-            --facebook-blue: #1877F2;  /* Color Facebook para Canona */
+            --facebook-blue: #1877F2;  /* Azul Cañona Facebook */
             --radius: 10px;
             --shadow: 0 4px 15px rgba(0,0,0,0.06);
         }
@@ -44,7 +44,7 @@
             font-family: 'Open Sans', sans-serif;
         }
 
-        h1, h2, h3, h4, .logo, .btn, th, .badge-category {
+        h1, h2, h3, h4, .logo, .btn, th, .badge-category, .tab-btn {
             font-family: 'Montserrat', sans-serif;
         }
 
@@ -55,7 +55,7 @@
             line-height: 1.5;
         }
 
-        /* --- NAVBAR --- */
+        /* --- NAVBAR FIJO --- */
         .header {
             position: fixed;
             top: 0;
@@ -108,7 +108,7 @@
             color: #CBD5E1;
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             transition: color 0.2s;
             text-transform: uppercase;
         }
@@ -156,7 +156,7 @@
             cursor: pointer;
         }
 
-        /* --- HERO PORTADA --- */
+        /* --- HERO PORTADA DEPORTIVA --- */
         .hero {
             background: linear-gradient(135deg, rgba(18, 24, 32, 0.92), rgba(154, 0, 7, 0.88)), 
                         url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
@@ -243,28 +243,42 @@
             color: var(--primary);
         }
 
-        /* FILTROS DE FECHAS (PESTAÑAS) */
+        /* PESTAÑAS DE FECHAS (FECHA 1, FECHA 2, FECHA 3) */
         .date-tabs {
             display: flex;
             gap: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
             background-color: #E2E8F0;
             border: none;
-            padding: 8px 16px;
+            padding: 9px 18px;
             border-radius: 20px;
             font-weight: 700;
             font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s;
             color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .tab-btn.active {
             background-color: var(--primary);
             color: white;
+            box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+        }
+
+        .tab-btn .badge-live {
+            background-color: #22C55E;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 8px;
+            text-transform: uppercase;
         }
 
         /* --- TARJETAS DE PARTIDOS --- */
@@ -272,7 +286,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
 
         .match-card {
@@ -326,8 +340,8 @@
         }
 
         .team-shield {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -358,6 +372,12 @@
             letter-spacing: 1px;
         }
 
+        .match-time {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
         .match-footer {
             margin-top: 8px;
             font-size: 0.75rem;
@@ -365,7 +385,7 @@
             text-align: center;
         }
 
-        /* --- TABLA DE POSICIONES --- */
+        /* --- TABLA DE POSICIONES AUTOMÁTICA --- */
         .table-container {
             background-color: var(--bg-card);
             border-radius: var(--radius);
@@ -429,13 +449,13 @@
             background-color: rgba(0,0,0,0.02);
         }
 
-        /* --- SECCIÓN SEGUIDORES Y PRENSA CANONA --- */
+        /* --- BANNER DE @CAÑONA MARCA REGISTRADA --- */
         .canona-banner {
             background: linear-gradient(135deg, #1877F2, #0052B4);
             color: white;
             border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 30px;
+            padding: 22px;
+            margin-bottom: 35px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -464,23 +484,23 @@
         }
 
         .canona-text h3 {
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 800;
         }
 
         .canona-text p {
-            font-size: 0.85rem;
-            opacity: 0.9;
+            font-size: 0.88rem;
+            opacity: 0.95;
         }
 
         .btn-facebook {
             background-color: white;
             color: #1877F2;
-            padding: 8px 18px;
+            padding: 10px 20px;
             border-radius: 20px;
             text-decoration: none;
             font-weight: 800;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -491,7 +511,7 @@
             transform: scale(1.03);
         }
 
-        /* --- NOTICIAS GRID --- */
+        /* --- NOTICIAS Y MEDIOS DE DURAZNO --- */
         .news-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -592,6 +612,11 @@
         .footer-links a {
             color: #CBD5E1;
             text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
         }
 
         .copyright {
@@ -601,7 +626,7 @@
             font-size: 0.8rem;
         }
 
-        /* --- RESPONSIVO --- */
+        /* --- RESPONSIVIDAD PARA CELULARES --- */
         @media (max-width: 768px) {
             .nav-menu {
                 display: none;
@@ -630,12 +655,21 @@
             .hide-mobile {
                 display: none;
             }
+
+            .canona-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .canona-info {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- ENCABEZADO Y NAVEGACIÓN -->
+    <!-- ENCABEZADO FIJO -->
     <header class="header">
         <div class="nav-container">
             <a href="#" class="logo">
@@ -653,21 +687,21 @@
 
             <ul class="nav-menu" id="navMenu">
                 <li><a href="#inicio" class="nav-link active" onclick="closeMenu()">Inicio</a></li>
-                <li><a href="#partidos" class="nav-link" onclick="closeMenu()">Partidos</a></li>
-                <li><a href="#tabla" class="nav-link" onclick="closeMenu()">Tabla Sub-17</a></li>
-                <li><a href="#noticias" class="nav-link" onclick="closeMenu()">Noticias</a></li>
+                <li><a href="#partidos" class="nav-link" onclick="closeMenu()">Partidos Sub-17</a></li>
+                <li><a href="#tabla" class="nav-link" onclick="closeMenu()">Tabla Posiciones</a></li>
+                <li><a href="#noticias" class="nav-link" onclick="closeMenu()">Cañona & Prensa</a></li>
             </ul>
         </div>
     </header>
 
-    <!-- PORTADA -->
+    <!-- PORTADA DEPORTIVA -->
     <section id="inicio" class="hero">
         <div class="hero-content">
             <span class="hero-tag">Liga de Fútbol de Durazno</span>
             <h1>Categoría Sub-17 en Vivo</h1>
-            <p>Resultados oficiales de la Fecha 1 y Fecha 2, estadísticas y cobertura fotográfica exclusiva.</p>
-            <a href="#tabla" class="btn-action">
-                <i class="fa-solid fa-trophy"></i> Ver Tabla de Posiciones
+            <p>Resultados oficiales de la Fecha 1, Fecha 2, fixture de la Fecha 3 de este fin de semana y posiciones en tiempo real.</p>
+            <a href="#partidos" class="btn-action">
+                <i class="fa-solid fa-calendar-check"></i> Ver Fecha 3 (Este Fin de Semana)
             </a>
         </div>
     </section>
@@ -675,7 +709,7 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="main-container">
 
-        <!-- PARTIDOS FECHA 1 Y FECHA 2 -->
+        <!-- FIXTURE Y RESULTADOS SUB-17 -->
         <section id="partidos">
             <div class="section-title">
                 <div class="title-left">
@@ -684,14 +718,18 @@
                 </div>
             </div>
 
-            <!-- Botones Pestaña Fecha 1 / Fecha 2 -->
+            <!-- BOTONES PESTAÑAS FECHA 3 (PRÓXIMA), FECHA 2, FECHA 1 -->
             <div class="date-tabs">
-                <button class="tab-btn active" id="btnFecha2" onclick="mostrarFecha(2)">Fecha 2</button>
+                <button class="tab-btn active" id="btnFecha3" onclick="mostrarFecha(3)">
+                    Fecha 3 <span class="badge-live">Este Fin de Semana</span>
+                </button>
+                <button class="tab-btn" id="btnFecha2" onclick="mostrarFecha(2)">Fecha 2</button>
                 <button class="tab-btn" id="btnFecha1" onclick="mostrarFecha(1)">Fecha 1</button>
             </div>
 
+            <!-- CONTENEDOR DE TARJETAS DE PARTIDOS -->
             <div class="matches-grid" id="partidos-grid">
-                <!-- Se genera dinámicamente con JS -->
+                <!-- Se llena dinámicamente con JS -->
             </div>
         </section>
 
@@ -716,7 +754,7 @@
                             <th title="Goles a Favor" class="hide-mobile">GF</th>
                             <th title="Goles en Contra" class="hide-mobile">GC</th>
                             <th title="Diferencia de Goles">DG</th>
-                            <th title="Puntos" class="pts-col">PTS</th>
+                            <th title="Puntos Totales" class="pts-col">PTS</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-body">
@@ -726,23 +764,23 @@
             </div>
         </section>
 
-        <!-- BANNER COLABORACIÓN CANONA MARCA REGISTRADA -->
+        <!-- BANNER OFICIAL CAÑONA MARCA REGISTRADA (FACEBOOK) -->
         <div class="canona-banner">
             <div class="canona-info">
                 <div class="canona-avatar">
-                    <i class="fa-solid fa-camera"></i>
+                    <i class="fa-solid fa-camera-retro"></i>
                 </div>
                 <div class="canona-text">
-                    <h3>@Canona Marca Registrada</h3>
-                    <p>Información al instante, fotos oficiales y cobertura completa del fútbol duraznense en Facebook.</p>
+                    <h3>Cañona Marca Registrada</h3>
+                    <p>Página oficial de Facebook con las mejores fotos, resultados al instante y la información del fútbol duraznense.</p>
                 </div>
             </div>
-            <a href="https://www.facebook.com" target="_blank" class="btn-facebook">
-                <i class="fa-brands fa-facebook"></i> Ver en Facebook
+            <a href="https://www.facebook.com/search/top?q=Ca%C3%B1ona%20Marca%20Registrada" target="_blank" class="btn-facebook">
+                <i class="fa-brands fa-facebook-f"></i> Visitar en Facebook
             </a>
         </div>
 
-        <!-- NOTICIAS Y NOVEDADES -->
+        <!-- NOTICIAS Y PRENSA LOCAL -->
         <section id="noticias">
             <h2 class="section-title">
                 <div class="title-left">
@@ -751,7 +789,7 @@
                 </div>
             </h2>
             <div class="news-grid" id="noticias-grid">
-                <!-- Se genera dinámicamente -->
+                <!-- Se genera dinámicamente con JS -->
             </div>
         </section>
 
@@ -762,21 +800,22 @@
         <div class="footer-container">
             <div class="footer-col">
                 <h4>Deportivo Durazno</h4>
-                <p>El portal web con el seguimiento paso a paso de la Liga de Fútbol de Durazno (Categoría Sub-17).</p>
+                <p>El portal referente del fútbol juvenil y de mayores del departamento de Durazno, Uruguay. Cobertura completa de la Liga de Fútbol de Durazno.</p>
             </div>
             <div class="footer-col">
-                <h4>Enlaces</h4>
+                <h4>Navegación</h4>
                 <ul class="footer-links">
                     <li><a href="#inicio">Inicio</a></li>
-                    <li><a href="#partidos">Partidos Sub-17</a></li>
-                    <li><a href="#tabla">Tabla de Posiciones</a></li>
-                    <li><a href="#noticias">Prensa & Noticias</a></li>
+                    <li><a href="#partidos">Fecha 3 (Próximos)</a></li>
+                    <li><a href="#tabla">Tabla de Posiciones Sub-17</a></li>
+                    <li><a href="#noticias">Noticias & Fotos</a></li>
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Información Local</h4>
+                <h4>Fuentes & Colaboradores</h4>
                 <p><i class="fa-solid fa-location-dot"></i> Durazno, Uruguay</p>
-                <p><i class="fa-solid fa-bullhorn"></i> Cobertura especial con @Canona Marca Registrada</p>
+                <p><i class="fa-brands fa-facebook"></i> Cañona Marca Registrada</p>
+                <p><i class="fa-solid fa-globe"></i> Sport Durazno / Durazno Hoy</p>
             </div>
         </div>
         <div class="copyright">
@@ -784,9 +823,9 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT CON LOS DATOS REALES -->
+    <!-- LÓGICA JAVASCRIPT Y BASE DE DATOS LOCAL -->
     <script>
-        // BASE DE DATOS LOCAL CON LOS DATOS EXACTOS DE LA LIGA SUB-17
+        // BASE DE DATOS DE EQUIPOS Y PARTIDOS REALES DE LA SUB-17
         const db = {
             equipos: [
                 { id: "e1", nombre: "Juvenil", color: "#16A34A" },
@@ -804,7 +843,7 @@
             ],
 
             partidos: [
-                // --- PRIMERA FECHA ---
+                // --- FECHA 1 (RESULTADOS REALES) ---
                 { id: 101, fechaNum: 1, equipoLocal: "e1", equipoVisitante: "e2", golesLocal: 7, golesVisitante: 1, estado: "Finalizado", fecha: "Fecha 1", cancha: "Durazno" },
                 { id: 102, fechaNum: 1, equipoLocal: "e3", equipoVisitante: "e4", golesLocal: 4, golesVisitante: 1, estado: "Finalizado", fecha: "Fecha 1", cancha: "Durazno" },
                 { id: 103, fechaNum: 1, equipoLocal: "e5", equipoVisitante: "e6", golesLocal: 1, golesVisitante: 0, estado: "Finalizado", fecha: "Fecha 1", cancha: "Durazno" },
@@ -812,43 +851,52 @@
                 { id: 105, fechaNum: 1, equipoLocal: "e9", equipoVisitante: "e10", golesLocal: 1, golesVisitante: 1, estado: "Finalizado", fecha: "Fecha 1", cancha: "Durazno" },
                 { id: 106, fechaNum: 1, equipoLocal: "e11", equipoVisitante: "e12", golesLocal: 4, golesVisitante: 0, estado: "Finalizado", fecha: "Fecha 1", cancha: "Dové García" },
 
-                // --- SEGUNDA FECHA ---
+                // --- FECHA 2 (RESULTADOS REALES) ---
                 { id: 201, fechaNum: 2, equipoLocal: "e6", equipoVisitante: "e10", golesLocal: 3, golesVisitante: 0, estado: "Finalizado", fecha: "2026-09-05 11:00", cancha: "Manuel D. Souza" },
                 { id: 202, fechaNum: 2, equipoLocal: "e2", equipoVisitante: "e12", golesLocal: null, golesVisitante: null, estado: "Suspendido", fecha: "2026-09-05 14:45", cancha: "Dové García" },
                 { id: 203, fechaNum: 2, equipoLocal: "e5", equipoVisitante: "e9", golesLocal: 2, golesVisitante: 1, estado: "Finalizado", fecha: "2026-09-05 15:00", cancha: "Complejo Bohemio" },
                 { id: 204, fechaNum: 2, equipoLocal: "e11", equipoVisitante: "e1", golesLocal: 0, golesVisitante: 2, estado: "Finalizado", fecha: "2026-09-05 17:00", cancha: "Dové García" },
-                { id: 205, fechaNum: 2, equipoLocal: "e3", equipoVisitante: "e7", golesLocal: 2, golesVisitante: 2, estado: "Finalizado", fecha: "2026-09-06 16:45", cancha: "Campus Sta. Bernardina" }
+                { id: 205, fechaNum: 2, equipoLocal: "e3", equipoVisitante: "e7", golesLocal: 2, golesVisitante: 2, estado: "Finalizado", fecha: "2026-09-06 16:45", cancha: "Campus Sta. Bernardina" },
+                { id: 206, fechaNum: 2, equipoLocal: "e4", equipoVisitante: "e8", golesLocal: 2, golesVisitante: 0, estado: "Finalizado", fecha: "2026-09-06 14:30", cancha: "Durazno" },
+
+                // --- FECHA 3 (PRÓXIMA FECHA - ESTE FIN DE SEMANA) ---
+                { id: 301, fechaNum: 3, equipoLocal: "e6", equipoVisitante: "e1", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Sábado - 14:00 hs", cancha: "Estadio Silvestre O. Landoni" },
+                { id: 302, fechaNum: 3, equipoLocal: "e2", equipoVisitante: "e5", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Sábado - 16:00 hs", cancha: "Complejo Bohemio" },
+                { id: 303, fechaNum: 3, equipoLocal: "e7", equipoVisitante: "e12", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Sábado - 17:30 hs", cancha: "Campus Sta. Bernardina" },
+                { id: 304, fechaNum: 3, equipoLocal: "e11", equipoVisitante: "e4", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Domingo - 11:00 hs", cancha: "Cancha Dové García" },
+                { id: 305, fechaNum: 3, equipoLocal: "e3", equipoVisitante: "e9", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Domingo - 15:00 hs", cancha: "Parque de la Hispanidad" },
+                { id: 306, fechaNum: 3, equipoLocal: "e10", equipoVisitante: "e8", golesLocal: null, golesVisitante: null, estado: "Próximo", fecha: "Domingo - 17:00 hs", cancha: "Manuel D. Souza" }
             ],
 
             noticias: [
                 {
                     id: 1,
-                    titulo: "Cobertura de la Sub-17 por @Canona Marca Registrada",
-                    fecha: "Reciente",
-                    categoria: "Facebook / Prensa",
-                    imagen: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=600&q=80",
-                    resumen: "Fotos oficiales, detalles de las canchas y los datos al instante de cada jornada publicados por Canona Marca Registrada."
+                    titulo: "Se juega la Fecha 3 de la Sub-17 este fin de semana",
+                    fecha: "Edición Fin de Semana",
+                    categoria: "Liga Sub-17",
+                    imagen: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
+                    resumen: "Síguelo en vivo: Central recibe a Juvenil y Wanderers choca frente a Racing en los duelos más atractivos de la jornada."
                 },
                 {
                     id: 2,
-                    titulo: "Histórico arranque de la Categoría Sub-17",
-                    fecha: "Fecha 1 y 2",
-                    categoria: "Liga Sub-17",
-                    imagen: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
-                    resumen: "Goleada récord de Nacional 26-0 en la Fecha 1 y vibrante empate 2-2 ante La Lanera en la Fecha 2 disputada en Santa Bernardina."
+                    titulo: "Fotografías y Cobertura de Cañona Marca Registrada",
+                    fecha: "Facebook Oficial",
+                    categoria: "Prensa / Cañona",
+                    imagen: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=600&q=80",
+                    resumen: "Las imágenes de las canchas, planteles e incidencias publicadas minuto a minuto en la página de Facebook de Cañona Marca Registrada."
                 },
                 {
                     id: 3,
-                    titulo: "Juvenil y Wanderers firman inicio perfecto",
-                    fecha: "Fecha 2",
-                    categoria: "Destacado",
+                    titulo: "Juvenil y Wanderers lideran la tabla con puntaje perfecto",
+                    fecha: "Tras Fecha 2",
+                    categoria: "Estadísticas",
                     imagen: "https://images.unsplash.com/photo-1551280857-2b9bbe520442?auto=format&fit=crop&w=600&q=80",
-                    resumen: "Juvenil venció 2-0 a Sportivo Yí y Wanderers superó 2-1 a Artigas para mantenerse firmes en lo alto de la tabla."
+                    resumen: "Ambos equipos acumulan 6 unidades de 6 posibles tras ganar sus respectivos duelos en el inicio de la temporada."
                 }
             ]
         };
 
-        let fechaSeleccionada = 2; // Por defecto abre en Fecha 2
+        let fechaSeleccionada = 3; // Por defecto abre en Fecha 3 (Próxima)
 
         function getEquipo(id) {
             return db.equipos.find(e => e.id === id) || { nombre: "Equipo", color: "#666" };
@@ -885,7 +933,9 @@
                             <div class="score-box">
                                 ${p.estado === 'Finalizado' 
                                     ? `<div class="score-num">${p.golesLocal} - ${p.golesVisitante}</div>`
-                                    : (p.estado === 'Suspendido' ? `<div style="font-weight:bold; color:var(--primary); font-size:0.8rem;">VS</div>` : `<div class="score-num">-</div>`)
+                                    : (p.estado === 'Suspendido' 
+                                        ? `<div style="font-weight:bold; color:var(--primary); font-size:0.8rem;">SUSPENDIDO</div>` 
+                                        : `<div class="match-time">VS</div>`)
                                 }
                             </div>
                             <div class="team-box">
@@ -904,11 +954,12 @@
             });
         }
 
-        // Cambiar entre Fecha 1 y Fecha 2
+        // Cambiar entre Fecha 1, Fecha 2 y Fecha 3
         function mostrarFecha(num) {
             fechaSeleccionada = num;
             document.getElementById("btnFecha1").classList.toggle("active", num === 1);
             document.getElementById("btnFecha2").classList.toggle("active", num === 2);
+            document.getElementById("btnFecha3").classList.toggle("active", num === 3);
             renderPartidos(num);
         }
 
@@ -945,11 +996,11 @@
                 }
             });
 
-            // Calcular diferencia de goles y ordenar (PTS > DG > GF)
+            // Ordenar automáticamente por Puntos > Diferencia de Goles > Goles a Favor
             tabla.forEach(t => t.dg = t.gf - t.gc);
             tabla.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
 
-            // Renderizar tabla HTML
+            // Renderizar tabla en HTML
             const tbody = document.getElementById("tabla-body");
             tbody.innerHTML = "";
 
@@ -999,7 +1050,7 @@
             });
         }
 
-        // Búsqueda simple
+        // Búsqueda rápida
         function filtrarContenido() {
             const query = document.getElementById("searchInput").value.toLowerCase();
             const cards = document.querySelectorAll(".match-card, .news-card");
@@ -1018,7 +1069,7 @@
             document.getElementById("navMenu").classList.remove("active");
         }
 
-        // Carga inicial
+        // Carga al iniciar
         window.onload = function() {
             renderPartidos(fechaSeleccionada);
             calcularTabla();
