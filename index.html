@@ -1,960 +1,871 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#070d0a">
-
-  <title>Campeonato Fútbol 5</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --bg: #070d0a;
-      --panel: #0e1712;
-      --panel2: #132019;
-      --line: rgba(255,255,255,.08);
-
-      --verde: #19d489;
-      --verde-suave: rgba(25,212,137,.14);
-      --verde-osc: #0b3d2e;
-
-      --oro: #ffce3d;
-      --rojo: #ff5a5f;
-
-      --txt: #eef6f2;
-      --mut: #8fa9a0;
-
-      --radio: 20px;
-      --sombra: 0 18px 50px rgba(0,0,0,.45);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: Inter, sans-serif;
-      background:
-        radial-gradient(circle at 20% 10%, rgba(25,212,137,.10), transparent 30%),
-        radial-gradient(circle at 80% 30%, rgba(255,206,61,.06), transparent 25%),
-        var(--bg);
-      color: var(--txt);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font-family: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    /* =========================
-       HEADER
-    ========================== */
-
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      background: rgba(7,13,10,.82);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .header-inner {
-      max-width: 1200px;
-      margin: auto;
-      padding: 15px 20px;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-    }
-
-    .logo-ball {
-      width: 43px;
-      height: 43px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-
-      background:
-        radial-gradient(circle at 35% 30%, white 0 7%, transparent 8%),
-        linear-gradient(145deg, #fff, #b9c5bf);
-
-      color: #101714;
-      font-size: 22px;
-      box-shadow: 0 0 25px rgba(25,212,137,.18);
-    }
-
-    .logo-text strong {
-      display: block;
-      font-family: Sora, sans-serif;
-      font-size: 15px;
-      letter-spacing: .4px;
-    }
-
-    .logo-text span {
-      color: var(--verde);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-    }
-
-    nav {
-      display: flex;
-      gap: 5px;
-    }
-
-    nav button {
-      border: 0;
-      color: var(--mut);
-      background: transparent;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      transition: .25s;
-    }
-
-    nav button:hover,
-    nav button.active {
-      color: var(--txt);
-      background: rgba(255,255,255,.06);
-    }
-
-    .header-cta {
-      border: 0;
-      color: #08100c;
-      font-weight: 800;
-      padding: 11px 16px;
-      border-radius: 12px;
-
-      background: linear-gradient(135deg, var(--oro), #ffe98a);
-      box-shadow: 0 8px 25px rgba(255,206,61,.15);
-      transition: .25s;
-    }
-
-    .header-cta:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(255,206,61,.25);
-    }
-
-    /* =========================
-       VIEWS
-    ========================== */
-
-    .view {
-      display: none;
-      animation: aparecer .4s ease;
-    }
-
-    .view.active {
-      display: block;
-    }
-
-    @keyframes aparecer {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* =========================
-       HERO
-    ========================== */
-
-    .hero {
-      min-height: 610px;
-      position: relative;
-      overflow: hidden;
-
-      display: flex;
-      align-items: center;
-
-      background:
-        linear-gradient(90deg, rgba(4,10,7,.98), rgba(4,10,7,.73), rgba(4,10,7,.55)),
-        url("https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1800&q=85")
-        center/cover;
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-
-      background:
-        repeating-linear-gradient(
-          -45deg,
-          transparent 0 20px,
-          rgba(25,212,137,.035) 20px 22px
-        );
-    }
-
-    .hero-content {
-      width: 100%;
-      max-width: 1200px;
-      margin: auto;
-      padding: 80px 20px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-
-      padding: 8px 12px;
-      border: 1px solid rgba(25,212,137,.25);
-      border-radius: 999px;
-
-      color: var(--verde);
-      background: rgba(25,212,137,.08);
-
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .pulse {
-      width: 8px;
-      height: 8px;
-      background: var(--verde);
-      border-radius: 50%;
-      animation: pulso 1.6s infinite;
-    }
-
-    @keyframes pulso {
-      0%,100% {
-        box-shadow: 0 0 0 0 rgba(25,212,137,.4);
-      }
-
-      50% {
-        box-shadow: 0 0 0 9px rgba(25,212,137,0);
-      }
-    }
-
-    .hero h1 {
-      max-width: 760px;
-      margin-top: 20px;
-
-      font-family: Sora, sans-serif;
-      font-size: clamp(42px, 7vw, 82px);
-      line-height: .98;
-      letter-spacing: -3px;
-    }
-
-    .hero h1 span {
-      color: var(--verde);
-    }
-
-    .hero p {
-      max-width: 620px;
-      margin-top: 24px;
-
-      color: #bdccc6;
-      font-size: 17px;
-      line-height: 1.7;
-    }
-
-    .hero-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 32px;
-    }
-
-    .btn {
-      border: 0;
-      padding: 14px 20px;
-      border-radius: 13px;
-      font-weight: 800;
-      transition: .25s;
-    }
-
-    .btn:hover {
-      transform: translateY(-3px);
-    }
-
-    .btn-primary {
-      color: #07100b;
-      background: linear-gradient(135deg, var(--verde), #77f0be);
-      box-shadow: 0 12px 30px rgba(25,212,137,.18);
-    }
-
-    .btn-gold {
-      color: #171000;
-      background: linear-gradient(135deg, var(--oro), #ffe98a);
-    }
-
-    .btn-dark {
-      color: var(--txt);
-      background: rgba(255,255,255,.06);
-      border: 1px solid var(--line);
-    }
-
-    .floating-ball {
-      position: absolute;
-      right: 8%;
-      bottom: 16%;
-      z-index: 3;
-
-      width: 95px;
-      height: 95px;
-      border-radius: 50%;
-
-      display: grid;
-      place-items: center;
-
-      font-size: 55px;
-
-      background: rgba(255,255,255,.92);
-      box-shadow:
-        0 0 60px rgba(25,212,137,.2),
-        0 20px 40px rgba(0,0,0,.4);
-
-      animation: flotar 4s ease-in-out infinite;
-    }
-
-    @keyframes flotar {
-      0%,100% {
-        transform: translateY(0) rotate(-5deg);
-      }
-
-      50% {
-        transform: translateY(-22px) rotate(8deg);
-      }
-    }
-
-    /* =========================
-       MARQUEE
-    ========================== */
-
-    .marquee {
-      overflow: hidden;
-      white-space: nowrap;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-      background: #0a120e;
-    }
-
-    .marquee-track {
-      display: inline-block;
-      padding: 14px 0;
-      animation: desfile 25s linear infinite;
-    }
-
-    .marquee span {
-      margin: 0 30px;
-      color: var(--mut);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-    }
-
-    .marquee strong {
-      color: var(--verde);
-    }
-
-    @keyframes desfile {
-      from {
-        transform: translateX(0);
-      }
-
-      to {
-        transform: translateX(-50%);
-      }
-    }
-
-    /* =========================
-       GENERAL
-    ========================== */
-
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 70px 20px;
-    }
-
-    .section-title {
-      margin-bottom: 35px;
-    }
-
-    .section-title small {
-      color: var(--verde);
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-    }
-
-    .section-title h2 {
-      margin-top: 8px;
-      font-family: Sora, sans-serif;
-      font-size: clamp(28px, 5vw, 44px);
-    }
-
-    .section-title p {
-      max-width: 650px;
-      color: var(--mut);
-      margin-top: 10px;
-      line-height: 1.6;
-    }
-
-    /* =========================
-       CARDS
-    ========================== */
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 18px;
-    }
-
-    .card {
-      position: relative;
-      overflow: hidden;
-
-      padding: 25px;
-      background: linear-gradient(145deg, rgba(19,32,25,.95), rgba(10,18,14,.95));
-
-      border: 1px solid var(--line);
-      border-radius: var(--radio);
-
-      box-shadow: var(--sombra);
-
-      transition: .3s;
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 2px;
-
-      background: linear-gradient(90deg, transparent, var(--verde), transparent);
-      opacity: .6;
-    }
-
-    .card:hover {
-      transform: translateY(-6px);
-      border-color: rgba(25,212,137,.25);
-    }
-
-    .card-icon {
-      width: 48px;
-      height: 48px;
-      display: grid;
-      place-items: center;
-
-      border-radius: 14px;
-      background: var(--verde-suave);
-      font-size: 22px;
-      margin-bottom: 18px;
-    }
-
-    .card h3 {
-      font-family: Sora, sans-serif;
-      font-size: 18px;
-      margin-bottom: 9px;
-    }
-
-    .card p {
-      color: var(--mut);
-      line-height: 1.6;
-      font-size: 14px;
-    }
-
-    /* =========================
-       PRIZES
-    ========================== */
-
-    .prize {
-      display: grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .prize-main {
-      padding: 35px;
-      border-radius: var(--radio);
-
-      background:
-        radial-gradient(circle at 90% 20%, rgba(255,206,61,.15), transparent 30%),
-        linear-gradient(135deg,#15170d,#0d1711);
-
-      border: 1px solid rgba(255,206,61,.18);
-    }
-
-    .prize-main small {
-      color: var(--oro);
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .prize-main h3 {
-      margin-top: 12px;
-      font-family: Sora, sans-serif;
-      font-size: 42px;
-      color: var(--oro);
-    }
-
-    .prize-main p {
-      color: var(--mut);
-      margin-top: 10px;
-    }
-
-    .stat-box {
-      padding: 28px;
-      border-radius: var(--radio);
-      background: var(--panel);
-      border: 1px solid var(--line);
-    }
-
-    .stat-box strong {
-      display: block;
-      font-family: Sora;
-      font-size: 32px;
-      color: var(--verde);
-    }
-
-    .stat-box span {
-      display: block;
-      margin-top: 5px;
-      color: var(--mut);
-      font-size: 13px;
-    }
-
-    /* =========================
-       FORM
-    ========================== */
-
-    .form-card {
-      max-width: 850px;
-      margin: auto;
-
-      padding: 30px;
-      border-radius: var(--radio);
-
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: var(--sombra);
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2,1fr);
-      gap: 18px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .field.full {
-      grid-column: 1/-1;
-    }
-
-    label {
-      color: #c8d5d0;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-
-      padding: 13px 14px;
-
-      color: var(--txt);
-      background: #09110d;
-
-      border: 1px solid var(--line);
-      border-radius: 11px;
-
-      outline: none;
-      transition: .2s;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: rgba(25,212,137,.55);
-      box-shadow: 0 0 0 3px rgba(25,212,137,.07);
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .players {
-      display: grid;
-      grid-template-columns: repeat(2,1fr);
-      gap: 10px;
-    }
-
-    .submit-area {
-      margin-top: 25px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .notice {
-      color: var(--mut);
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    /* =========================
-       TEAMS
-    ========================== */
-
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 22px;
-    }
-
-    .filters input,
-    .filters select {
-      max-width: 250px;
-    }
-
-    .teams-grid {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 16px;
-    }
-
-    .team-card {
-      padding: 20px;
-      border-radius: 17px;
-
-      background: var(--panel);
-      border: 1px solid var(--line);
-
-      transition: .25s;
-    }
-
-    .team-card:hover {
-      transform: translateY(-4px);
-    }
-
-    .team-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .team-logo {
-      width: 50px;
-      height: 50px;
-
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-
-      background: var(--verde-suave);
-      font-size: 24px;
-    }
-
-    .team-name {
-      flex: 1;
-    }
-
-    .team-name h3 {
-      font-size: 16px;
-      font-family: Sora;
-    }
-
-    .team-name span {
-      color: var(--mut);
-      font-size: 12px;
-    }
-
-    .status {
-      padding: 6px 9px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 800;
-    }
-
-    .paid {
-      color: var(--verde);
-      background: var(--verde-suave);
-    }
-
-    .pending {
-      color: var(--oro);
-      background: rgba(255,206,61,.1);
-    }
-
-    .team-info {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 18px;
-    }
-
-    .info {
-      padding: 10px;
-      border-radius: 10px;
-      background: rgba(255,255,255,.035);
-    }
-
-    .info small {
-      color: var(--mut);
-      display: block;
-      font-size: 10px;
-    }
-
-    .info strong {
-      font-size: 12px;
-    }
-
-    /* =========================
-       INFO
-    ========================== */
-
-    .info-list {
-      display: grid;
-      gap: 12px;
-      max-width: 850px;
-    }
-
-    .info-row {
-      display: flex;
-      gap: 15px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      background: var(--panel);
-    }
-
-    .info-row .number {
-      width: 35px;
-      height: 35px;
-      flex: 0 0 35px;
-
-      display: grid;
-      place-items: center;
-
-      border-radius: 10px;
-      color: #06100b;
-      background: var(--verde);
-      font-weight: 900;
-    }
-
-    .info-row h3 {
-      margin-bottom: 5px;
-      font-size: 15px;
-    }
-
-    .info-row p {
-      color: var(--mut);
-      line-height: 1.5;
-      font-size: 13px;
-    }
-
-    /* =========================
-       CONTACT
-    ========================== */
-
-    .contact-box {
-      max-width: 800px;
-      margin: auto;
-      text-align: center;
-      padding: 50px 25px;
-
-      border-radius: 25px;
-
-      background:
-        radial-gradient(circle at 50% 0%, rgba(25,212,137,.14), transparent 40%),
-        var(--panel);
-
-      border: 1px solid var(--line);
-    }
-
-    .contact-box h2 {
-      font-family: Sora;
-      font-size: 34px;
-    }
-
-    .contact-box p {
-      color: var(--mut);
-      max-width: 550px;
-      margin: 12px auto 25px;
-      line-height: 1.6;
-    }
-
-    .contact-buttons {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    /* =========================
-       CONFIRMATION
-    ========================== */
-
-    .confirmation {
-      max-width: 700px;
-      margin: 80px auto;
-      padding: 45px 25px;
-      text-align: center;
-
-      background: var(--panel);
-      border: 1px solid rgba(25,212,137,.25);
-      border-radius: 25px;
-      box-shadow: var(--sombra);
-    }
-
-    .success-icon {
-      width: 75px;
-      height: 75px;
-      margin: auto;
-
-      display: grid;
-      place-items: center;
-
-      border-radius: 50%;
-      background: var(--verde-suave);
-      color: var(--verde);
-      font-size: 36px;
-    }
-
-    .confirmation h2 {
-      font-family: Sora;
-      margin-top: 20px;
-      font-size: 32px;
-    }
-
-    .confirmation p {
-      color: var(--mut);
-      line-height: 1.6;
-      margin: 12px auto 25px;
-    }
-
-    /* =========================
-       ADMIN
-    ========================== */
-
-    .admin-login {
-      max-width: 450px;
-      margin: 70px auto;
-      padding: 30px;
-
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-    }
-
-    .admin-dashboard {
-      display: none;
-    }
-
-    .admin-dashboard.active {
-      display: block;
-    }
-
-    .admin-stats {
-      display: grid;
-      grid-template-columns: repeat(4,1fr);
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-
-    .admin-stat {
-      padding: 20px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 15px;
-    }
-
-    .admin-stat strong {
-      display: block;
-      font-family: Sora;
-      font-size: 25px;
-      color: var(--verde);
-    }
-
-    .admin-stat span {
-      color: var(--mut);
-      font-size: 12px;
-    }
-
-    /* =========================
-       FOOTER
-    ========================== */
-
-    footer {
-      margin-top: 50px;
-      padding: 35px 20px 90px;
-
-      border-top: 1px solid var(--line);
-      text-align: center;
-
-      color: var(--mut);
-      font-size: 12px;
-    }
-
-    footer strong {
-      color: var(--verde);
-    }
-
-    /* =========================
-       MOBILE NAV
-    ========================== */
-
-    .mobile-nav {
-      display: none;
-
-      position: fixed;
-      z
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campeonato Fútbol 5 | Inscripciones</title>
+    <meta name="description" content="Campeonato de Fútbol 5. Inscribí tu equipo contactándonos por WhatsApp al 092 043 677.">
+    
+    <!-- Open Graph SEO -->
+    <meta property="og:title" content="Campeonato Fútbol 5 | Inscripciones">
+    <meta property="og:description" content="Armá tu equipo, competí y buscá la gloria. Inscribite por WhatsApp.">
+    <meta property="og:type" content="website">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome (Iconos) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #050806;
+            --bg-card: #07140D;
+            --primary: #19D489;
+            --primary-glow: #39FF9A;
+            --gold: #FFD447;
+            --text-main: #F4FFF9;
+            --text-muted: #A8B5AE;
+            --glass-bg: rgba(7, 20, 13, 0.7);
+            --glass-border: rgba(25, 212, 137, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6, .sora-font {
+            font-family: 'Sora', sans-serif;
+        }
+
+        /* Background Effects */
+        .bg-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .glow-orb {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(25,212,137,0.15) 0%, rgba(5,8,6,0) 70%);
+            border-radius: 50%;
+            top: -200px;
+            left: -200px;
+            animation: pulse 8s infinite alternate;
+        }
+
+        .glow-orb-2 {
+            top: 50%;
+            right: -200px;
+            background: radial-gradient(circle, rgba(255,212,71,0.08) 0%, rgba(5,8,6,0) 70%);
+            animation: pulse 10s infinite alternate-reverse;
+        }
+
+        .floating-ball {
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
+            font-size: 150px;
+            opacity: 0.03;
+            animation: float 15s ease-in-out infinite;
+            filter: grayscale(100%);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 1; }
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(50px, -50px) rotate(180deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+
+        /* Utilidades */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section-padding {
+            padding: 80px 0;
+        }
+
+        .text-center { text-align: center; }
+        .text-primary { color: var(--primary); }
+        .text-gold { color: var(--gold); }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(25, 212, 137, 0.5);
+            box-shadow: 0 10px 40px 0 rgba(25, 212, 137, 0.1);
+        }
+
+        /* Botones */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-wsp {
+            background: linear-gradient(135deg, var(--primary), #128C7E);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px rgba(25, 212, 137, 0.4);
+        }
+
+        .btn-wsp:hover {
+            box-shadow: 0 0 30px rgba(57, 255, 154, 0.7);
+            transform: scale(1.05);
+            color: #000;
+        }
+
+        /* Header & Nav */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(5, 8, 6, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i { color: var(--gold); }
+
+        .desktop-nav ul {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .desktop-nav a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .desktop-nav a:hover {
+            color: var(--primary);
+        }
+
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(5, 8, 6, 0.95);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid var(--glass-border);
+            z-index: 1000;
+            padding: 10px 0;
+        }
+
+        .mobile-nav ul {
+            display: flex;
+            justify-content: space-around;
+            list-style: none;
+        }
+
+        .mobile-nav a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.75rem;
+            gap: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .mobile-nav a i { font-size: 1.2rem; }
+        .mobile-nav a:hover, .mobile-nav a.active { color: var(--primary); }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding-top: 70px;
+            background: url('https://images.unsplash.com/photo-1518605368461-1e1e1273919d?q=80&w=2074&auto=format&fit=crop') center/cover no-repeat;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(5,8,6,0.7), var(--bg-dark));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 59, 48, 0.2);
+            color: #FF3B30;
+            border: 1px solid #FF3B30;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #FFF, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p.subtitle {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+
+        .hero-price {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-glow);
+            margin-bottom: 30px;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .wsp-note {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Secciones Generales */
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .section-title p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Banner WhatsApp */
+        .wsp-banner {
+            background: linear-gradient(45deg, rgba(25, 212, 137, 0.1), rgba(7, 20, 13, 0.8));
+            border-top: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .wsp-number {
+            font-family: 'Sora', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--primary-glow);
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(25, 212, 137, 0.3);
+        }
+
+        /* Equipos Confirmados */
+        .equipos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .equipo-card {
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .equipo-escudo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border: 2px solid var(--glass-border);
+        }
+
+        .equipo-nombre {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .status-badge {
+            background: rgba(25, 212, 137, 0.15);
+            color: var(--primary-glow);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .equipo-barrio {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .empty-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            border: 1px dashed var(--glass-border);
+            color: var(--text-muted);
+        }
+
+        /* Premios & Info */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .premio-box {
+            text-align: center;
+            border-color: rgba(255, 212, 71, 0.3);
+            background: linear-gradient(180deg, rgba(7,20,13,0.7) 0%, rgba(255,212,71,0.05) 100%);
+        }
+
+        .premio-box i {
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(255, 212, 71, 0.4));
+        }
+
+        .premio-monto {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 10px 0;
+        }
+
+        /* Pasos Inscripción */
+        .pasos-list {
+            list-style: none;
+            margin: 30px 0;
+        }
+
+        .pasos-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .pasos-list li:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .paso-num {
+            background: var(--primary);
+            color: var(--bg-dark);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        /* Detalles Grid */
+        .detalles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .detalle-item {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .detalle-item i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        /* Footer */
+        footer {
+            background: #030504;
+            padding: 60px 20px 30px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .footer-logo i { color: var(--gold); }
+
+        .footer-wsp {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin: 20px 0;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+        }
+
+        .footer-copy {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Scroll Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .desktop-nav { display: none; }
+            .mobile-nav { display: block; }
+            
+            body { padding-bottom: 60px; } /* Espacio para nav mobile */
+            
+            .hero h1 { font-size: 2.8rem; }
+            .hero-price { font-size: 1.5rem; }
+            .wsp-number { font-size: 2.5rem; }
+            .premio-monto { font-size: 2.5rem; }
+            
+            .section-padding { padding: 60px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Effects -->
+    <div class="bg-effects">
+        <div class="glow-orb"></div>
+        <div class="glow-orb-2"></div>
+        <i class="fa-regular fa-futbol floating-ball"></i>
+    </div>
+
+    <!-- Header Desktop -->
+    <header>
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-trophy"></i>
+                <span class="conf-nombre-camp">Copa Fútbol 5</span>
+            </a>
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="#inicio">INICIO</a></li>
+                    <li><a href="#equipos">EQUIPOS</a></li>
+                    <li><a href="#premios">PREMIOS</a></li>
+                    <li><a href="#info">INFORMACIÓN</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Navegación Mobile -->
+    <nav class="mobile-nav">
+        <ul>
+            <li><a href="#inicio"><i class="fa-solid fa-house"></i>Inicio</a></li>
+            <li><a href="#equipos"><i class="fa-solid fa-shield-halved"></i>Equipos</a></li>
+            <li><a href="#premios"><i class="fa-solid fa-trophy"></i>Premios</a></li>
+            <li><a href="#info"><i class="fa-solid fa-circle-info"></i>Info</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero">
+        <div class="container">
+            <div class="hero-content reveal">
+                <div class="badge">🔥 INSCRIPCIONES ABIERTAS</div>
+                <h1>El campeonato<br>empieza acá</h1>
+                <p class="subtitle">Armá tu equipo, competí y buscá la gloria.</p>
+                
+                <div class="hero-price">
+                    INSCRIPCIÓN: $<span class="conf-precio">0</span> UYU
+                </div>
+                
+                <a href="#" class="btn btn-wsp ws-link">
+                    <i class="fa-brands fa-whatsapp"></i> INSCRIBIR MI EQUIPO
+                </a>
+                <p class="wsp-note">Para registrar tu equipo escribinos por WhatsApp al <strong class="conf-telefono"></strong></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Banner WhatsApp -->
+    <section class="wsp-banner reveal">
+        <div class="container">
+            <h2 class="sora-font" style="font-size: 2rem;">¿QUERÉS JUGAR?</h2>
+            <p style="color: var(--text-muted); margin-top: 10px; font-size: 1.1rem;">
+                Para registrar tu equipo en el campeonato, escribinos directamente por WhatsApp.
+            </p>
+            
+            <div class="wsp-number conf-telefono"></div>
+            
+            <a href="#" class="btn btn-wsp ws-link">
+                <i class="fa-brands fa-whatsapp"></i> ESCRIBIR POR WHATSAPP
+            </a>
+            <p style="margin-top: 15px; font-size: 0.85rem; color: var(--text-muted);">
+                Un organizador te responderá y te indicará cómo completar la inscripción.
+            </p>
+        </div>
+    </section>
+
+    <!-- Equipos Confirmados -->
+    <section id="equipos" class="section-padding container">
+        <div class="section-title reveal">
+            <h2>🏆 EQUIPOS CONFIRMADOS</h2>
+            <p>Estos son los equipos que ya aseguraron su lugar en el campeonato.</p>
+        </div>
+        
+        <!-- Contenedor donde JS inyectará los equipos -->
+        <div id="equipos-container" class="equipos-grid reveal">
+            <!-- Renderizado dinámico -->
+        </div>
+    </section>
+
+    <!-- Premios & Info Grid -->
+    <section id="premios" class="section-padding container">
+        <div class="info-grid">
+            
+            <!-- Tarjeta de Premio -->
+            <div class="glass-card premio-box reveal">
+                <i class="fa-solid fa-trophy"></i>
+                <h3 class="sora-font">PREMIO AL CAMPEÓN</h3>
+                <div class="premio-monto">$<span class="conf-premio">0</span> UYU</div>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">El premio puede actualizarse según la cantidad de equipos participantes.</p>
+            </div>
+
+            <!-- Tarjeta Cómo Inscribirse -->
+            <div class="glass-card reveal">
+                <h3 class="sora-font" style="margin-bottom: 20px; color: var(--primary);">¿CÓMO INSCRIBIRSE?</h3>
+                <ul class="pasos-list">
+                    <li>
+                        <div class="paso-num">1</div>
+                        <div>
+                            <strong>Escribinos por WhatsApp</strong>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Al <span class="conf-telefono"></span></p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="paso-num">2</div>
+                        <div>
+                            <strong>Mandanos los datos</strong>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Nombre de tu equipo y barrio.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="paso-num">3</div>
+                        <div>
+                            <strong>Pago de inscripción</strong>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Valor: $<span class="conf-precio">0</span> UYU. Te pasamos los medios de pago.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="paso-num">4</div>
+                        <div>
+                            <strong>¡Confirmado!</strong>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Tu equipo aparecerá en la sección "Equipos Confirmados".</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="text-center" style="margin-top: 20px;">
+                    <a href="#" class="btn btn-wsp ws-link" style="padding: 10px 20px; font-size: 0.9rem;">
+                        <i class="fa-brands fa-whatsapp"></i> INSCRIBIRSE
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Información del Torneo -->
+    <section id="info" class="section-padding container reveal">
+        <div class="section-title">
+            <h2>INFORMACIÓN DEL CAMPEONATO</h2>
+        </div>
+        
+        <div class="detalles-grid">
+            <div class="glass-card detalle-item">
+                <i class="fa-regular fa-futbol"></i>
+                <h4>Formato</h4>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Fútbol 5</p>
+            </div>
+            <div class="glass-card detalle-item">
+                <i class="fa-regular fa-calendar-days"></i>
+                <h4>Fecha</h4>
+                <p class="conf-fecha" style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;"></p>
+            </div>
+            <div class="glass-card detalle-item">
+                <i class="fa-solid fa-location-dot"></i>
+                <h4>Ubicación</h4>
+                <p class="conf-lugar" style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;"></p>
+            </div>
+            <div class="glass-card detalle-item">
+                <i class="fa-solid fa-sack-dollar"></i>
+                <h4>Inscripción</h4>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">$<span class="conf-precio">0</span> UYU</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="wsp-banner reveal" style="background: var(--bg-card);">
+        <div class="container">
+            <h2 class="sora-font" style="font-size: 2.5rem; margin-bottom: 10px;">¿TENÉS ALGUNA DUDA?</h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px;">
+                Consultanos directamente por WhatsApp para inscripciones, dudas o información del campeonato.
+            </p>
+            <div class="wsp-number conf-telefono" style="font-size: 3rem;"></div>
+            <a href="#" class="btn btn-wsp ws-link" style="margin-top: 10px;">
+                <i class="fa-brands fa-whatsapp"></i> CONTACTAR POR WHATSAPP
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <a href="#" class="footer-logo sora-font text-main" style="text-decoration: none; color: white;">
+                <i class="fa-solid fa-trophy"></i> <span class="conf-nombre-camp"></span>
+            </a>
+            <p style="font-size: 1.1rem;">Competí. Disfrutá. Buscá la gloria.</p>
+            
+            <div class="footer-wsp">
+                <i class="fa-brands fa-whatsapp"></i> <span class="conf-telefono"></span>
+            </div>
+            
+            <div class="footer-copy">
+                <p>Página exclusivamente informativa del campeonato.</p>
+                <p style="margin-top: 5px;">No se realizan cobros ni registros a través de este sitio web.</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <script>
+        // =========================================================================
+        // ===============================
+        // CONFIGURACIÓN DEL CAMPEONATO
+        // ===============================
+        // Modificá los valores de aquí abajo para actualizar toda la página.
+        // =========================================================================
+
+        const configuracion = {
+            nombre: "Campeonato Fútbol 5",
+            inscripcion: 850,             // Precio en UYU
+            premioCampeon: 5000,          // Premio en UYU
+            whatsapp: "59892043677",      // Número con código de país (sin +)
+            telefonoDisplay: "092 043 677", // Número como se mostrará en pantalla
+            fecha: "Fecha a confirmar",   // Ej: "Sábado 15 de Octubre"
+            lugar: "Lugar a confirmar",   // Ej: "Canchas El Golazo"
+            mensajeWsp: "Hola, quiero inscribir mi equipo al campeonato de Fútbol 5."
+        };
+
+        // ===============================
+        // EQUIPOS CONFIRMADOS
+        // ===============================
+        // Agregá o quitá equipos de esta lista. 
+        // Si la lista está vacía [], mostrará un mensaje invitando a inscribirse.
+        
+        const equipos = [
+            /* 
+            // EJEMPLO DE CÓMO AGREGAR UN EQUIPO:
+            {
+                nombre: "Los Pibes FC",
+                categoria: "Fútbol 5",
+                barrio: "Centro",
+                escudo: "⚽" // Puede ser un emoji o la URL de una imagen
+            },
+            {
+                nombre: "La Escaloneta",
+                categoria: "Fútbol 5",
+                barrio: "Cordón",
+                escudo: "🛡️"
+            }
+            */
+        ];
+
+        // =========================================================================
+        // FIN DE LA CONFIGURACIÓN (No tocar el código de abajo si no sabés programar)
+        // =========================================================================
+
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // 1. Aplicar Configuración a los textos
+            document.querySelectorAll('.conf-nombre-camp').forEach(el => el.textContent = configuracion.nombre);
+            document.querySelectorAll('.conf-precio').forEach(el => el.textContent = configuracion.inscripcion.toLocaleString("es-UY"));
+            document.querySelectorAll('.conf-premio').forEach(el => el.textContent = configuracion.premioCampeon.toLocaleString("es-UY"));
+            document.querySelectorAll('.conf-telefono').forEach(el => el.textContent = configuracion.telefonoDisplay);
+            document.querySelectorAll('.conf-fecha').forEach(el => el.textContent = configuracion.fecha);
+            document.querySelectorAll('.conf-lugar').forEach(el => el.textContent = configuracion.lugar);
+
+            // 2. Configurar enlaces de WhatsApp
+            const urlWsp = `https://wa.me/${configuracion.whatsapp}?text=${encodeURIComponent(configuracion.mensajeWsp)}`;
+            document.querySelectorAll('.ws-link').forEach(btn => {
+                btn.href = urlWsp;
+                btn.target = "_blank";
+            });
+
+            // 3. Renderizar Equipos Confirmados
+            const contenedorEquipos = document.getElementById('equipos-container');
+            
+            if (equipos.length === 0) {
+                contenedorEquipos.innerHTML = `
+                    <div class="empty-msg">
+                        <i class="fa-solid fa-clipboard-list" style="font-size: 3rem; margin-bottom: 15px; color: var(--primary);"></i>
+                        <p style="font-size: 1.2rem; font-family: 'Sora', sans-serif;">Todavía no hay equipos confirmados.</p>
+                        <p style="margin-top: 5px;">¡Escribinos y sé el primero en inscribirte!</p>
+                    </div>
+                `;
+            } else {
+                let htmlEquipos = "";
+                equipos.forEach(eq => {
+                    // Detectar si el escudo es emoji o URL de imagen
+                    const esImagen = eq.escudo.includes("http") || eq.escudo.includes("/");
+                    const renderEscudo = esImagen 
+                        ? `<img src="${eq.escudo}" alt="Escudo" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` 
+                        : eq.escudo;
+
+                    htmlEquipos += `
+                        <div class="glass-card equipo-card">
+                            <div class="equipo-escudo">${renderEscudo}</div>
+                            <div class="equipo-nombre sora-font">${eq.nombre}</div>
+                            <div class="status-badge">CONFIRMADO</div>
+                            <div class="equipo-barrio">
+                                ${eq.categoria ? `<span style="margin-right:10px;"><i class="fa-solid fa-futbol"></i> ${eq.categoria}</span>` : ''}
+                                ${eq.barrio ? `<span><i class="fa-solid fa-map-pin"></i> ${eq.barrio}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                contenedorEquipos.innerHTML = htmlEquipos;
+            }
+
+            // 4. Animaciones on Scroll (Reveal)
+            function reveal() {
+                var reveals = document.querySelectorAll(".reveal");
+                for (var i = 0; i < reveals.length; i++) {
+                    var windowHeight = window.innerHeight;
+                    var elementTop = reveals[i].getBoundingClientRect().top;
+                    var elementVisible = 100;
+                    if (elementTop < windowHeight - elementVisible) {
+                        reveals[i].classList.add("active");
+                    }
+                }
+            }
+            window.addEventListener("scroll", reveal);
+            reveal(); // Ejecutar al inicio por si ya hay elementos visibles
+        });
+    </script>
+</body>
+</html>
