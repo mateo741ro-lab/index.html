@@ -59,7 +59,7 @@
         }
 
         .glass-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-5px);
             border-color: rgba(0, 255, 136, 0.4);
             box-shadow: 0 15px 35px -10px rgba(0, 255, 136, 0.25);
         }
@@ -84,42 +84,12 @@
             overflow: hidden;
         }
 
-        .card-highlight::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0,255,136,0.15) 0%, transparent 60%);
-            animation: pulse-glow 3s infinite alternate;
-            z-index: 0;
-        }
-        
-        .card-highlight > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        @keyframes pulse-glow {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            100% { transform: scale(1.1); opacity: 1; }
-        }
-
-        /* Text Gradients */
         .bg-clip-text-neon {
             background: linear-gradient(to right, #00ff88, #00b35f);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .bg-clip-text-gold {
-            background: linear-gradient(to right, #ffd700, #ffaa00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Buttons */
         .btn-neon {
             background: linear-gradient(45deg, #00ff88, #00cc6a);
             color: #020617;
@@ -133,10 +103,9 @@
             transform: scale(1.05);
         }
 
-        /* Scroll Animations */
         .reveal {
             opacity: 0;
-            transform: translateY(40px);
+            transform: translateY(30px);
             transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
         }
         
@@ -145,7 +114,6 @@
             transform: translateY(0);
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #020617; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
@@ -164,9 +132,9 @@
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-8">
-                        <a href="#inicio" class="hover:text-neon text-white px-3 py-2 rounded-md text-sm font-semibold transition">Inicio</a>
-                        <a href="#imagenes" class="hover:text-neon text-gray-300 px-3 py-2 rounded-md text-sm font-semibold transition">Cancha</a>
-                        <a href="#reglas" class="hover:text-neon text-gray-300 px-3 py-2 rounded-md text-sm font-semibold transition">Reglas</a>
+                        <a href="#inicio" class="hover:text-neon text-white px-3 py-2 text-sm font-semibold transition">Inicio</a>
+                        <a href="#formato" class="hover:text-neon text-gray-300 px-3 py-2 text-sm font-semibold transition">Formato</a>
+                        <a href="#reglas" class="hover:text-neon text-gray-300 px-3 py-2 text-sm font-semibold transition">Reglas</a>
                         <a href="#inscripcion" class="btn-neon px-6 py-2 rounded-full text-sm">Inscribirse</a>
                     </div>
                 </div>
@@ -174,372 +142,362 @@
         </div>
     </nav>
 
-    <!-- Hero Section con Imagen de Fondo -->
-    <section id="inicio" class="relative pt-32 pb-20 lg:pt-56 lg:pb-40 overflow-hidden bg-[url('https://images.unsplash.com/photo-1518605368461-1ee7c532066d?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-fixed">
-        <!-- Overlay Oscuro/Verde -->
+    <!-- Hero Section -->
+    <section id="inicio" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-[url('https://images.unsplash.com/photo-1518605368461-1ee7c532066d?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-fixed">
         <div class="absolute inset-0 bg-gradient-to-b from-darker/95 via-darker/85 to-darker/95 z-0"></div>
         <div class="absolute inset-0 bg-neon/5 z-0"></div>
         
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
             <div class="inline-block mb-4 px-4 py-1 rounded-full glass-panel border border-neon/30 text-neon text-sm font-bold tracking-widest uppercase">
-                <i class="fas fa-bolt mr-2"></i> Inscripciones Abiertas
+                <i class="fas fa-trophy mr-2 text-gold"></i> Torneo de Fútbol 5
             </div>
             <h1 class="text-6xl md:text-8xl font-black mb-6 leading-tight uppercase tracking-tighter" id="hero-titulo">
                 <span class="text-white drop-shadow-xl">COPA</span> <br> <span class="bg-clip-text-neon drop-shadow-[0_0_20px_rgba(0,255,136,0.4)]">POTRERO</span>
             </h1>
-            <p class="mt-4 max-w-2xl text-xl text-gray-300 mx-auto mb-10 font-light drop-shadow-md">
-                Armá tu equipo, demostrá quién manda en la sintética y llevate la gloria.
+            <p class="mt-4 max-w-2xl text-xl md:text-2xl text-gray-200 mx-auto mb-10 font-semibold drop-shadow-md">
+                Armá tu equipo y disfrutá.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-5">
                 <a href="#inscripcion" class="btn-neon px-8 py-4 rounded-full text-lg uppercase tracking-wide">
                     Asegurar mi lugar
                 </a>
-                <a href="#reglas" class="glass-panel hover:bg-white/10 px-8 py-4 rounded-full text-lg font-bold text-white transition border border-white/20 uppercase tracking-wide">
-                    Ver Reglas
+                <a href="#formato" class="glass-panel hover:bg-white/10 px-8 py-4 rounded-full text-lg font-bold text-white transition border border-white/20 uppercase tracking-wide">
+                    Ver Formato
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- Galería de Imágenes de Fútbol 5 -->
-    <section id="imagenes" class="py-12 relative bg-darker z-10">
+    <!-- Galería -->
+    <section id="imagenes" class="py-8 relative bg-darker z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                <!-- Imagen 1 -->
-                <div class="relative group overflow-hidden rounded-2xl h-40 md:h-64 shadow-xl border border-white/5">
-                    <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800&auto=format&fit=crop" alt="Fútbol 5 Sintético" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
-                </div>
-                <!-- Imagen 2 -->
-                <div class="relative group overflow-hidden rounded-2xl h-40 md:h-64 shadow-xl border border-white/5">
-                    <img src="https://images.unsplash.com/photo-1551280362-7901844cb185?q=80&w=800&auto=format&fit=crop" alt="Cancha Noche" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                    <div class="absolute inset-0 bg-neon/20 mix-blend-overlay group-hover:opacity-0 transition duration-500"></div>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
-                </div>
-                <!-- Imagen 3 -->
-                <div class="relative group overflow-hidden rounded-2xl h-40 md:h-64 shadow-xl border border-white/5 md:col-span-2">
-                    <img src="https://images.unsplash.com/photo-1600250395372-b6f0bcf84ff4?q=80&w=1200&auto=format&fit=crop" alt="Acción Fútbol" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="relative group overflow-hidden rounded-2xl h-48 shadow-xl border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800&auto=format&fit=crop" alt="Fútbol Sintético" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                     <div class="absolute bottom-4 left-4">
-                        <span class="text-white font-black uppercase tracking-wider text-xl">Fútbol de Potrero</span>
+                        <span class="text-white font-bold uppercase tracking-wider">Fútbol 5 Sintético</span>
+                    </div>
+                </div>
+                <div class="relative group overflow-hidden rounded-2xl h-48 shadow-xl border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1529900965798-2404a168192f?q=80&w=800&auto=format&fit=crop" alt="Cancha de Noche" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute bottom-4 left-4">
+                        <span class="text-neon font-bold uppercase tracking-wider">Pasión de Potrero</span>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- NEW SECTION: REGLAS DE COPA POTRERO -->
-    <section id="reglas" class="py-24 relative bg-darker">
-        
-        <!-- Background Decorativo -->
-        <div class="absolute top-0 right-0 w-1/2 h-full bg-[url('https://images.unsplash.com/photo-1529900965798-2404a168192f?q=80&w=1000')] bg-cover opacity-5 mix-blend-luminosity pointer-events-none"></div>
-        <div class="absolute inset-0 bg-gradient-to-l from-darker/90 to-darker pointer-events-none"></div>
-
+    <!-- SECCIÓN: FORMATO DEL CAMPEONATO -->
+    <section id="formato" class="py-20 relative bg-darker">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="text-center mb-16 reveal">
-                <h2 class="text-5xl md:text-6xl font-black text-white uppercase mb-4 tracking-tighter">
-                    <i class="fas fa-futbol text-neon mr-2"></i> Reglas de <span class="text-neon">Copa Potrero</span>
+                <span class="text-gold font-bold uppercase tracking-widest text-sm">Competencia</span>
+                <h2 class="text-4xl md:text-6xl font-black text-white uppercase mb-4 tracking-tighter">
+                    ⚽ Formato del Campeonato
                 </h2>
-                <p class="text-xl md:text-2xl text-gray-400 font-light max-w-3xl mx-auto">
-                    Fútbol, potrero y reglas simples. Todo claro antes de entrar a la cancha.
+                <div class="inline-block bg-red-500/10 border border-red-500/30 rounded-full px-6 py-2 text-red-400 font-bold text-lg mb-2">
+                    10 Cuadros — Eliminación Directa
+                </div>
+                <p class="text-gray-400 text-md max-w-xl mx-auto">
+                    No hay fase de grupos. Si un equipo pierde, queda eliminado.
                 </p>
-                <div class="w-24 h-1 bg-gradient-to-r from-neon to-green-600 mx-auto rounded-full mt-8"></div>
+            </div>
+
+            <!-- Fixture Interactivo -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 reveal">
+                
+                <!-- Ronda Inicial -->
+                <div class="glass-card rounded-2xl p-6 border-l-4 border-l-neon">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-black text-neon uppercase">🔹 Ronda Inicial</h3>
+                        <span class="text-xs bg-neon/10 text-neon px-2 py-1 rounded">2 Partidos</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-dark/80 p-3 rounded-xl border border-white/5">
+                            <span class="text-xs text-gray-400 font-bold">PARTIDO 1</span>
+                            <div class="text-white font-bold mt-1">Cuadro 7 <span class="text-neon">🆚</span> Cuadro 8</div>
+                        </div>
+                        <div class="bg-dark/80 p-3 rounded-xl border border-white/5">
+                            <span class="text-xs text-gray-400 font-bold">PARTIDO 2</span>
+                            <div class="text-white font-bold mt-1">Cuadro 9 <span class="text-neon">🆚</span> Cuadro 10</div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-4 text-center">Los ganadores avanzan a Cuartos.</p>
+                </div>
+
+                <!-- Cuartos de Final -->
+                <div class="glass-card rounded-2xl p-6 border-l-4 border-l-blue-400">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-black text-blue-400 uppercase">🔹 Cuartos de Final</h3>
+                        <span class="text-xs bg-blue-400/10 text-blue-400 px-2 py-1 rounded">4 Partidos</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-dark/80 p-2.5 rounded-xl border border-white/5 text-sm">
+                            <span class="text-[10px] text-gray-400 font-bold block">PARTIDO 3</span>
+                            <span class="text-white font-bold">Cuadro 1 🆚 Ganador P1</span>
+                        </div>
+                        <div class="bg-dark/80 p-2.5 rounded-xl border border-white/5 text-sm">
+                            <span class="text-[10px] text-gray-400 font-bold block">PARTIDO 4</span>
+                            <span class="text-white font-bold">Cuadro 2 🆚 Cuadro 3</span>
+                        </div>
+                        <div class="bg-dark/80 p-2.5 rounded-xl border border-white/5 text-sm">
+                            <span class="text-[10px] text-gray-400 font-bold block">PARTIDO 5</span>
+                            <span class="text-white font-bold">Cuadro 4 🆚 Cuadro 5</span>
+                        </div>
+                        <div class="bg-dark/80 p-2.5 rounded-xl border border-white/5 text-sm">
+                            <span class="text-[10px] text-gray-400 font-bold block">PARTIDO 6</span>
+                            <span class="text-white font-bold">Cuadro 6 🆚 Ganador P2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Semifinales -->
+                <div class="glass-card rounded-2xl p-6 border-l-4 border-l-purple-400 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-black text-purple-400 uppercase">🔹 Semifinales</h3>
+                            <span class="text-xs bg-purple-400/10 text-purple-400 px-2 py-1 rounded">2 Partidos</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-dark/80 p-3 rounded-xl border border-white/5">
+                                <span class="text-xs text-gray-400 font-bold">PARTIDO 7</span>
+                                <div class="text-white font-bold mt-1">Ganador P3 <span class="text-purple-400">🆚</span> Ganador P4</div>
+                            </div>
+                            <div class="bg-dark/80 p-3 rounded-xl border border-white/5">
+                                <span class="text-xs text-gray-400 font-bold">PARTIDO 8</span>
+                                <div class="text-white font-bold mt-1">Ganador P5 <span class="text-purple-400">🆚</span> Ganador P6</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gran Final -->
+                <div class="glass-card rounded-2xl p-6 border-2 border-gold flex flex-col justify-between bg-gold/5">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-black text-gold uppercase">🏆 Gran Final</h3>
+                            <i class="fas fa-crown text-gold"></i>
+                        </div>
+                        <div class="bg-dark/90 p-4 rounded-xl border border-gold/30 text-center my-2">
+                            <span class="text-xs text-gold font-bold">PARTIDO 9</span>
+                            <div class="text-lg text-white font-black my-2">Ganador P7 <span class="text-gold">🆚</span> Ganador P8</div>
+                        </div>
+                    </div>
+                    <div class="text-center bg-gold/20 p-3 rounded-xl border border-gold/40">
+                        <span class="text-xs text-gold font-bold uppercase block">Recompensa</span>
+                        <span class="text-white font-black text-sm uppercase">CAMPEÓN DE LA COPA POTRERO</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN: REGLAS BÁSICAS -->
+    <section id="reglas" class="py-20 relative bg-darker">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-4xl md:text-6xl font-black text-white uppercase mb-2 tracking-tighter">
+                    📋 Reglas de Copa Potrero
+                </h2>
+                <p class="text-xl text-gray-300 font-light max-w-2xl mx-auto">
+                    Fútbol, potrero y reglas simples.
+                </p>
+                <div class="w-20 h-1 bg-neon mx-auto rounded-full mt-6"></div>
             </div>
 
             <!-- 1. DURACIÓN DEL PARTIDO (DESTACADO) -->
-            <div class="card-highlight rounded-3xl p-8 md:p-12 text-center mb-16 max-w-4xl mx-auto reveal">
-                <div class="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1511886929837-354d827aae26?q=80&w=1200')] bg-cover bg-center mix-blend-screen"></div>
-                
-                <div class="text-6xl md:text-8xl mb-4 drop-shadow-[0_0_20px_rgba(0,255,136,0.6)]">⏱️</div>
-                <h3 class="text-4xl md:text-7xl font-black text-white mb-2 tracking-tight">
-                    <span id="regla-duracion">20</span> MINUTOS
+            <div class="card-highlight rounded-3xl p-8 md:p-10 text-center mb-12 max-w-3xl mx-auto reveal">
+                <div class="text-5xl md:text-7xl mb-3">⏱️</div>
+                <h3 class="text-3xl md:text-5xl font-black text-white mb-1">
+                    <span id="regla-duracion">20</span> MINUTOS CORRIDOS
                 </h3>
-                <h4 class="text-3xl md:text-6xl font-black bg-clip-text-neon mb-8 tracking-wide">CORRIDOS</h4>
-                
-                <p class="text-xl md:text-2xl text-gray-200 mb-6 font-light">
-                    Cada partido tendrá <strong class="text-white font-bold" id="regla-duracion-texto">20</strong> minutos de duración total.
+                <p class="text-lg text-gray-300 mb-4 font-light">
+                    No hay entretiempo. El tiempo continúa corriendo durante el partido.
                 </p>
-
-                <div class="inline-block bg-black/60 border border-neon/30 backdrop-blur-md rounded-2xl px-6 py-5 max-w-2xl">
-                    <div class="flex flex-col gap-2">
-                        <span class="text-neon font-bold text-lg md:text-xl uppercase tracking-wider">
-                            Sin descanso.
-                        </span>
-                        <span class="text-gray-300 text-md md:text-lg">
-                            El partido comienza y continúa hasta completar los <span id="regla-duracion-min">20</span> minutos.
-                        </span>
-                    </div>
-                </div>
             </div>
 
-            <!-- GRID DE REGLAS BÁSICAS -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            <!-- GRID DE REGLAS BÁSICAS ACTUALIZADAS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 
-                <!-- 2. JUGADORES -->
-                <div class="glass-card rounded-2xl p-6 reveal group">
-                    <div class="absolute -right-4 -bottom-4 opacity-10 text-9xl text-white group-hover:scale-110 transition-transform"><i class="fas fa-users"></i></div>
-                    <div class="flex items-center mb-4 relative z-10">
-                        <i class="fas fa-users text-4xl text-neon mr-4"></i>
-                        <h3 class="text-2xl font-black text-white uppercase"><span id="regla-jugadores">5</span> CONTRA <span id="regla-jugadores2">5</span></h3>
+                <!-- 👥 Equipos -->
+                <div class="glass-card rounded-2xl p-6 reveal">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-users text-3xl text-neon mr-4"></i>
+                        <h3 class="text-xl font-black text-white uppercase">👥 Equipos</h3>
                     </div>
-                    <div class="relative z-10">
-                        <p class="text-xl font-bold text-gray-200 mb-4 bg-neon/10 border border-neon/20 px-3 py-1 rounded inline-block">
-                            <span id="regla-cancha">5</span> JUGADORES EN CANCHA
-                        </p>
-                        <ul class="text-gray-400 space-y-2">
-                            <li><i class="fas fa-check text-neon mr-2"></i>1 de ellos será el arquero.</li>
-                            <li><i class="fas fa-check text-neon mr-2"></i>Se permiten jugadores suplentes.</li>
-                            <li><i class="fas fa-check text-neon mr-2"></i>Los cambios serán libres durante el partido.</li>
-                        </ul>
-                    </div>
+                    <ul class="text-gray-300 space-y-2 text-sm">
+                        <li><i class="fas fa-check text-neon mr-2"></i>Cada equipo juega con 5 jugadores (4 de campo + 1 golero).</li>
+                        <li><i class="fas fa-check text-neon mr-2"></i>Se permiten jugadores suplentes.</li>
+                        <li><i class="fas fa-check text-neon mr-2"></i>Los cambios serán libres durante el partido (el jugador que sale puede volver a entrar).</li>
+                    </ul>
                 </div>
 
-                <!-- 3. BALÓN EN JUEGO (TECHO) -->
-                <div class="glass-card rounded-2xl p-6 reveal border-t-2 border-t-blue-400">
-                    <div class="flex items-center mb-3">
+                <!-- 🧤 Golero -->
+                <div class="glass-card rounded-2xl p-6 reveal">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-hand-paper text-3xl text-yellow-400 mr-4"></i>
+                        <h3 class="text-xl font-black text-white uppercase">🧤 Golero</h3>
+                    </div>
+                    <ul class="text-gray-300 space-y-2 text-sm">
+                        <li><i class="fas fa-circle text-[8px] text-yellow-400 mr-2 align-middle"></i>Puede usar las manos dentro de su área.</li>
+                        <li><i class="fas fa-circle text-[8px] text-yellow-400 mr-2 align-middle"></i>Si un compañero le pasa la pelota intencionalmente con el pie, <strong>NO</strong> puede agarrarla con las manos (continúa jugando con los pies).</li>
+                        <li><i class="fas fa-circle text-[8px] text-yellow-400 mr-2 align-middle"></i>Si la pelota viene de un rival, puede agarrarla con las manos.</li>
+                    </ul>
+                </div>
+
+                <!-- ↩️ Laterales -->
+                <div class="glass-card rounded-2xl p-6 reveal">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shoe-prints text-3xl text-orange-400 mr-4"></i>
+                        <h3 class="text-xl font-black text-white uppercase">↩️ Laterales</h3>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-3">
+                        Cuando la pelota sale por un costado, se realiza lateral <strong>con el pie desde el piso</strong>.
+                    </p>
+                    <p class="text-gray-400 text-xs">
+                        El saque se realiza desde el lugar exacto por donde salió la pelota.
+                    </p>
+                </div>
+
+                <!-- 🏟️ Pelota al techo -->
+                <div class="glass-card rounded-2xl p-6 reveal">
+                    <div class="flex items-center mb-4">
                         <i class="fas fa-arrow-up text-3xl text-blue-400 mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">Si la pelota toca el techo</h3>
+                        <h3 class="text-xl font-black text-white uppercase">🏟️ Pelota al Techo</h3>
                     </div>
-                    <p class="text-gray-300 mb-4">Si la pelota toca el techo o la estructura superior de la cancha: <strong class="text-white">Se cobra lateral para el equipo contrario.</strong></p>
-                    
-                    <div class="bg-dark/80 border border-blue-500/30 rounded-xl p-4 text-center">
-                        <div class="text-lg font-bold text-gray-300 tracking-widest">⚽ → <span class="text-white">TECHO</span></div>
-                        <div class="text-2xl text-blue-400 my-1">↓</div>
-                        <div class="text-xl font-black text-blue-400 uppercase tracking-widest">↔️ LATERAL</div>
-                    </div>
-                    <p class="text-gray-400 text-sm mt-3 text-center">Desde el lugar donde la pelota tocó el techo.</p>
-                </div>
-
-                <!-- 4. SAQUE LATERAL -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-arrows-alt-h text-3xl text-orange-400 mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">Saque Lateral</h3>
-                    </div>
-                    <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 mb-4 inline-block">
-                        <span class="text-orange-400 font-black text-lg">CON EL PIE Y DESDE EL PISO.</span>
-                    </div>
-                    <p class="text-gray-400">La pelota debe colocarse sobre el lugar correspondiente y ponerse nuevamente en juego con el pie.</p>
-                </div>
-
-                <!-- 5. SAQUE DE ARCO -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-bullseye text-3xl text-gray-300 mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">Saque de Arco</h3>
-                    </div>
-                    <p class="text-gray-400 mb-3">Cuando la pelota sale por la línea de fondo y corresponde saque de arco:</p>
-                    <ul class="text-gray-300 space-y-2 font-medium">
-                        <li><i class="fas fa-caret-right text-gray-500 mr-2"></i>El arquero pone nuevamente la pelota en juego.</li>
-                        <li><i class="fas fa-caret-right text-gray-500 mr-2"></i>La reanudación se realizará desde la zona de saque de arco.</li>
-                    </ul>
-                </div>
-
-                <!-- 6. CORNERS -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-flag text-3xl text-red-400 mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">Corners</h3>
-                    </div>
-                    <p class="text-gray-400 mb-3">Cuando la pelota sale por la línea de fondo después de tocar a un jugador defensor:</p>
-                    <p class="text-white font-bold bg-red-500/20 px-3 py-2 rounded-lg inline-block border border-red-500/30">
-                        Se cobra corner.
+                    <p class="text-gray-300 text-sm mb-2">
+                        Si la pelota toca el techo o estructura superior:
                     </p>
-                    <p class="text-gray-400 mt-3 text-sm">El corner se ejecuta desde la esquina correspondiente de la cancha.</p>
-                </div>
-
-                <!-- 7. GOL -->
-                <div class="glass-card rounded-2xl p-6 reveal group overflow-hidden">
-                    <div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=600')] bg-cover mix-blend-screen transition-transform duration-700 group-hover:scale-110"></div>
-                    <div class="relative z-10">
-                        <div class="flex items-center mb-4">
-                            <i class="fas fa-futbol text-3xl text-white mr-4 animate-bounce"></i>
-                            <h3 class="text-xl font-black text-white uppercase">Gol</h3>
-                        </div>
-                        <p class="text-gray-300 mb-3">Un gol será válido cuando la pelota atraviese completamente la línea de gol entre los postes y debajo del travesaño.</p>
-                        <div class="bg-black/50 p-3 rounded-lg border border-white/10 mt-4">
-                            <p class="text-neon text-sm font-bold uppercase"><i class="fas fa-redo text-xs mr-1"></i> Después de cada gol:</p>
-                            <p class="text-white text-sm">Se reanuda el partido desde el centro de la cancha.</p>
-                        </div>
+                    <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-center my-2">
+                        <span class="text-blue-400 font-bold text-sm">Lateral con el pie para el rival</span>
                     </div>
-                </div>
-
-                <!-- 8. ARQUERO -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-mitten text-3xl text-yellow-400 mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">Reglas del Arquero</h3>
-                    </div>
-                    <ul class="text-gray-300 space-y-3">
-                        <li class="flex items-start"><i class="fas fa-hand-paper text-yellow-400 mt-1 mr-3"></i> <span>El arquero puede utilizar las manos dentro de su área.</span></li>
-                        <li class="flex items-start"><i class="fas fa-running text-yellow-400 mt-1 mr-3"></i> <span>Fuera de su área juega como un jugador más.</span></li>
-                        <li class="flex items-start"><i class="fas fa-shoe-prints text-yellow-400 mt-1 mr-3"></i> <span>Puede participar en el juego con los pies.</span></li>
-                    </ul>
-                </div>
-
-                <!-- 9. EQUIPAMIENTO -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-tshirt text-3xl text-indigo-400 mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">Equipamiento</h3>
-                    </div>
-                    <ul class="text-gray-400 space-y-3 text-sm">
-                        <li><i class="fas fa-circle text-[8px] text-indigo-400 mr-2 align-middle"></i>Se recomienda que todos los jugadores del equipo utilicen camisetas similares.</li>
-                        <li><i class="fas fa-circle text-[8px] text-indigo-400 mr-2 align-middle"></i>Se debe utilizar calzado apropiado para césped sintético.</li>
-                        <li><i class="fas fa-circle text-[8px] text-indigo-400 mr-2 align-middle"></i>No utilizar elementos que puedan representar un riesgo para otros jugadores.</li>
-                    </ul>
-                </div>
-
-                <!-- 10. ÁRBITRO -->
-                <div class="glass-card rounded-2xl p-6 reveal flex flex-col justify-center text-center">
-                    <i class="fas fa-user-shield text-5xl text-gray-500 mb-4"></i>
-                    <h3 class="text-xl font-black text-white uppercase mb-2">Árbitro</h3>
-                    <p class="text-gray-400 italic">
-                        “El árbitro será el encargado de controlar el partido y hacer cumplir las reglas de Copa Potrero.”
+                    <p class="text-gray-400 text-xs">
+                        Se ejecuta desde el lugar donde la pelota tocó el techo.
                     </p>
+                </div>
+
+                <!-- 🏆 Desempate -->
+                <div class="glass-card rounded-2xl p-6 reveal">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bullseye text-3xl text-gold mr-4"></i>
+                        <h3 class="text-xl font-black text-white uppercase">🏆 Desempate</h3>
+                    </div>
+                    <p class="text-gray-300 text-sm">
+                        Si un partido de eliminación directa termina empatado después de los 20 minutos:
+                    </p>
+                    <div class="bg-gold/10 border border-gold/30 rounded-lg p-3 text-center mt-3">
+                        <span class="text-gold font-black uppercase text-md">Se define por penales</span>
+                    </div>
                 </div>
 
             </div>
 
-            <!-- TARJETAS FINALES: FORMATO, INSCRIPCIÓN Y PREMIO -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 reveal">
+            <!-- TARJETAS DE DETALLES (PREMIO E INSCRIPCIÓN) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 reveal max-w-4xl mx-auto">
                 
-                <!-- 11. Formato -->
-                <div class="glass-card rounded-2xl p-6 text-center border border-dashed border-gray-600 flex flex-col justify-center">
-                    <h3 class="text-lg font-bold text-gray-400 uppercase mb-2">Formato</h3>
-                    <span class="text-2xl font-black text-white" id="reglas-formato">Cargando...</span>
+                <div class="glass-card rounded-2xl p-6 text-center border-t-4 border-t-neon">
+                    <i class="fas fa-ticket-alt text-3xl text-neon mb-2"></i>
+                    <h3 class="text-lg font-black text-white mb-1">INSCRIPCIÓN POR EQUIPO</h3>
+                    <div class="text-3xl font-black text-neon" id="reglas-inscripcion">$850 UYU</div>
+                    <p class="text-gray-400 text-xs mt-2">Contactá a la organización por WhatsApp para anotar a tu equipo.</p>
                 </div>
 
-                <!-- 12. Inscripción -->
-                <div class="glass-card rounded-2xl p-8 text-center border-t-4 border-t-neon relative overflow-hidden group">
-                    <div class="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1508344928928-7165b67de128?q=80&w=600')] bg-cover mix-blend-screen transition-transform duration-700 group-hover:scale-110"></div>
-                    <div class="relative z-10">
-                        <i class="fas fa-ticket-alt text-3xl text-neon mb-3"></i>
-                        <h3 class="text-xl font-black text-white mb-2">INSCRIPCIÓN</h3>
-                        <div class="text-3xl font-black text-neon mb-4" id="reglas-inscripcion">Cargando...</div>
-                        <p class="text-gray-400 text-sm">
-                            Para inscribir tu equipo, contactá a la organización por WhatsApp.
-                        </p>
-                    </div>
+                <div class="glass-card rounded-2xl p-6 text-center border-t-4 border-t-gold">
+                    <i class="fas fa-trophy text-3xl text-gold mb-2"></i>
+                    <h3 class="text-lg font-black text-white mb-1">PREMIO AL CAMPEÓN</h3>
+                    <div class="text-3xl font-black text-gold" id="reglas-premio">$5000 UYU</div>
+                    <p class="text-gray-400 text-xs mt-2">El equipo que gane la final se consagra Campeón de la Copa Potrero.</p>
                 </div>
 
-                <!-- 13. Premio -->
-                <div class="glass-card rounded-2xl p-8 text-center border-t-4 border-t-gold relative overflow-hidden group">
-                    <div class="absolute inset-0 opacity-15 bg-[url('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=600')] bg-cover mix-blend-screen transition-transform duration-700 group-hover:scale-110"></div>
-                    <div class="relative z-10">
-                        <i class="fas fa-trophy text-4xl text-gold mb-3 drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]"></i>
-                        <h3 class="text-xl font-black text-white mb-2">PREMIO AL CAMPEÓN</h3>
-                        <div class="text-3xl lg:text-4xl font-black text-gold mt-2 drop-shadow-md" id="reglas-premio">Cargando...</div>
-                    </div>
-                </div>
             </div>
 
         </div>
     </section>
 
-    <!-- Inscripción Section (CTA Final) -->
-    <section id="inscripcion" class="py-24 relative overflow-hidden">
-        <!-- Imagen de fondo final -->
-        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551280362-7901844cb185?q=80&w=1920')] bg-cover bg-center opacity-20"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-darker via-darker/90 to-transparent"></div>
-
+    <!-- CTA Inscripción -->
+    <section id="inscripcion" class="py-20 relative overflow-hidden">
         <div class="max-w-4xl mx-auto px-4 text-center relative z-10 reveal">
-            <h2 class="text-5xl md:text-6xl font-black text-white uppercase mb-6 drop-shadow-lg">Asegurá tu lugar</h2>
-            <p class="text-xl text-gray-300 mb-10 font-light">Los cupos son limitados. Comunicate ahora con la organización para anotar a tu equipo y entrar a la cancha.</p>
-            <a href="#" id="btn-whatsapp-final" target="_blank" class="btn-neon px-10 py-5 rounded-full text-xl font-black uppercase tracking-wide inline-flex items-center justify-center gap-4 w-full sm:w-auto hover:-translate-y-1">
-                <i class="fab fa-whatsapp text-4xl"></i>
+            <h2 class="text-5xl font-black text-white uppercase mb-4">¿Listo para entrar a la cancha?</h2>
+            <p class="text-lg text-gray-300 mb-8 font-light">Cupos limitados para 10 equipos. Asegurá la participación de tu cuadro hoy mismo.</p>
+            <a href="#" id="btn-whatsapp-final" target="_blank" class="btn-neon px-10 py-5 rounded-full text-xl font-black uppercase tracking-wide inline-flex items-center justify-center gap-3">
+                <i class="fab fa-whatsapp text-3xl"></i>
                 Inscribir a mi equipo
             </a>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-darker border-t border-white/10 pt-16 pb-24 md:pb-12 relative z-10">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <i class="fas fa-futbol text-4xl text-neon mb-4 opacity-50"></i>
-            <h3 class="text-3xl font-black text-white uppercase mb-4 tracking-tighter" id="footer-titulo">COPA POTRERO</h3>
-            <p class="text-gray-500 mb-8 font-light">El campeonato donde nacen las leyendas de la sintética.</p>
-            <p class="text-gray-600 text-sm">
-                &copy; <span id="year"></span> Organización Copa Potrero. Todos los derechos reservados.
-            </p>
-        </div>
+    <footer class="bg-darker border-t border-white/10 pt-12 pb-24 md:pb-12 text-center">
+        <i class="fas fa-futbol text-3xl text-neon mb-3 opacity-50"></i>
+        <h3 class="text-2xl font-black text-white uppercase mb-2" id="footer-titulo">COPA POTRERO</h3>
+        <p class="text-gray-500 text-sm">
+            &copy; <span id="year"></span> Organización Copa Potrero.
+        </p>
     </footer>
 
-    <!-- Mobile Bottom Navigation -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-white/10 z-50 px-6 py-3 pb-safe">
+    <!-- Navegación Mobile -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-white/10 z-50 px-6 py-3">
         <div class="flex justify-between items-center text-xs font-semibold">
-            <a href="#inicio" class="flex flex-col items-center text-gray-400 hover:text-neon transition">
+            <a href="#inicio" class="flex flex-col items-center text-gray-400 hover:text-neon">
                 <i class="fas fa-home text-lg mb-1"></i>
                 <span>Inicio</span>
             </a>
-            <a href="#imagenes" class="flex flex-col items-center text-gray-400 hover:text-neon transition">
-                <i class="fas fa-image text-lg mb-1"></i>
-                <span>Cancha</span>
+            <a href="#formato" class="flex flex-col items-center text-gray-400 hover:text-neon">
+                <i class="fas fa-sitemap text-lg mb-1"></i>
+                <span>Formato</span>
             </a>
-            <a href="#reglas" class="flex flex-col items-center text-gray-400 hover:text-neon transition">
+            <a href="#reglas" class="flex flex-col items-center text-gray-400 hover:text-neon">
                 <i class="fas fa-book text-lg mb-1"></i>
                 <span>Reglas</span>
             </a>
-            <a href="#inscripcion" class="flex flex-col items-center text-neon drop-shadow-[0_0_8px_rgba(0,255,136,0.5)] transition">
+            <a href="#inscripcion" class="flex flex-col items-center text-neon">
                 <i class="fab fa-whatsapp text-xl mb-1"></i>
                 <span>Inscribir</span>
             </a>
         </div>
     </div>
 
-    <!-- SCRIPT DE CONFIGURACIÓN Y LÓGICA -->
+    <!-- SCRIPT DE CONFIGURACIÓN -->
     <script>
-        // ⚙️ CONFIGURACIÓN CENTRAL DE COPA POTRERO
         const configuracion = {
             nombre: "Copa Potrero",
             inscripcion: 850,
             premioCampeon: 5000,
             duracionPartido: 20,
             jugadoresCancha: 5,
-            formatoTorneo: "A confirmar",
-            whatsapp: "59899000000" // Cambiar por el número real
+            formatoTorneo: "10 cuadros — Eliminación directa",
+            whatsapp: "59892043677" // Actualizado con código de país 598
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Textos Generales
             document.getElementById('nav-titulo').textContent = configuracion.nombre;
             document.getElementById('footer-titulo').textContent = configuracion.nombre;
             document.getElementById('year').textContent = new Date().getFullYear();
             
-            // Reglas Dinámicas
             document.getElementById('regla-duracion').textContent = configuracion.duracionPartido;
-            document.getElementById('regla-duracion-texto').textContent = configuracion.duracionPartido;
-            document.getElementById('regla-duracion-min').textContent = configuracion.duracionPartido;
-            
-            document.getElementById('regla-jugadores').textContent = configuracion.jugadoresCancha;
-            document.getElementById('regla-jugadores2').textContent = configuracion.jugadoresCancha;
-            document.getElementById('regla-cancha').textContent = configuracion.jugadoresCancha;
+            document.getElementById('reglas-inscripcion').textContent = `$${configuracion.inscripcion} UYU`;
+            document.getElementById('reglas-premio').textContent = `$${configuracion.premioCampeon} UYU`;
 
-            document.getElementById('reglas-formato').textContent = `FORMATO: ${configuracion.formatoTorneo}`;
-            document.getElementById('reglas-inscripcion').textContent = `$${configuracion.inscripcion} UYU por equipo`;
-            document.getElementById('reglas-premio').textContent = `🏆 PREMIO AL CAMPEÓN: $${configuracion.premioCampeon} UYU`;
-
-            // Configurar botón de WhatsApp
             const msgInscripcion = encodeURIComponent(`¡Hola! Quiero inscribir a mi equipo en la ${configuracion.nombre}.`);
             document.getElementById('btn-whatsapp-final').href = `https://wa.me/${configuracion.whatsapp}?text=${msgInscripcion}`;
 
-            // Lógica para animaciones al hacer scroll (Reveal)
+            // Animaciones Reveal
             const reveals = document.querySelectorAll('.reveal');
-            
             function revealOnScroll() {
                 const windowHeight = window.innerHeight;
-                const elementVisible = 100;
-
                 reveals.forEach(reveal => {
                     const elementTop = reveal.getBoundingClientRect().top;
-                    if (elementTop < windowHeight - elementVisible) {
+                    if (elementTop < windowHeight - 80) {
                         reveal.classList.add('active');
                     }
                 });
             }
-            
             window.addEventListener('scroll', revealOnScroll);
-            revealOnScroll(); // Trigger inicial
+            revealOnScroll();
         });
     </script>
 </body>
