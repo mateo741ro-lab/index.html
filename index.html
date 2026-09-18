@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -135,6 +135,7 @@
                         <a href="#inicio" class="hover:text-neon text-white px-3 py-2 text-sm font-semibold transition">Inicio</a>
                         <a href="#formato" class="hover:text-neon text-gray-300 px-3 py-2 text-sm font-semibold transition">Formato</a>
                         <a href="#reglas" class="hover:text-neon text-gray-300 px-3 py-2 text-sm font-semibold transition">Reglas</a>
+                        <a href="#equipos" class="hover:text-neon text-gray-300 px-3 py-2 text-sm font-semibold transition">Equipos</a>
                         <a href="#inscripcion" class="btn-neon px-6 py-2 rounded-full text-sm">Inscribirse</a>
                     </div>
                 </div>
@@ -143,7 +144,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section id="inicio" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-[url('https://images.unsplash.com/photo-1518605368461-1ee7c532066d?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-fixed">
+    <section id="inicio" class="relative pt-32 pb-24 lg:pt-48 lg:pb-36 overflow-hidden bg-[url('https://images.unsplash.com/photo-1518605368461-1ee7c532066d?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-fixed">
         <div class="absolute inset-0 bg-gradient-to-b from-darker/95 via-darker/85 to-darker/95 z-0"></div>
         <div class="absolute inset-0 bg-neon/5 z-0"></div>
         
@@ -168,14 +169,58 @@
         </div>
     </section>
 
+    <!-- SECCIÓN: FECHA, HORARIO Y LUGAR -->
+    <section id="info-evento" class="relative z-20 -mt-12 md:-mt-16 mb-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <!-- Fecha -->
+                <div class="glass-card rounded-2xl p-6 flex items-center gap-5 border-b-4 border-b-neon shadow-2xl">
+                    <div class="bg-neon/10 p-4 rounded-xl text-neon text-3xl">
+                        <i class="far fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Día del Torneo</h3>
+                        <p class="text-white font-black text-2xl uppercase">Domingo 27</p>
+                    </div>
+                </div>
+
+                <!-- Horario -->
+                <div class="glass-card rounded-2xl p-6 flex items-center gap-5 border-b-4 border-b-gold shadow-2xl">
+                    <div class="bg-gold/10 p-4 rounded-xl text-gold text-3xl">
+                        <i class="far fa-clock"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Horario</h3>
+                        <p class="text-white font-black text-2xl uppercase">Tarde / Noche</p>
+                        <p class="text-gold/80 text-xs font-semibold mt-1">* Se confirmará más adelante</p>
+                    </div>
+                </div>
+
+                <!-- Lugar -->
+                <div class="glass-card rounded-2xl p-6 flex items-center gap-5 border-b-4 border-b-blue-400 shadow-2xl">
+                    <div class="bg-blue-400/10 p-4 rounded-xl text-blue-400 text-3xl">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Ubicación</h3>
+                        <p class="text-white font-black text-2xl uppercase">A Confirmar</p>
+                        <p class="text-blue-400/80 text-[11px] mt-1 leading-tight">Todavía no se ha definido en qué complejo de fútbol 5 se realizará.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <!-- Galería -->
     <section id="imagenes" class="py-8 relative bg-darker z-10">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="relative group overflow-hidden rounded-2xl h-56 md:h-72 shadow-xl border border-white/5">
-                <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800&auto=format&fit=crop" alt="Fútbol Sintético" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800&auto=format&fit=crop" alt="Fútbol 5 Copa Potrero" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                 <div class="absolute bottom-4 left-4">
-                    <span class="text-white font-bold uppercase tracking-wider">Fútbol 5 Sintético</span>
+                    <span class="text-white font-bold uppercase tracking-wider">Fútbol 5 Copa Potrero</span>
                 </div>
             </div>
         </div>
@@ -385,6 +430,17 @@
                     </div>
                 </div>
 
+                <!-- ⚖️ Información del Árbitro -->
+                <div class="glass-card rounded-2xl p-6 reveal border-l-4 border-l-white">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-gavel text-3xl text-white mr-4"></i>
+                        <h3 class="text-xl font-black text-white uppercase">⚖️ Arbitraje Oficial</h3>
+                    </div>
+                    <p class="text-gray-300 text-sm">
+                        El torneo será dirigido por un árbitro con amplia trayectoria. Cuenta con experiencia arbitrando en <strong>Primera División</strong>, así como en todas las categorías de fútbol infantil, fútbol 7 y fútbol 11.
+                    </p>
+                </div>
+
             </div>
 
             <!-- TARJETAS DE DETALLES (PREMIO E INSCRIPCIÓN) -->
@@ -400,12 +456,32 @@
                 <div class="glass-card rounded-2xl p-6 text-center border-t-4 border-t-gold">
                     <i class="fas fa-trophy text-3xl text-gold mb-2"></i>
                     <h3 class="text-lg font-black text-white mb-1">PREMIO AL CAMPEÓN</h3>
-                    <div class="text-3xl font-black text-gold" id="reglas-premio">$5000 UYU</div>
+                    <div class="text-3xl font-black text-gold" id="reglas-premio">$4000 UYU</div>
                     <p class="text-gray-400 text-xs mt-2">El equipo que gane la final se consagra Campeón de la Copa Potrero.</p>
                 </div>
 
             </div>
 
+        </div>
+    </section>
+
+    <!-- SECCIÓN: CUADROS ANOTADOS -->
+    <section id="equipos" class="py-16 relative bg-darker border-y border-white/5">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center reveal">
+            <h2 class="text-4xl md:text-5xl font-black text-white uppercase mb-4 tracking-tighter">
+                🛡️ Cuadros ya anotados para la Copa Potrero
+            </h2>
+            <p class="text-gray-400 text-sm mb-10 max-w-xl mx-auto">Estos son los equipos que ya tienen su lugar asegurado en el torneo.</p>
+            
+            <div class="glass-card rounded-3xl p-10 md:p-16 border-dashed border-2 border-white/20">
+                <i class="fas fa-hourglass-start text-5xl text-gray-500 mb-4 opacity-50"></i>
+                <p class="text-xl text-gray-400 font-light mb-6">
+                    Aún no hay equipos confirmados en la lista...
+                </p>
+                <p class="text-2xl md:text-3xl text-neon font-black uppercase tracking-wide">
+                    ¡Anotate y sé el primero en aparecer aquí!
+                </p>
+            </div>
         </div>
     </section>
 
@@ -445,6 +521,10 @@
                 <i class="fas fa-book text-lg mb-1"></i>
                 <span>Reglas</span>
             </a>
+            <a href="#equipos" class="flex flex-col items-center text-gray-400 hover:text-neon">
+                <i class="fas fa-shield-alt text-lg mb-1"></i>
+                <span>Equipos</span>
+            </a>
             <a href="#inscripcion" class="flex flex-col items-center text-neon">
                 <i class="fab fa-whatsapp text-xl mb-1"></i>
                 <span>Inscribir</span>
@@ -457,7 +537,7 @@
         const configuracion = {
             nombre: "Copa Potrero",
             inscripcion: 850,
-            premioCampeon: 5000,
+            premioCampeon: 4000,
             duracionPartido: 20,
             jugadoresCancha: 5,
             formatoTorneo: "10 cuadros — Eliminación directa",
@@ -493,4 +573,3 @@
     </script>
 </body>
 </html>
-
