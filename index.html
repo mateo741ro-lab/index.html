@@ -197,14 +197,14 @@
 
         .desktop-nav ul {
             display: flex;
-            gap: 30px;
+            gap: 25px;
             list-style: none;
         }
 
         .desktop-nav a {
             color: var(--text-main);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 500;
             transition: color 0.3s ease;
         }
@@ -229,6 +229,7 @@
             display: flex;
             justify-content: space-around;
             list-style: none;
+            padding: 0 5px;
         }
 
         .mobile-nav a {
@@ -237,7 +238,7 @@
             align-items: center;
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             gap: 5px;
             transition: color 0.3s ease;
         }
@@ -320,6 +321,7 @@
         .section-title h2 {
             font-size: 2.5rem;
             margin-bottom: 10px;
+            text-transform: uppercase;
         }
 
         .section-title p {
@@ -483,6 +485,110 @@
             margin-bottom: 15px;
         }
 
+        /* ===============================
+           SECCIÓN REGLAS 
+           =============================== */
+        .reglas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .regla-destacada {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(25, 212, 137, 0.15), rgba(7, 20, 13, 0.9));
+            border-color: var(--primary);
+            padding: 40px 30px;
+        }
+
+        .regla-destacada i {
+            font-size: 3.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 10px rgba(25, 212, 137, 0.4));
+        }
+
+        .tiempo-total {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--primary-glow);
+            font-family: 'Sora', sans-serif;
+            text-shadow: 0 0 20px rgba(57, 255, 154, 0.3);
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .tiempo-detalle {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 1.1rem;
+        }
+
+        .tiempo-detalle span {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .regla-card {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 25px;
+        }
+
+        .regla-card i.icon-regla {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .regla-card h4 {
+            font-size: 1.25rem;
+            font-family: 'Sora', sans-serif;
+            color: var(--text-main);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .regla-card ul {
+            list-style: none;
+            padding-left: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .regla-card ul li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .regla-card ul li::before {
+            content: '•';
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .icon-cards i { color: #FFD447; }
+        .icon-cards i:last-child { color: #FF3B30; margin-left: -5px; }
+
+        .regla-contacto {
+            text-align: center;
+            background: rgba(25, 212, 137, 0.05);
+            border-radius: 16px;
+            padding: 40px 20px;
+            border: 1px dashed var(--primary);
+            margin-top: 20px;
+        }
+
         /* Footer */
         footer {
             background: #030504;
@@ -539,6 +645,8 @@
             .hero-price { font-size: 1.5rem; }
             .wsp-number { font-size: 2.5rem; }
             .premio-monto { font-size: 2.5rem; }
+            .tiempo-total { font-size: 2.5rem; }
+            .tiempo-detalle { flex-direction: column; gap: 10px; }
             
             .section-padding { padding: 60px 0; }
         }
@@ -566,6 +674,7 @@
                     <li><a href="#equipos">EQUIPOS</a></li>
                     <li><a href="#premios">PREMIOS</a></li>
                     <li><a href="#info">INFORMACIÓN</a></li>
+                    <li><a href="#reglas" class="text-primary">REGLAS</a></li>
                 </ul>
             </nav>
         </div>
@@ -578,6 +687,7 @@
             <li><a href="#equipos"><i class="fa-solid fa-shield-halved"></i>Equipos</a></li>
             <li><a href="#premios"><i class="fa-solid fa-trophy"></i>Premios</a></li>
             <li><a href="#info"><i class="fa-solid fa-circle-info"></i>Info</a></li>
+            <li><a href="#reglas"><i class="fa-solid fa-scroll"></i>Reglas</a></li>
         </ul>
     </nav>
 
@@ -691,14 +801,14 @@
     <!-- Información del Torneo -->
     <section id="info" class="section-padding container reveal">
         <div class="section-title">
-            <h2>INFORMACIÓN DEL CAMPEONATO</h2>
+            <h2>INFORMACIÓN GENERAL</h2>
         </div>
         
         <div class="detalles-grid">
             <div class="glass-card detalle-item">
                 <i class="fa-regular fa-futbol"></i>
                 <h4>Formato</h4>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Fútbol 5</p>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Fútbol <span class="conf-jugadores">5</span></p>
             </div>
             <div class="glass-card detalle-item">
                 <i class="fa-regular fa-calendar-days"></i>
@@ -718,12 +828,160 @@
         </div>
     </section>
 
-    <!-- Contacto -->
+    <!-- SECCIÓN REGLAS DEL CAMPEONATO -->
+    <section id="reglas" class="section-padding container">
+        <div class="section-title reveal">
+            <h2>REGLAMENTO DEL CAMPEONATO</h2>
+            <p>Todo lo que tenés que saber antes de entrar a la cancha.</p>
+        </div>
+
+        <div class="reglas-grid">
+            
+            <!-- Regla Destacada: Tiempo -->
+            <div class="glass-card regla-destacada reveal">
+                <i class="fa-solid fa-stopwatch"></i>
+                <div class="tiempo-total"><span class="conf-duracion">20</span> MINUTOS POR PARTIDO</div>
+                <div class="tiempo-detalle">
+                    <span><i class="fa-solid fa-play"></i> <span class="conf-primer">9</span> min. 1er Tiempo</span>
+                    <span><i class="fa-solid fa-pause"></i> <span class="conf-descanso">2</span> min. Descanso</span>
+                    <span><i class="fa-solid fa-forward-step"></i> <span class="conf-segundo">9</span> min. 2do Tiempo</span>
+                </div>
+                <p style="color: var(--text-muted); margin-top: 15px; font-size: 0.9rem;">Cada partido tendrá una duración total exacta de <span class="conf-duracion">20</span> minutos.</p>
+            </div>
+
+            <!-- 2. Cantidad de Jugadores -->
+            <div class="glass-card regla-card reveal">
+                <i class="fa-solid fa-users icon-regla"></i>
+                <h4>2. Jugadores</h4>
+                <ul>
+                    <li>Cada equipo juega con <strong><span class="conf-jugadores">5</span> jugadores</strong> en cancha.</li>
+                    <li>Se permiten suplentes.</li>
+                    <li>Los cambios serán libres durante el partido, siempre que se realicen correctamente.</li>
+                    <li>Cantidad máxima de jugadores por plantel: <strong><span class="conf-max-jugadores">A confirmar</span></strong>.</li>
+                </ul>
+            </div>
+
+            <!-- 3. Formato de Juego -->
+            <div class="glass-card regla-card reveal">
+                <i class="fa-solid fa-futbol icon-regla"></i>
+                <h4>3. Formato de Juego</h4>
+                <ul>
+                    <li>Fútbol <span class="conf-jugadores">5</span>.</li>
+                    <li>Los partidos se disputarán según el fixture oficial del campeonato.</li>
+                    <li>El horario de cada partido será informado previamente.</li>
+                    <li>Los equipos deberán presentarse con anticipación.</li>
+                </ul>
+            </div>
+
+            <!-- 4. Faltas y Tarjetas -->
+            <div class="glass-card regla-card reveal">
+                <div class="icon-cards icon-regla">
+                    <i class="fa-solid fa-square"></i>
+                    <i class="fa-solid fa-square"></i>
+                </div>
+                <h4>4. Faltas y Tarjetas</h4>
+                <ul>
+                    <li>Las faltas serán sancionadas por el árbitro.</li>
+                    <li><strong>Tarjeta amarilla:</strong> advertencia disciplinaria.</li>
+                    <li><strong>Tarjeta roja:</strong> expulsión del partido.</li>
+                    <li>Un jugador expulsado no podrá continuar jugando ese partido.</li>
+                    <li>Las sanciones adicionales serán informadas por la organización.</li>
+                </ul>
+            </div>
+
+            <!-- 5. Saques y Reanudaciones -->
+            <div class="glass-card regla-card reveal">
+                <i class="fa-solid fa-arrows-rotate icon-regla"></i>
+                <h4>5. Saques y Reanudaciones</h4>
+                <ul>
+                    <li>Saque inicial.</li>
+                    <li>Saque de banda.</li>
+                    <li>Saque de arco.</li>
+                    <li>Tiros libres y Tiros de esquina.</li>
+                    <li>Penal.</li>
+                    <li>Según criterio del reglamento oficial del campeonato.</li>
+                </ul>
+            </div>
+
+            <!-- 6. Sistema de Competencia -->
+            <div class="glass-card regla-card reveal">
+                <i class="fa-solid fa-sitemap icon-regla"></i>
+                <h4>6. Formato del Torneo</h4>
+                <ul>
+                    <li>Formato de competencia: <strong><span class="conf-formato-torneo">A confirmar</span></strong>.</li>
+                </ul>
+            </div>
+
+            <!-- 7. Puntualidad -->
+            <div class="glass-card regla-card reveal">
+                <i class="fa-regular fa-clock icon-regla"></i>
+                <h4>7. Puntualidad</h4>
+                <ul>
+                    <li>Los equipos deberán presentarse antes del horario asignado.</li>
+                    <li>El equipo debe estar preparado para comenzar cuando sea llamado.</li>
+                    <li>Si un equipo llega tarde, la organización determinará cómo proceder según las circunstancias.</li>
+                </ul>
+            </div>
+
+            <!-- 8. Indumentaria -->
+            <div class="glass-card regla-card reveal">
+                <i class="fa-solid fa-shirt icon-regla"></i>
+                <h4>8. Indumentaria</h4>
+                <ul>
+                    <li>Se recomienda que todos los jugadores de un equipo utilicen camisetas del mismo color.</li>
+                    <li>Si dos equipos tienen colores similares, la organización determinará cómo diferenciarlos.</li>
+                    <li>Se recomienda utilizar calzado adecuado para fútbol 5.</li>
+                </ul>
+            </div>
+
+            <!-- 9. Conducta y Respeto -->
+            <div class="glass-card regla-card reveal">
+                <i class="fa-solid fa-handshake-angle icon-regla"></i>
+                <h4>9. Respeto ante todo</h4>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+                    Todos los jugadores, equipos y acompañantes deberán mantener una conducta respetuosa durante el campeonato. Las decisiones arbitrales deberán ser respetadas y cualquier conducta antideportiva podrá ser sancionada por la organización.
+                </p>
+            </div>
+
+            <!-- 10. Inscripción -->
+            <div class="glass-card regla-card reveal">
+                <i class="fa-solid fa-money-bill-wave icon-regla"></i>
+                <h4>10. Inscripción</h4>
+                <ul>
+                    <li>Precio de inscripción: <strong>$<span class="conf-precio">0</span> UYU</strong> por equipo.</li>
+                    <li>El pago se coordina directamente con el organizador.</li>
+                    <li>La página NO realiza pagos.</li>
+                    <li>Para inscribirse hay que comunicarse por WhatsApp.</li>
+                </ul>
+            </div>
+
+            <!-- 11. Premio -->
+            <div class="glass-card regla-card reveal">
+                <i class="fa-solid fa-trophy icon-regla" style="color: var(--gold);"></i>
+                <h4 style="color: var(--gold); border-bottom-color: rgba(255, 212, 71, 0.2);">11. Premio al Campeón</h4>
+                <div style="font-size: 1.8rem; font-weight: 800; color: var(--gold); text-align: center; margin-top: 10px; font-family: 'Sora', sans-serif;">
+                    🏆 $<span class="conf-premio">0</span> UYU
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 12. Contacto Dudas Reglas -->
+        <div class="regla-contacto reveal">
+            <h3 class="sora-font" style="margin-bottom: 10px;">¿TENÉS DUDAS SOBRE LAS REGLAS?</h3>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Consultá directamente con la organización por WhatsApp.</p>
+            <a href="#" class="btn btn-wsp ws-link">
+                <i class="fa-brands fa-whatsapp"></i> CONSULTAR POR WHATSAPP
+            </a>
+        </div>
+    </section>
+
+    <!-- Contacto General Footer -->
     <section id="contacto" class="wsp-banner reveal" style="background: var(--bg-card);">
         <div class="container">
-            <h2 class="sora-font" style="font-size: 2.5rem; margin-bottom: 10px;">¿TENÉS ALGUNA DUDA?</h2>
+            <h2 class="sora-font" style="font-size: 2.5rem; margin-bottom: 10px;">¿LISTO PARA ENTRAR A LA CANCHA?</h2>
             <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px;">
-                Consultanos directamente por WhatsApp para inscripciones, dudas o información del campeonato.
+                Escribinos por WhatsApp para inscripciones o más información.
             </p>
             <div class="wsp-number conf-telefono" style="font-size: 3rem;"></div>
             <a href="#" class="btn btn-wsp ws-link" style="margin-top: 10px;">
@@ -768,7 +1026,16 @@
             telefonoDisplay: "092 043 677", // Número como se mostrará en pantalla
             fecha: "Fecha a confirmar",   // Ej: "Sábado 15 de Octubre"
             lugar: "Lugar a confirmar",   // Ej: "Canchas El Golazo"
-            mensajeWsp: "Hola, quiero inscribir mi equipo al campeonato de Fútbol 5."
+            mensajeWsp: "Hola, quiero inscribir mi equipo al campeonato de Fútbol 5.",
+            
+            // --- NUEVAS REGLAS ---
+            duracionPartido: 20,          // Duración TOTAL del partido
+            primerTiempo: 9,              // Minutos primer tiempo
+            descanso: 2,                  // Minutos de descanso
+            segundoTiempo: 9,             // Minutos segundo tiempo
+            jugadoresCancha: 5,           // Cantidad de jugadores en cancha
+            maxJugadoresPlantel: null,    // Poner número (ej: 10) o dejar en null para "A confirmar"
+            formatoTorneo: "A confirmar"  // Ej: "Fase de grupos y eliminación directa"
         };
 
         // ===============================
@@ -801,7 +1068,7 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             
-            // 1. Aplicar Configuración a los textos
+            // 1. Aplicar Configuración a los textos generales
             document.querySelectorAll('.conf-nombre-camp').forEach(el => el.textContent = configuracion.nombre);
             document.querySelectorAll('.conf-precio').forEach(el => el.textContent = configuracion.inscripcion.toLocaleString("es-UY"));
             document.querySelectorAll('.conf-premio').forEach(el => el.textContent = configuracion.premioCampeon.toLocaleString("es-UY"));
@@ -809,14 +1076,26 @@
             document.querySelectorAll('.conf-fecha').forEach(el => el.textContent = configuracion.fecha);
             document.querySelectorAll('.conf-lugar').forEach(el => el.textContent = configuracion.lugar);
 
-            // 2. Configurar enlaces de WhatsApp
+            // 2. Aplicar Configuración a la sección REGLAS
+            document.querySelectorAll('.conf-duracion').forEach(el => el.textContent = configuracion.duracionPartido);
+            document.querySelectorAll('.conf-primer').forEach(el => el.textContent = configuracion.primerTiempo);
+            document.querySelectorAll('.conf-descanso').forEach(el => el.textContent = configuracion.descanso);
+            document.querySelectorAll('.conf-segundo').forEach(el => el.textContent = configuracion.segundoTiempo);
+            document.querySelectorAll('.conf-jugadores').forEach(el => el.textContent = configuracion.jugadoresCancha);
+            document.querySelectorAll('.conf-formato-torneo').forEach(el => el.textContent = configuracion.formatoTorneo);
+            
+            // Lógica para cantidad máxima de jugadores (si es null, muestra texto por defecto)
+            const maxJugadoresText = configuracion.maxJugadoresPlantel ? configuracion.maxJugadoresPlantel : "A confirmar";
+            document.querySelectorAll('.conf-max-jugadores').forEach(el => el.textContent = maxJugadoresText);
+
+            // 3. Configurar enlaces de WhatsApp
             const urlWsp = `https://wa.me/${configuracion.whatsapp}?text=${encodeURIComponent(configuracion.mensajeWsp)}`;
             document.querySelectorAll('.ws-link').forEach(btn => {
                 btn.href = urlWsp;
                 btn.target = "_blank";
             });
 
-            // 3. Renderizar Equipos Confirmados
+            // 4. Renderizar Equipos Confirmados
             const contenedorEquipos = document.getElementById('equipos-container');
             
             if (equipos.length === 0) {
@@ -830,7 +1109,6 @@
             } else {
                 let htmlEquipos = "";
                 equipos.forEach(eq => {
-                    // Detectar si el escudo es emoji o URL de imagen
                     const esImagen = eq.escudo.includes("http") || eq.escudo.includes("/");
                     const renderEscudo = esImagen 
                         ? `<img src="${eq.escudo}" alt="Escudo" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` 
@@ -851,7 +1129,7 @@
                 contenedorEquipos.innerHTML = htmlEquipos;
             }
 
-            // 4. Animaciones on Scroll (Reveal)
+            // 5. Animaciones on Scroll (Reveal)
             function reveal() {
                 var reveals = document.querySelectorAll(".reveal");
                 for (var i = 0; i < reveals.length; i++) {
@@ -869,3 +1147,5 @@
     </script>
 </body>
 </html>
+
+         
