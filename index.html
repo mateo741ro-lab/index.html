@@ -475,22 +475,43 @@
         </div>
     </section>
 
-    <!-- SECCIÓN: CUADROS ANOTADOS -->
+    <!-- SECCIÓN: CUADROS ANOTADOS ACTUALIZADA -->
     <section id="equipos" class="py-16 relative bg-darker border-y border-white/5">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center reveal">
-            <h2 class="text-4xl md:text-5xl font-black text-white uppercase mb-4 tracking-tighter">
-                🛡️ Cuadros ya anotados para la Copa Potrero
-            </h2>
-            <p class="text-gray-400 text-sm mb-10 max-w-xl mx-auto">Estos son los equipos que ya tienen su lugar asegurado en el torneo.</p>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 reveal">
+            <div class="text-center mb-10">
+                <h2 class="text-4xl md:text-5xl font-black text-white uppercase mb-4 tracking-tighter">
+                    🛡️ Cuadros Anotados
+                </h2>
+                <div class="flex items-center justify-center gap-3">
+                    <p class="text-gray-400 text-sm">Equipos que ya tienen su lugar asegurado en la Copa Potrero.</p>
+                    <span class="bg-neon/20 border border-neon/30 text-neon text-xs font-bold px-3 py-1 rounded-full">1/10 CUPOS</span>
+                </div>
+            </div>
             
-            <div class="glass-card rounded-3xl p-10 md:p-16 border-dashed border-2 border-white/20">
-                <i class="fas fa-hourglass-start text-5xl text-gray-500 mb-4 opacity-50"></i>
-                <p class="text-xl text-gray-400 font-light mb-6">
-                    Aún no hay equipos confirmados en la lista...
-                </p>
-                <p class="text-2xl md:text-3xl text-neon font-black uppercase tracking-wide">
-                    ¡Anotate y sé el primero en aparecer aquí!
-                </p>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                
+                <!-- EQUIPO 1 CONFIRMADO: Cerezos FC -->
+                <div class="glass-card rounded-2xl p-6 border-b-4 border-neon flex flex-col items-center text-center transform hover:-translate-y-2 transition-transform shadow-[0_0_20px_rgba(0,255,136,0.1)]">
+                    <div class="w-16 h-16 rounded-full bg-darker flex items-center justify-center mb-4 border border-neon/30 shadow-[0_0_15px_rgba(0,255,136,0.3)]">
+                        <i class="fas fa-shield-alt text-3xl text-neon"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white uppercase tracking-wide w-full truncate">Cerezos FC</h3>
+                    <span class="mt-3 text-[10px] bg-neon/10 text-neon px-3 py-1 rounded-full font-bold uppercase tracking-widest border border-neon/20">Lugar Asegurado</span>
+                </div>
+                
+                <!-- ESPACIO DISPONIBLE (Llamado a la acción) -->
+                <div class="glass-panel rounded-2xl p-6 border-dashed border-2 border-white/10 flex flex-col items-center justify-center text-center opacity-60 hover:opacity-100 hover:border-white/30 transition-all cursor-pointer group">
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:bg-white/10 transition-colors">
+                        <i class="fas fa-plus text-2xl text-gray-500 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-400 uppercase tracking-wide group-hover:text-gray-200 transition-colors">Lugar Disponible</h3>
+                    <a href="#inscripcion" class="mt-3 text-[10px] bg-white/10 hover:bg-neon hover:text-dark text-white px-4 py-1.5 rounded-full font-bold uppercase tracking-widest transition-colors">Anotar mi cuadro</a>
+                </div>
+
+            </div>
+            
+            <div class="mt-8 text-center text-gray-500 text-sm italic">
+                * Faltan 9 equipos para completar el cupo del torneo.
             </div>
         </div>
     </section>
