@@ -1,615 +1,250 @@
-<!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<!<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Copa Potrero</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800;900&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
-                    },
-                    colors: {
-                        neon: '#00ff88',
-                        gold: '#ffd700',
-                        dark: '#0f172a',
-                        darker: '#020617',
-                    }
-                }
-            }
-        }
-    </script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Juego - Mando y Receptor</title>
+    <!-- Librería PeerJS para conexión directa (WebRTC) sin backend -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <!-- Librería QRious para generar el código QR en el celular emisor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --btn-a: #ff4757; /* Rojo */
+            --btn-b: #1e90ff; /* Azul */
+            --btn-c: #2ed573; /* Verde */
+            --btn-d: #ffa502; /* Amarillo */
+        }
         body {
-            background-color: #020617;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(0, 255, 136, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(255, 215, 0, 0.03) 0%, transparent 50%);
-            color: #f8fafc;
-            overflow-x: hidden;
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; text-align: center;
+            transition: background-color 0.1s; /* Para el destello visual en iOS */
         }
-
-        /* Glassmorphism */
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-        }
-
-        .glass-card {
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.95) 100%);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .glass-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(0, 255, 136, 0.4);
-            box-shadow: 0 15px 35px -10px rgba(0, 255, 136, 0.25);
-        }
-
-        /* Neon & Gold Text Effects */
-        .text-neon {
-            color: #00ff88;
-            text-shadow: 0 0 12px rgba(0, 255, 136, 0.6);
-        }
+        h1 { margin-top: 30px; font-size: 1.5rem; }
         
-        .text-gold {
-            color: #ffd700;
-            text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+        /* Estado de conexión */
+        .status-badge {
+            margin-bottom: 20px; padding: 8px 20px; border-radius: 20px;
+            font-weight: bold; background: #333; font-size: 0.9rem;
+        }
+        .status-badge.connected { background: var(--btn-c); color: #000; }
+        .status-badge.error { background: var(--btn-a); color: #fff; }
+
+        /* Contenedores de pantallas */
+        #emisor-screen, #receptor-screen, #loading-screen {
+            display: none; width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box;
         }
 
-        /* Destacado principal 20 min */
-        .card-highlight {
-            background: linear-gradient(145deg, rgba(0, 255, 136, 0.08) 0%, rgba(2, 6, 23, 0.9) 100%);
-            border: 2px solid rgba(0, 255, 136, 0.5);
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2), inset 0 0 25px rgba(0, 255, 136, 0.08);
-            position: relative;
-            overflow: hidden;
+        /* DISEÑO EMISOR */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .btn-signal {
+            border: none; border-radius: 15px; padding: 40px 0;
+            font-size: 2rem; font-weight: bold; color: white;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: transform 0.1s, opacity 0.2s;
         }
+        .btn-signal:active { transform: scale(0.92); }
+        .btn-signal:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-a { background-color: var(--btn-a); }
+        .btn-b { background-color: var(--btn-b); }
+        .btn-c { background-color: var(--btn-c); color: #000; }
+        .btn-d { background-color: var(--btn-d); color: #000; }
 
-        .bg-clip-text-neon {
-            background: linear-gradient(to right, #00ff88, #00b35f);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        #qr-section { margin-top: 30px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; }
+        #qr-canvas { background: white; padding: 10px; border-radius: 10px; }
+        .help-text { font-size: 0.85rem; color: #aaa; margin-top: 10px; }
 
-        .btn-neon {
-            background: linear-gradient(45deg, #00ff88, #00cc6a);
-            color: #020617;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
-            transition: all 0.3s;
-            font-weight: 800;
+        /* DISEÑO RECEPTOR */
+        #last-signal {
+            font-size: 6rem; font-weight: bold; margin: 40px 0;
+            min-height: 140px; display: flex; align-items: center; justify-content: center;
         }
-        
-        .btn-neon:hover {
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
-            transform: scale(1.05);
+        .btn-test {
+            background: #333; color: white; border: none; padding: 15px 30px;
+            font-size: 1.1rem; border-radius: 10px; cursor: pointer; width: 100%;
+            margin-top: 20px;
         }
-
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
-        }
-        
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #020617; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+        .btn-test:active { background: #555; }
     </style>
 </head>
-<body class="antialiased pb-20 md:pb-0">
+<body>
 
-    <!-- Navbar -->
-    <nav class="fixed w-full z-50 glass-panel border-b-0">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <div class="flex-shrink-0 flex items-center gap-3">
-                    <i class="fas fa-futbol text-3xl text-neon"></i>
-                    <span class="font-black text-2xl tracking-tighter text-white uppercase" id="nav-titulo">COPA POTRERO</span>
-                </div>
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-8">
-                        <a href="#inicio" class="hover:text-neon text-white px-3 py-2 text-sm font-semibold transition">Inicio</a>
-                        <a href="#formato" class="hover:text-neon text-gray-300 px-3 py-2 text-sm font-semibold transition">Formato</a>
-                        <a href="#reglas" class="hover:text-neon text-gray-300 px-3 py-2 text-sm font-semibold transition">Reglas</a>
-                        <a href="#equipos" class="hover:text-neon text-gray-300 px-3 py-2 text-sm font-semibold transition">Equipos</a>
-                        <a href="#inscripcion" class="btn-neon px-6 py-2 rounded-full text-sm">Inscribirse</a>
-                    </div>
-                </div>
-            </div>
+    <h1 id="main-title">Iniciando...</h1>
+    <div id="status" class="status-badge">Conectando al servidor...</div>
+
+    <!-- PANTALLA EMISOR -->
+    <div id="emisor-screen">
+        <div class="btn-grid">
+            <button class="btn-signal btn-a" onclick="enviarSenal('A')" disabled>A</button>
+            <button class="btn-signal btn-b" onclick="enviarSenal('B')" disabled>B</button>
+            <button class="btn-signal btn-c" onclick="enviarSenal('C')" disabled>C</button>
+            <button class="btn-signal btn-d" onclick="enviarSenal('D')" disabled>D</button>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section id="inicio" class="relative pt-32 pb-24 lg:pt-48 lg:pb-36 overflow-hidden bg-[url('https://images.unsplash.com/photo-1518605368461-1ee7c532066d?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-fixed">
-        <div class="absolute inset-0 bg-gradient-to-b from-darker/95 via-darker/85 to-darker/95 z-0"></div>
-        <div class="absolute inset-0 bg-neon/5 z-0"></div>
         
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <div class="inline-block mb-3 px-4 py-1 rounded-full glass-panel border border-neon/30 text-neon text-sm font-bold tracking-widest uppercase">
-                <i class="fas fa-trophy mr-2 text-gold"></i> Torneo de Fútbol 5
-            </div>
-            
-            <h1 class="text-6xl md:text-8xl font-black mb-4 leading-tight uppercase tracking-tighter" id="hero-titulo">
-                <span class="text-white drop-shadow-xl">COPA</span> <br> <span class="bg-clip-text-neon drop-shadow-[0_0_20px_rgba(0,255,136,0.4)]">POTRERO</span>
-            </h1>
-
-            <!-- Insignia de Arbitraje Profesional -->
-            <div class="inline-flex items-center gap-2 mb-6 px-5 py-2 rounded-full bg-gold/10 border border-gold/40 text-gold text-xs md:text-sm font-extrabold uppercase tracking-wider backdrop-blur-md shadow-lg">
-                <i class="fas fa-gavel text-base"></i>
-                <span>Arbitraje Profesional | Larga Trayectoria en Fútbol 11</span>
-            </div>
-
-            <!-- Texto explicativo actualizado -->
-            <p class="mt-2 max-w-2xl text-lg md:text-xl text-gray-200 mx-auto mb-10 font-medium leading-relaxed drop-shadow-md">
-                Armá tu equipo y vení a competir. Todos los partidos serán dirigidos por un <strong class="text-white font-bold">árbitro profesional</strong> con amplia experiencia en <strong class="text-neon font-bold">Primera División</strong>, fútbol infantil, fútbol 7 y fútbol 11.
-            </p>
-
-            <div class="flex flex-col sm:flex-row justify-center gap-5">
-                <a href="#inscripcion" class="btn-neon px-8 py-4 rounded-full text-lg uppercase tracking-wide">
-                    Asegurar mi lugar
-                </a>
-                <a href="#formato" class="glass-panel hover:bg-white/10 px-8 py-4 rounded-full text-lg font-bold text-white transition border border-white/20 uppercase tracking-wide">
-                    Ver Formato
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECCIÓN: FECHA, HORARIO Y LUGAR -->
-    <section id="info-evento" class="relative z-20 -mt-12 md:-mt-16 mb-12">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                
-                <!-- Fecha -->
-                <div class="glass-card rounded-2xl p-6 flex items-center gap-5 border-b-4 border-b-neon shadow-2xl">
-                    <div class="bg-neon/10 p-4 rounded-xl text-neon text-3xl">
-                        <i class="far fa-calendar-alt"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Día del Torneo</h3>
-                        <p class="text-white font-black text-2xl uppercase">Domingo 27</p>
-                    </div>
-                </div>
-
-                <!-- Horario -->
-                <div class="glass-card rounded-2xl p-6 flex items-center gap-5 border-b-4 border-b-gold shadow-2xl">
-                    <div class="bg-gold/10 p-4 rounded-xl text-gold text-3xl">
-                        <i class="far fa-clock"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Horario</h3>
-                        <p class="text-white font-black text-2xl uppercase">Tarde / Noche</p>
-                        <p class="text-gold/80 text-xs font-semibold mt-1">* Se confirmará más adelante</p>
-                    </div>
-                </div>
-
-                <!-- Lugar -->
-                <div class="glass-card rounded-2xl p-6 flex items-center gap-5 border-b-4 border-b-blue-400 shadow-2xl">
-                    <div class="bg-blue-400/10 p-4 rounded-xl text-blue-400 text-3xl">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Ubicación</h3>
-                        <p class="text-white font-black text-2xl uppercase">A Confirmar</p>
-                        <p class="text-blue-400/80 text-[11px] mt-1 leading-tight">Todavía no se ha definido en qué complejo de fútbol 5 se realizará.</p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Galería -->
-    <section id="imagenes" class="py-8 relative bg-darker z-10">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="relative group overflow-hidden rounded-2xl h-56 md:h-72 shadow-xl border border-white/5">
-                <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800&auto=format&fit=crop" alt="Fútbol 5 Copa Potrero" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div class="absolute bottom-4 left-4">
-                    <span class="text-white font-bold uppercase tracking-wider">Fútbol 5 Copa Potrero</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECCIÓN: FORMATO DEL CAMPEONATO -->
-    <section id="formato" class="py-20 relative bg-darker">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center mb-16 reveal">
-                <span class="text-gold font-bold uppercase tracking-widest text-sm">Competencia</span>
-                <h2 class="text-4xl md:text-6xl font-black text-white uppercase mb-4 tracking-tighter">
-                    ⚽ Formato del Campeonato
-                </h2>
-                <div class="inline-block bg-red-500/10 border border-red-500/30 rounded-full px-6 py-2 text-red-400 font-bold text-lg mb-2">
-                    10 Cuadros — Eliminación Directa
-                </div>
-                <p class="text-gray-400 text-md max-w-xl mx-auto">
-                    No hay fase de grupos. Si un equipo pierde, queda eliminado.
-                </p>
-            </div>
-
-            <!-- Fixture Interactivo -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 reveal">
-                
-                <!-- Ronda Inicial -->
-                <div class="glass-card rounded-2xl p-6 border-l-4 border-l-neon">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-black text-neon uppercase">🔹 Ronda Inicial</h3>
-                        <span class="text-xs bg-neon/10 text-neon px-2 py-1 rounded">2 Partidos</span>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="bg-dark/80 p-3 rounded-xl border border-white/5">
-                            <span class="text-xs text-gray-400 font-bold">PARTIDO 1</span>
-                            <div class="text-white font-bold mt-1">Cuadro 7 <span class="text-neon">🆚</span> Cuadro 8</div>
-                        </div>
-                        <div class="bg-dark/80 p-3 rounded-xl border border-white/5">
-                            <span class="text-xs text-gray-400 font-bold">PARTIDO 2</span>
-                            <div class="text-white font-bold mt-1">Cuadro 9 <span class="text-neon">🆚</span> Cuadro 10</div>
-                        </div>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-4 text-center">Los ganadores avanzan a Cuartos.</p>
-                </div>
-
-                <!-- Cuartos de Final -->
-                <div class="glass-card rounded-2xl p-6 border-l-4 border-l-blue-400">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-black text-blue-400 uppercase">🔹 Cuartos de Final</h3>
-                        <span class="text-xs bg-blue-400/10 text-blue-400 px-2 py-1 rounded">4 Partidos</span>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="bg-dark/80 p-2.5 rounded-xl border border-white/5 text-sm">
-                            <span class="text-[10px] text-gray-400 font-bold block">PARTIDO 3</span>
-                            <span class="text-white font-bold">Cuadro 1 🆚 Ganador P1</span>
-                        </div>
-                        <div class="bg-dark/80 p-2.5 rounded-xl border border-white/5 text-sm">
-                            <span class="text-[10px] text-gray-400 font-bold block">PARTIDO 4</span>
-                            <span class="text-white font-bold">Cuadro 2 🆚 Cuadro 3</span>
-                        </div>
-                        <div class="bg-dark/80 p-2.5 rounded-xl border border-white/5 text-sm">
-                            <span class="text-[10px] text-gray-400 font-bold block">PARTIDO 5</span>
-                            <span class="text-white font-bold">Cuadro 4 🆚 Cuadro 5</span>
-                        </div>
-                        <div class="bg-dark/80 p-2.5 rounded-xl border border-white/5 text-sm">
-                            <span class="text-[10px] text-gray-400 font-bold block">PARTIDO 6</span>
-                            <span class="text-white font-bold">Cuadro 6 🆚 Ganador P2</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Semifinales -->
-                <div class="glass-card rounded-2xl p-6 border-l-4 border-l-purple-400 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-black text-purple-400 uppercase">🔹 Semifinales</h3>
-                            <span class="text-xs bg-purple-400/10 text-purple-400 px-2 py-1 rounded">2 Partidos</span>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="bg-dark/80 p-3 rounded-xl border border-white/5">
-                                <span class="text-xs text-gray-400 font-bold">PARTIDO 7</span>
-                                <div class="text-white font-bold mt-1">Ganador P3 <span class="text-purple-400">🆚</span> Ganador P4</div>
-                            </div>
-                            <div class="bg-dark/80 p-3 rounded-xl border border-white/5">
-                                <span class="text-xs text-gray-400 font-bold">PARTIDO 8</span>
-                                <div class="text-white font-bold mt-1">Ganador P5 <span class="text-purple-400">🆚</span> Ganador P6</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gran Final -->
-                <div class="glass-card rounded-2xl p-6 border-2 border-gold flex flex-col justify-between bg-gold/5">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-black text-gold uppercase">🏆 Gran Final</h3>
-                            <i class="fas fa-crown text-gold"></i>
-                        </div>
-                        <div class="bg-dark/90 p-4 rounded-xl border border-gold/30 text-center my-2">
-                            <span class="text-xs text-gold font-bold">PARTIDO 9</span>
-                            <div class="text-lg text-white font-black my-2">Ganador P7 <span class="text-gold">🆚</span> Ganador P8</div>
-                        </div>
-                    </div>
-                    <div class="text-center bg-gold/20 p-3 rounded-xl border border-gold/40">
-                        <span class="text-xs text-gold font-bold uppercase block">Recompensa</span>
-                        <span class="text-white font-black text-sm uppercase">CAMPEÓN DE LA COPA POTRERO</span>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- SECCIÓN: REGLAS BÁSICAS -->
-    <section id="reglas" class="py-20 relative bg-darker">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center mb-16 reveal">
-                <h2 class="text-4xl md:text-6xl font-black text-white uppercase mb-2 tracking-tighter">
-                    📋 Reglas de Copa Potrero
-                </h2>
-                <p class="text-xl text-gray-300 font-light max-w-2xl mx-auto">
-                    Fútbol, potrero y reglas simples.
-                </p>
-                <div class="w-20 h-1 bg-neon mx-auto rounded-full mt-6"></div>
-            </div>
-
-            <!-- 1. DURACIÓN DEL PARTIDO (DESTACADO) -->
-            <div class="card-highlight rounded-3xl p-8 md:p-10 text-center mb-12 max-w-3xl mx-auto reveal">
-                <div class="text-5xl md:text-7xl mb-3">⏱️</div>
-                <h3 class="text-3xl md:text-5xl font-black text-white mb-1">
-                    <span id="regla-duracion">20</span> MINUTOS CORRIDOS
-                </h3>
-                <p class="text-lg text-gray-300 mb-4 font-light">
-                    No hay entretiempo. El tiempo continúa corriendo durante el partido.
-                </p>
-            </div>
-
-            <!-- GRID DE REGLAS BÁSICAS ACTUALIZADAS -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                
-                <!-- 👥 Equipos -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-users text-3xl text-neon mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">👥 Equipos</h3>
-                    </div>
-                    <ul class="text-gray-300 space-y-2 text-sm">
-                        <li><i class="fas fa-check text-neon mr-2"></i>Cada equipo juega con 5 jugadores (4 de campo + 1 golero).</li>
-                        <li><i class="fas fa-check text-neon mr-2"></i>Se permiten jugadores suplentes.</li>
-                        <li><i class="fas fa-check text-neon mr-2"></i>Los cambios serán libres durante el partido (el jugador que sale puede volver a entrar).</li>
-                    </ul>
-                </div>
-
-                <!-- 🧤 Golero -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-hand-paper text-3xl text-yellow-400 mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">🧤 Golero</h3>
-                    </div>
-                    <ul class="text-gray-300 space-y-2 text-sm">
-                        <li><i class="fas fa-circle text-[8px] text-yellow-400 mr-2 align-middle"></i>Puede usar las manos dentro de su área.</li>
-                        <li><i class="fas fa-circle text-[8px] text-yellow-400 mr-2 align-middle"></i>Si un compañero le pasa la pelota intencionalmente con el pie, <strong>NO</strong> puede agarrarla con las manos (continúa jugando con los pies).</li>
-                        <li><i class="fas fa-circle text-[8px] text-yellow-400 mr-2 align-middle"></i>Si la pelota viene de un rival, puede agarrarla con las manos.</li>
-                    </ul>
-                </div>
-
-                <!-- ↩️ Laterales -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-shoe-prints text-3xl text-orange-400 mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">↩️ Laterales</h3>
-                    </div>
-                    <p class="text-gray-300 text-sm mb-3">
-                        Cuando la pelota sale por un costado, se realiza lateral <strong>con el pie desde el piso</strong>.
-                    </p>
-                    <p class="text-gray-400 text-xs">
-                        El saque se realiza desde el lugar exacto por donde salió la pelota.
-                    </p>
-                </div>
-
-                <!-- 🏟️ Pelota al techo -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-arrow-up text-3xl text-blue-400 mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">🏟️ Pelota al Techo</h3>
-                    </div>
-                    <p class="text-gray-300 text-sm mb-2">
-                        Si la pelota toca el techo o estructura superior:
-                    </p>
-                    <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-center my-2">
-                        <span class="text-blue-400 font-bold text-sm">Lateral con el pie para el rival</span>
-                    </div>
-                    <p class="text-gray-400 text-xs">
-                        Se ejecuta desde el lugar donde la pelota tocó el techo.
-                    </p>
-                </div>
-
-                <!-- 🏆 Desempate -->
-                <div class="glass-card rounded-2xl p-6 reveal">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-bullseye text-3xl text-gold mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">🏆 Desempate</h3>
-                    </div>
-                    <p class="text-gray-300 text-sm">
-                        Si un partido de eliminación directa termina empatado después de los 20 minutos:
-                    </p>
-                    <div class="bg-gold/10 border border-gold/30 rounded-lg p-3 text-center mt-3">
-                        <span class="text-gold font-black uppercase text-md">Se define por penales</span>
-                    </div>
-                </div>
-
-                <!-- ⚖️ Información del Árbitro -->
-                <div class="glass-card rounded-2xl p-6 reveal border-l-4 border-l-white">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-gavel text-3xl text-white mr-4"></i>
-                        <h3 class="text-xl font-black text-white uppercase">⚖️ Arbitraje Oficial</h3>
-                    </div>
-                    <p class="text-gray-300 text-sm">
-                        El torneo será dirigido por un árbitro con amplia trayectoria. Cuenta con experiencia arbitrando en <strong>Primera División</strong>, así como en todas las categorías de fútbol infantil, fútbol 7 y fútbol 11.
-                    </p>
-                </div>
-
-            </div>
-
-            <!-- TARJETAS DE DETALLES (PREMIO E INSCRIPCIÓN) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 reveal max-w-4xl mx-auto">
-                
-                <div class="glass-card rounded-2xl p-6 text-center border-t-4 border-t-neon">
-                    <i class="fas fa-ticket-alt text-3xl text-neon mb-2"></i>
-                    <h3 class="text-lg font-black text-white mb-1">INSCRIPCIÓN POR EQUIPO</h3>
-                    <div class="text-3xl font-black text-neon" id="reglas-inscripcion">$850 UYU</div>
-                    <p class="text-gray-400 text-xs mt-2">Contactá a la organización por WhatsApp para anotar a tu equipo.</p>
-                </div>
-
-                <div class="glass-card rounded-2xl p-6 text-center border-t-4 border-t-gold">
-                    <i class="fas fa-trophy text-3xl text-gold mb-2"></i>
-                    <h3 class="text-lg font-black text-white mb-1">PREMIO AL CAMPEÓN</h3>
-                    <div class="text-3xl font-black text-gold" id="reglas-premio">$4000 UYU</div>
-                    <p class="text-gray-400 text-xs mt-2">El equipo que gane la final se consagra Campeón de la Copa Potrero.</p>
-                </div>
-
-            </div>
-
-        </div>
-    </section>
-
-    <!-- SECCIÓN: CUADROS ANOTADOS ACTUALIZADA -->
-    <section id="equipos" class="py-16 relative bg-darker border-y border-white/5">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 reveal">
-            <div class="text-center mb-10">
-                <h2 class="text-4xl md:text-5xl font-black text-white uppercase mb-4 tracking-tighter">
-                    🛡️ Cuadros Anotados
-                </h2>
-                <div class="flex items-center justify-center gap-3">
-                    <p class="text-gray-400 text-sm">Equipos que ya tienen su lugar asegurado en la Copa Potrero.</p>
-                    <span class="bg-neon/20 border border-neon/30 text-neon text-xs font-bold px-3 py-1 rounded-full">2/10 CUPOS</span>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                
-                <!-- EQUIPO 1 CONFIRMADO: Cerezos FC -->
-                <div class="glass-card rounded-2xl p-6 border-b-4 border-neon flex flex-col items-center text-center transform hover:-translate-y-2 transition-transform shadow-[0_0_20px_rgba(0,255,136,0.1)]">
-                    <div class="w-16 h-16 rounded-full bg-darker flex items-center justify-center mb-4 border border-neon/30 shadow-[0_0_15px_rgba(0,255,136,0.3)]">
-                        <i class="fas fa-shield-alt text-3xl text-neon"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-white uppercase tracking-wide w-full truncate">Cerezos FC</h3>
-                    <span class="mt-3 text-[10px] bg-neon/10 text-neon px-3 py-1 rounded-full font-bold uppercase tracking-widest border border-neon/20">Lugar Asegurado</span>
-                </div>
-
-                <!-- EQUIPO 2 CONFIRMADO: El Rejunte -->
-                <div class="glass-card rounded-2xl p-6 border-b-4 border-neon flex flex-col items-center text-center transform hover:-translate-y-2 transition-transform shadow-[0_0_20px_rgba(0,255,136,0.1)]">
-                    <div class="w-16 h-16 rounded-full bg-darker flex items-center justify-center mb-4 border border-neon/30 shadow-[0_0_15px_rgba(0,255,136,0.3)]">
-                        <i class="fas fa-shield-alt text-3xl text-neon"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-white uppercase tracking-wide w-full truncate">El Rejunte</h3>
-                    <span class="mt-3 text-[10px] bg-neon/10 text-neon px-3 py-1 rounded-full font-bold uppercase tracking-widest border border-neon/20">Lugar Asegurado</span>
-                </div>
-                
-                <!-- ESPACIO DISPONIBLE (Llamado a la acción) -->
-                <div class="glass-panel rounded-2xl p-6 border-dashed border-2 border-white/10 flex flex-col items-center justify-center text-center opacity-60 hover:opacity-100 hover:border-white/30 transition-all cursor-pointer group">
-                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:bg-white/10 transition-colors">
-                        <i class="fas fa-plus text-2xl text-gray-500 group-hover:text-white transition-colors"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-400 uppercase tracking-wide group-hover:text-gray-200 transition-colors">Lugar Disponible</h3>
-                    <a href="#inscripcion" class="mt-3 text-[10px] bg-white/10 hover:bg-neon hover:text-dark text-white px-4 py-1.5 rounded-full font-bold uppercase tracking-widest transition-colors">Anotar mi cuadro</a>
-                </div>
-
-            </div>
-            
-            <div class="mt-8 text-center text-gray-500 text-sm italic">
-                * Faltan 8 equipos para completar el cupo del torneo.
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Inscripción -->
-    <section id="inscripcion" class="py-20 relative overflow-hidden">
-        <div class="max-w-4xl mx-auto px-4 text-center relative z-10 reveal">
-            <h2 class="text-5xl font-black text-white uppercase mb-4">¿Listo para entrar a la cancha?</h2>
-            <p class="text-lg text-gray-300 mb-8 font-light">Cupos limitados para 10 equipos. Asegurá la participación de tu cuadro hoy mismo.</p>
-            <a href="#" id="btn-whatsapp-final" target="_blank" class="btn-neon px-10 py-5 rounded-full text-xl font-black uppercase tracking-wide inline-flex items-center justify-center gap-3">
-                <i class="fab fa-whatsapp text-3xl"></i>
-                Inscribir a mi equipo
-            </a>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-darker border-t border-white/10 pt-12 pb-24 md:pb-12 text-center">
-        <i class="fas fa-futbol text-3xl text-neon mb-3 opacity-50"></i>
-        <h3 class="text-2xl font-black text-white uppercase mb-2" id="footer-titulo">COPA POTRERO</h3>
-        <p class="text-gray-500 text-sm">
-            &copy; <span id="year"></span> Organización Copa Potrero.
-        </p>
-    </footer>
-
-    <!-- Navegación Mobile -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-white/10 z-50 px-6 py-3">
-        <div class="flex justify-between items-center text-xs font-semibold">
-            <a href="#inicio" class="flex flex-col items-center text-gray-400 hover:text-neon">
-                <i class="fas fa-home text-lg mb-1"></i>
-                <span>Inicio</span>
-            </a>
-            <a href="#formato" class="flex flex-col items-center text-gray-400 hover:text-neon">
-                <i class="fas fa-sitemap text-lg mb-1"></i>
-                <span>Formato</span>
-            </a>
-            <a href="#reglas" class="flex flex-col items-center text-gray-400 hover:text-neon">
-                <i class="fas fa-book text-lg mb-1"></i>
-                <span>Reglas</span>
-            </a>
-            <a href="#equipos" class="flex flex-col items-center text-gray-400 hover:text-neon">
-                <i class="fas fa-shield-alt text-lg mb-1"></i>
-                <span>Equipos</span>
-            </a>
-            <a href="#inscripcion" class="flex flex-col items-center text-neon">
-                <i class="fab fa-whatsapp text-xl mb-1"></i>
-                <span>Inscribir</span>
-            </a>
+        <div id="qr-section">
+            <p>Escanea este QR con el otro celular para conectarlo (Receptor)</p>
+            <canvas id="qr-canvas"></canvas>
+            <p class="help-text">Mantén esta pantalla abierta.</p>
         </div>
     </div>
 
-    <!-- SCRIPT DE CONFIGURACIÓN -->
+    <!-- PANTALLA RECEPTOR -->
+    <div id="receptor-screen">
+        <p>Última señal recibida:</p>
+        <div id="last-signal">-</div>
+        <button class="btn-test" onclick="probarVibracion()">Probar Vibración (A)</button>
+    </div>
+
     <script>
-        const configuracion = {
-            nombre: "Copa Potrero",
-            inscripcion: 850,
-            premioCampeon: 4000,
-            duracionPartido: 20,
-            jugadoresCancha: 5,
-            formatoTorneo: "10 cuadros — Eliminación directa",
-            whatsapp: "59892043677"
+        // Variables globales
+        let peer;
+        let conexion;
+        const urlParams = new URLSearchParams(window.location.search);
+        const receptorModeId = urlParams.get('join'); // Si la URL tiene ?join=ID, este celular es RECEPTOR
+        
+        const UI = {
+            status: document.getElementById('status'),
+            title: document.getElementById('main-title'),
+            emisorScreen: document.getElementById('emisor-screen'),
+            receptorScreen: document.getElementById('receptor-screen'),
+            qrSection: document.getElementById('qr-section'),
+            botones: document.querySelectorAll('.btn-signal'),
+            lastSignal: document.getElementById('last-signal')
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('nav-titulo').textContent = configuracion.nombre;
-            document.getElementById('footer-titulo').textContent = configuracion.nombre;
-            document.getElementById('year').textContent = new Date().getFullYear();
+        // Función para actualizar el estado visual
+        function setStatus(text, isConnected = false, isError = false) {
+            UI.status.innerText = text;
+            UI.status.className = 'status-badge';
+            if (isConnected) UI.status.classList.add('connected');
+            if (isError) UI.status.classList.add('error');
+        }
+
+        // Inicializar PeerJS
+        function inicializar() {
+            peer = new Peer(); // Se conecta al servidor gratuito de PeerJS
+
+            peer.on('open', (id) => {
+                if (receptorModeId) {
+                    iniciarReceptor(id);
+                } else {
+                    iniciarEmisor(id);
+                }
+            });
+
+            peer.on('error', (err) => {
+                setStatus('Error de conexión', false, true);
+                console.error(err);
+            });
+        }
+
+        // --- LÓGICA DEL EMISOR ---
+        function iniciarEmisor(myId) {
+            UI.title.innerText = "Modo: EMISOR";
+            UI.emisorScreen.style.display = 'block';
+            setStatus('Esperando al receptor...');
+
+            // Generar enlace para el receptor
+            const joinUrl = window.location.href.split('?')[0] + '?join=' + myId;
             
-            document.getElementById('regla-duracion').textContent = configuracion.duracionPartido;
-            document.getElementById('reglas-inscripcion').textContent = `$${configuracion.inscripcion} UYU`;
-            document.getElementById('reglas-premio').textContent = `$${configuracion.premioCampeon} UYU`;
+            // Generar código QR
+            new QRious({
+                element: document.getElementById('qr-canvas'),
+                value: joinUrl,
+                size: 200
+            });
 
-            const msgInscripcion = encodeURIComponent(`¡Hola! Quiero inscribir a mi equipo en la ${configuracion.nombre}.`);
-            document.getElementById('btn-whatsapp-final').href = `https://wa.me/${configuracion.whatsapp}?text=${msgInscripcion}`;
+            // Escuchar conexiones entrantes del receptor
+            peer.on('connection', (conn) => {
+                conexion = conn;
+                UI.qrSection.style.display = 'none'; // Ocultar QR cuando se conecta
+                setStatus('Conectado', true);
+                
+                // Habilitar botones
+                UI.botones.forEach(btn => btn.disabled = false);
 
-            // Animaciones Reveal
-            const reveals = document.querySelectorAll('.reveal');
-            function revealOnScroll() {
-                const windowHeight = window.innerHeight;
-                reveals.forEach(reveal => {
-                    const elementTop = reveal.getBoundingClientRect().top;
-                    if (elementTop < windowHeight - 80) {
-                        reveal.classList.add('active');
-                    }
+                conexion.on('close', () => {
+                    setStatus('Desconectado. Recarga la página.', false, true);
+                    UI.botones.forEach(btn => btn.disabled = true);
                 });
+            });
+        }
+
+        function enviarSenal(letra) {
+            if (conexion && conexion.open) {
+                conexion.send({ signal: letra });
             }
-            window.addEventListener('scroll', revealOnScroll);
-            revealOnScroll();
-        });
+        }
+
+        // --- LÓGICA DEL RECEPTOR ---
+        function iniciarReceptor(myId) {
+            UI.title.innerText = "Modo: RECEPTOR";
+            UI.receptorScreen.style.display = 'block';
+            setStatus('Conectando al Emisor...');
+
+            // Conectar con el ID del emisor obtenido de la URL
+            conexion = peer.connect(receptorModeId);
+
+            conexion.on('open', () => {
+                setStatus('Conectado', true);
+            });
+
+            conexion.on('data', (data) => {
+                if (data.signal) {
+                    recibirSenal(data.signal);
+                }
+            });
+
+            conexion.on('close', () => {
+                setStatus('Emisor desconectado', false, true);
+            });
+        }
+
+        function recibirSenal(letra) {
+            UI.lastSignal.innerText = letra;
+            UI.lastSignal.style.color = getComputedStyle(document.body).getPropertyValue('--btn-' + letra.toLowerCase());
+            
+            // Configurar patrón de vibración y flash visual (para iOS)
+            let vibPattern = [];
+            let flashCount = 0;
+
+            if (letra === 'A') { vibPattern = [200]; flashCount = 1; }
+            if (letra === 'B') { vibPattern = [200, 200, 200]; flashCount = 2; }
+            if (letra === 'C') { vibPattern = [200, 200, 200, 200, 200]; flashCount = 3; }
+            if (letra === 'D') { vibPattern = [200, 200, 200, 200, 200, 200, 200]; flashCount = 4; }
+
+            // Intentar vibrar (Android)
+            if (navigator.vibrate) {
+                navigator.vibrate(vibPattern);
+            }
+
+            // Destello visual (Alternativa para iOS y refuerzo visual)
+            ejecutarDestello(flashCount);
+        }
+
+        function probarVibracion() {
+            recibirSenal('A');
+        }
+
+        function ejecutarDestello(veces) {
+            let count = 0;
+            const intervalo = setInterval(() => {
+                document.body.style.backgroundColor = (document.body.style.backgroundColor === 'white') ? 'var(--bg-color)' : 'white';
+                count++;
+                if (count >= veces * 2) {
+                    clearInterval(intervalo);
+                    document.body.style.backgroundColor = 'var(--bg-color)';
+                }
+            }, 200); // 200ms por cada cambio de luz
+        }
+
+        // Arrancar la aplicación
+        inicializar();
     </script>
 </body>
 </html>
