@@ -1,19 +1,17 @@
-<!<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Juego - Mando y Receptor</title>
-    <!-- Librería PeerJS para conexión directa (WebRTC) sin backend -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <!-- Librería QRious para generar el código QR en el celular emisor -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
         :root {
             --bg-color: #121212;
             --text-color: #ffffff;
-            --btn-a: #ff4757; /* Rojo */
-            --btn-b: #1e90ff; /* Azul */
+            --btn-a: #ff4757; /* Rojo - Sube Volumen */
+            --btn-b: #1e90ff; /* Azul - Baja Volumen */
             --btn-c: #2ed573; /* Verde */
             --btn-d: #ffa502; /* Amarillo */
         }
@@ -23,11 +21,10 @@
             background-color: var(--bg-color); color: var(--text-color);
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; text-align: center;
-            transition: background-color 0.1s; /* Para el destello visual en iOS */
+            transition: background-color 0.1s;
         }
         h1 { margin-top: 30px; font-size: 1.5rem; }
         
-        /* Estado de conexión */
         .status-badge {
             margin-bottom: 20px; padding: 8px 20px; border-radius: 20px;
             font-weight: bold; background: #333; font-size: 0.9rem;
@@ -35,12 +32,11 @@
         .status-badge.connected { background: var(--btn-c); color: #000; }
         .status-badge.error { background: var(--btn-a); color: #fff; }
 
-        /* Contenedores de pantallas */
-        #emisor-screen, #receptor-screen, #loading-screen {
+        #emisor-screen, #receptor-screen {
             display: none; width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box;
         }
 
-        /* DISEÑO EMISOR */
+        /* BOTONES EMISOR */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .btn-signal {
             border: none; border-radius: 15px; padding: 40px 0;
@@ -55,19 +51,24 @@
         .btn-c { background-color: var(--btn-c); color: #000; }
         .btn-d { background-color: var(--btn-d); color: #000; }
 
+        /* SECCIÓN QR Y LINK */
         #qr-section { margin-top: 30px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; }
         #qr-canvas { background: white; padding: 10px; border-radius: 10px; }
         .help-text { font-size: 0.85rem; color: #aaa; margin-top: 10px; }
+        .link-box {
+            width: 100%; padding: 10px; margin-top: 15px; border-radius: 8px;
+            border: 1px solid #555; background: #222; color: #00ff00;
+            font-size: 0.8rem; box-sizing: border-box; text-align: center;
+        }
 
-        /* DISEÑO RECEPTOR */
+        /* PANTALLA RECEPTOR */
         #last-signal {
             font-size: 6rem; font-weight: bold; margin: 40px 0;
             min-height: 140px; display: flex; align-items: center; justify-content: center;
         }
         .btn-test {
             background: #333; color: white; border: none; padding: 15px 30px;
-            font-size: 1.1rem; border-radius: 10px; cursor: pointer; width: 100%;
-            margin-top: 20px;
+            font-size: 1.1rem; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 20px;
         }
         .btn-test:active { background: #555; }
     </style>
@@ -80,16 +81,17 @@
     <!-- PANTALLA EMISOR -->
     <div id="emisor-screen">
         <div class="btn-grid">
-            <button class="btn-signal btn-a" onclick="enviarSenal('A')" disabled>A</button>
-            <button class="btn-signal btn-b" onclick="enviarSenal('B')" disabled>B</button>
+            <button class="btn-signal btn-a" onclick="enviarSenal('A')" disabled>A (Vol +)</button>
+            <button class="btn-signal btn-b" onclick="enviarSenal('B')" disabled>B (Vol -)</button>
             <button class="btn-signal btn-c" onclick="enviarSenal('C')" disabled>C</button>
             <button class="btn-signal btn-d" onclick="enviarSenal('D')" disabled>D</button>
         </div>
         
         <div id="qr-section">
-            <p>Escanea este QR con el otro celular para conectarlo (Receptor)</p>
+            <p>Escanea este QR con el otro celular</p>
             <canvas id="qr-canvas"></canvas>
-            <p class="help-text">Mantén esta pantalla abierta.</p>
+            <p class="help-text">O si el QR falla, pásale este link por WhatsApp:</p>
+            <input type="text" id="manual-link" class="link-box" readonly onclick="this.select();">
         </div>
     </div>
 
@@ -101,11 +103,12 @@
     </div>
 
     <script>
-        // Variables globales
         let peer;
         let conexion;
-        const urlParams = new URLSearchParams(window.location.search);
-        const receptorModeId = urlParams.get('join'); // Si la URL tiene ?join=ID, este celular es RECEPTOR
+        
+        // Método más seguro para leer si somos receptor, a prueba de fallos de GitHub Pages
+        const urlObj = new URL(window.location.href);
+        const receptorModeId = urlObj.searchParams.get('join'); 
         
         const UI = {
             status: document.getElementById('status'),
@@ -114,10 +117,10 @@
             receptorScreen: document.getElementById('receptor-screen'),
             qrSection: document.getElementById('qr-section'),
             botones: document.querySelectorAll('.btn-signal'),
-            lastSignal: document.getElementById('last-signal')
+            lastSignal: document.getElementById('last-signal'),
+            manualLink: document.getElementById('manual-link')
         };
 
-        // Función para actualizar el estado visual
         function setStatus(text, isConnected = false, isError = false) {
             UI.status.innerText = text;
             UI.status.className = 'status-badge';
@@ -125,9 +128,8 @@
             if (isError) UI.status.classList.add('error');
         }
 
-        // Inicializar PeerJS
         function inicializar() {
-            peer = new Peer(); // Se conecta al servidor gratuito de PeerJS
+            peer = new Peer();
 
             peer.on('open', (id) => {
                 if (receptorModeId) {
@@ -149,9 +151,14 @@
             UI.emisorScreen.style.display = 'block';
             setStatus('Esperando al receptor...');
 
-            // Generar enlace para el receptor
-            const joinUrl = window.location.href.split('?')[0] + '?join=' + myId;
+            // Generación de URL a prueba de fallos para GitHub Pages
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('join', myId);
+            const joinUrl = currentUrl.toString();
             
+            // Mostrar link en texto por si falla el QR
+            UI.manualLink.value = joinUrl;
+
             // Generar código QR
             new QRious({
                 element: document.getElementById('qr-canvas'),
@@ -159,13 +166,24 @@
                 size: 200
             });
 
-            // Escuchar conexiones entrantes del receptor
+            // Capturar eventos de botones de volumen (Funciona en algunos Android Chrome)
+            window.addEventListener('keydown', (e) => {
+                if (!conexion || !conexion.open) return;
+                
+                if (e.key === 'VolumeUp' || e.keyCode === 175) {
+                    enviarSenal('A');
+                    e.preventDefault(); // Intenta bloquear que suba el volumen real
+                }
+                if (e.key === 'VolumeDown' || e.keyCode === 174) {
+                    enviarSenal('B');
+                    e.preventDefault(); // Intenta bloquear que baje el volumen real
+                }
+            });
+
             peer.on('connection', (conn) => {
                 conexion = conn;
-                UI.qrSection.style.display = 'none'; // Ocultar QR cuando se conecta
+                UI.qrSection.style.display = 'none'; 
                 setStatus('Conectado', true);
-                
-                // Habilitar botones
                 UI.botones.forEach(btn => btn.disabled = false);
 
                 conexion.on('close', () => {
@@ -178,6 +196,13 @@
         function enviarSenal(letra) {
             if (conexion && conexion.open) {
                 conexion.send({ signal: letra });
+                
+                // Efecto visual en el botón tocado (opcional, para saber que se envió)
+                const btn = document.querySelector(`.btn-${letra.toLowerCase()}`);
+                if (btn) {
+                    btn.style.transform = 'scale(0.9)';
+                    setTimeout(() => btn.style.transform = 'scale(1)', 100);
+                }
             }
         }
 
@@ -187,7 +212,6 @@
             UI.receptorScreen.style.display = 'block';
             setStatus('Conectando al Emisor...');
 
-            // Conectar con el ID del emisor obtenido de la URL
             conexion = peer.connect(receptorModeId);
 
             conexion.on('open', () => {
@@ -209,7 +233,6 @@
             UI.lastSignal.innerText = letra;
             UI.lastSignal.style.color = getComputedStyle(document.body).getPropertyValue('--btn-' + letra.toLowerCase());
             
-            // Configurar patrón de vibración y flash visual (para iOS)
             let vibPattern = [];
             let flashCount = 0;
 
@@ -218,12 +241,12 @@
             if (letra === 'C') { vibPattern = [200, 200, 200, 200, 200]; flashCount = 3; }
             if (letra === 'D') { vibPattern = [200, 200, 200, 200, 200, 200, 200]; flashCount = 4; }
 
-            // Intentar vibrar (Android)
+            // Vibración nativa para Android
             if (navigator.vibrate) {
                 navigator.vibrate(vibPattern);
             }
 
-            // Destello visual (Alternativa para iOS y refuerzo visual)
+            // Destello visual (alternativa iOS)
             ejecutarDestello(flashCount);
         }
 
@@ -240,10 +263,9 @@
                     clearInterval(intervalo);
                     document.body.style.backgroundColor = 'var(--bg-color)';
                 }
-            }, 200); // 200ms por cada cambio de luz
+            }, 200);
         }
 
-        // Arrancar la aplicación
         inicializar();
     </script>
 </body>
