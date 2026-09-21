@@ -20,11 +20,11 @@
             min-height: 100vh; text-align: center;
             transition: background-color 0.1s;
             user-select: none; -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent; /* Evita destello azul en Android al tocar */
         }
         
         h1 { margin-top: 15px; font-size: 1.2rem; color: #aaa;}
         
-        /* Controles superiores */
         .top-controls {
             display: flex; gap: 10px; margin-bottom: 15px; width: 100%; max-width: 400px;
             justify-content: center; padding: 0 10px; box-sizing: border-box;
@@ -41,17 +41,14 @@
             padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;
         }
 
-        /* Pantallas */
         #setup-screen, #active-screen {
             width: 100%; max-width: 400px; padding: 10px; box-sizing: border-box;
         }
         
-        /* SECCIÓN CÓDIGO QR */
         #qr-section { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 15px;}
         #qr-canvas { background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px;}
         .link-box { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #555; background: #222; color: var(--accent-color); text-align: center; }
 
-        /* GRILLA DE SEÑAS DEL TRUCO (8 Botones) */
         .btn-grid { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
@@ -66,20 +63,18 @@
         }
         .btn-carta:active { transform: scale(0.95); background: #333; }
         
-        .icono { font-size: 2.2rem; margin-bottom: 2px; }
-        .nombre { font-size: 1rem; font-weight: bold; color: #ddd; margin-bottom: 2px;}
-        .ritmo { font-size: 0.7rem; color: #888; }
+        .icono { font-size: 2.2rem; margin-bottom: 2px; pointer-events: none; }
+        .nombre { font-size: 1rem; font-weight: bold; color: #ddd; margin-bottom: 2px; pointer-events: none;}
+        .ritmo { font-size: 0.7rem; color: #888; pointer-events: none; }
 
-        /* MODO SIGILO (Pantalla Negra) */
         body.stealth-mode { background-color: #000 !important; color: #000; }
         body.stealth-mode h1, body.stealth-mode #setup-screen, body.stealth-mode .top-controls { display: none; }
         
-        /* En modo sigilo, los botones son negros pero con un borde hiper sutil para que sepas dónde están si mirás fijo */
         body.stealth-mode .btn-carta { 
             background: #000; border: 1px solid #0a0a0a; 
-            height: 90px; /* Mantienen el tamaño */
+            height: 90px;
         }
-        body.stealth-mode .btn-carta * { display: none; /* Oculta iconos y texto */ }
+        body.stealth-mode .btn-carta * { display: none; }
         
         #btn-exit-stealth {
             display: none; position: fixed; top: 10px; right: 10px;
@@ -93,11 +88,10 @@
     <h1 id="main-title">Señas de Truco</h1>
     
     <div class="top-controls">
-        <div id="status" class="status-badge">Prueba Local (Sin conectar)</div>
+        <div id="status" class="status-badge">Prueba Local</div>
         <button class="btn-stealth" onclick="toggleStealth()">Modo Sigilo 👁️</button>
     </div>
 
-    <!-- PANTALLA DE EMPAREJAMIENTO (Solo visible hasta conectar) -->
     <div id="setup-screen">
         <div id="qr-section">
             <p style="margin: 0 0 10px 0; font-size:0.9rem; color:#aaa;">Escaneá para conectar al compañero:</p>
@@ -106,18 +100,15 @@
         </div>
     </div>
 
-    <!-- PANTALLA DE CARTAS (Siempre visible para poder probar localmente) -->
     <div id="active-screen">
         <div class="btn-grid" id="button-container">
-            <!-- Botones generados por JS -->
+            <!-- Botones dinámicos -->
         </div>
     </div>
 
-    <!-- Botón oculto para salir del modo sigilo -->
     <button id="btn-exit-stealth" onclick="toggleStealth()">×</button>
 
     <script>
-        // EL DICCIONARIO DEL TRUCO Y SUS VIBRACIONES
         const SENAS = {
             'MACHO': { nombre: '1 Espada', icono: '♠️', ritmo: '1 Largo', patron: [700] },
             'HEMBRA': { nombre: '1 Basto', icono: '🪵', ritmo: '2 Largos', patron: [400, 200, 400] },
@@ -126,7 +117,7 @@
             'TRES': { nombre: 'Los Tres', icono: '3️⃣', ritmo: '3 Medios', patron: [250, 150, 250, 150, 250] },
             'DOS': { nombre: 'Los Dos', icono: '2️⃣', ritmo: '2 Medios', patron: [250, 150, 250] },
             'ENVIDO': { nombre: 'Envido/Tantos', icono: '🗣️', ritmo: 'Corto - Largo', patron: [150, 150, 600] },
-            'MALAS': { nombre: 'Malas (Ciego)', icono: '👎', ritmo: '1 Toquecito', patron: [50] } // Vibración súper sutil
+            'MALAS': { nombre: 'Malas (Ciego)', icono: '👎', ritmo: '1 Toquecito', patron: [50] } 
         };
 
         let peer;
@@ -144,7 +135,6 @@
             manualLink: document.getElementById('manual-link')
         };
 
-        // 1. Generar botones dinámicamente
         for (const [clave, datos] of Object.entries(SENAS)) {
             const btn = document.createElement('button');
             btn.className = 'btn-carta';
@@ -153,11 +143,14 @@
                 <span class="nombre">${datos.nombre}</span>
                 <span class="ritmo">${datos.ritmo}</span>
             `;
-            btn.onclick = () => procesarToque(clave);
+            // Cambiado a pointerdown para reacción inmediata en móviles
+            btn.addEventListener('pointerdown', (e) => {
+                e.preventDefault(); // Evita conflictos con scroll
+                procesarToque(clave);
+            });
             UI.btnContainer.appendChild(btn);
         }
 
-        // 2. Sistema de pantalla siempre activa (WakeLock)
         let wakeLock = null;
         async function mantenerPantallaEncendida() {
             try {
@@ -166,13 +159,10 @@
                 }
             } catch (err) { console.log('WakeLock error:', err); }
         }
-        // Pedir permiso al primer toque en la pantalla (requerimiento de los navegadores)
-        document.body.addEventListener('click', mantenerPantallaEncendida, { once: true });
+        document.body.addEventListener('pointerdown', mantenerPantallaEncendida, { once: true });
 
-        // 3. Modo Sigilo (Pantalla Apagada)
         function toggleStealth() {
             document.body.classList.toggle('stealth-mode');
-            // Al tocar para entrar/salir de sigilo, intentamos forzar que la pantalla no se apague
             mantenerPantallaEncendida(); 
         }
 
@@ -182,7 +172,6 @@
             if (isConnected) UI.status.classList.add('connected');
         }
 
-        // 4. Inicializar Conexión P2P
         function inicializar() {
             peer = new Peer();
             peer.on('open', (id) => {
@@ -204,7 +193,7 @@
 
         function iniciarGuest(hostId) {
             UI.setupScreen.style.display = 'none';
-            setStatus('Conectando al compañero...');
+            setStatus('Conectando...');
             configurarConexion(peer.connect(hostId));
         }
 
@@ -212,39 +201,36 @@
             conexion = conn;
             conexion.on('open', () => {
                 setStatus('¡Conectados!', true);
-                UI.setupScreen.style.display = 'none'; // Oculta QR
+                UI.setupScreen.style.display = 'none'; 
             });
             conexion.on('data', (data) => {
                 if (data.carta) ejecutarVibracion(data.carta);
             });
             conexion.on('close', () => {
-                setStatus('Compañero desconectado');
+                setStatus('Desconectado');
                 if(esHost) UI.setupScreen.style.display = 'block';
             });
         }
 
-        // 5. Procesar cuando tocas un botón
         function procesarToque(carta) {
-            // Si estamos conectados con el compañero, enviamos la señal
             if (conexion && conexion.open) {
                 conexion.send({ carta: carta });
-            } else {
-                // SI NO ESTAMOS CONECTADOS: vibra en este mismo celular para que el usuario practique
-                ejecutarVibracion(carta);
             }
+            // Siempre vibra localmente al tocar (como feedback y práctica)
+            ejecutarVibracion(carta);
         }
 
-        // 6. Ejecutar la vibración (y pequeño flash por si tienen iPhone)
         function ejecutarVibracion(carta) {
             const config = SENAS[carta];
             
-            // Vibración física en Android
+            // Forzar vibración directa
             if (navigator.vibrate) {
-                navigator.vibrate(config.patron);
+                navigator.vibrate(0); // Detiene cualquier vibración anterior
+                setTimeout(() => {
+                    navigator.vibrate(config.patron);
+                }, 10); // Pequeño delay para asegurar que Android limpie el buffer
             }
 
-            // Destello visual MUY oscuro (para que no ilumine la mesa en iOS)
-            // Solo parpadea si NO estamos en modo sigilo, para evitar revelar el celular.
             if (!document.body.classList.contains('stealth-mode')) {
                 let paso = 0;
                 function parpadear() {
@@ -252,7 +238,6 @@
                         document.body.style.backgroundColor = 'var(--bg-color)';
                         return; 
                     }
-                    // Usa un gris súper oscuro (#222) en lugar de blanco para no llamar la atención
                     document.body.style.backgroundColor = (paso % 2 === 0) ? '#333' : 'var(--bg-color)';
                     paso++;
                     setTimeout(parpadear, config.patron[paso - 1]);
