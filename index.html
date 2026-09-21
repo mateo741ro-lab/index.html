@@ -20,7 +20,7 @@
             min-height: 100vh; text-align: center;
             transition: background-color 0.1s;
             user-select: none; -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent; /* Evita destello azul en Android al tocar */
+            -webkit-tap-highlight-color: transparent;
         }
         
         h1 { margin-top: 15px; font-size: 1.2rem; color: #aaa;}
@@ -143,11 +143,8 @@
                 <span class="nombre">${datos.nombre}</span>
                 <span class="ritmo">${datos.ritmo}</span>
             `;
-            // Cambiado a pointerdown para reacción inmediata en móviles
-            btn.addEventListener('pointerdown', (e) => {
-                e.preventDefault(); // Evita conflictos con scroll
-                procesarToque(clave);
-            });
+            // Volvemos al onclick estándar que Chrome reconoce como interacción válida
+            btn.onclick = () => procesarToque(clave);
             UI.btnContainer.appendChild(btn);
         }
 
@@ -159,7 +156,7 @@
                 }
             } catch (err) { console.log('WakeLock error:', err); }
         }
-        document.body.addEventListener('pointerdown', mantenerPantallaEncendida, { once: true });
+        document.body.addEventListener('click', mantenerPantallaEncendida, { once: true });
 
         function toggleStealth() {
             document.body.classList.toggle('stealth-mode');
@@ -216,19 +213,15 @@
             if (conexion && conexion.open) {
                 conexion.send({ carta: carta });
             }
-            // Siempre vibra localmente al tocar (como feedback y práctica)
             ejecutarVibracion(carta);
         }
 
         function ejecutarVibracion(carta) {
             const config = SENAS[carta];
             
-            // Forzar vibración directa
+            // Llamada directa y sincrónica para que Chrome no la bloquee
             if (navigator.vibrate) {
-                navigator.vibrate(0); // Detiene cualquier vibración anterior
-                setTimeout(() => {
-                    navigator.vibrate(config.patron);
-                }, 10); // Pequeño delay para asegurar que Android limpie el buffer
+                navigator.vibrate(config.patron);
             }
 
             if (!document.body.classList.contains('stealth-mode')) {
