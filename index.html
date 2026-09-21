@@ -2,378 +2,296 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Truco - Modo Espía</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#121212">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Truco - Espía</title>
+    
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    
     <style>
         :root {
-            --bg-color: #121212;
-            --text-color: #ffffff;
-            --accent-color: #4CAF50;
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --primary: #4CAF50;
+            --text: #ffffff;
         }
+        
         body {
-            margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color); color: var(--text-color);
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg); color: var(--text);
             display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; text-align: center;
-            transition: background-color 0.1s;
-            user-select: none; -webkit-user-select: none;
+            min-height: 100vh; overflow: hidden; user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        h1 { margin-top: 15px; font-size: 1.2rem; color: #aaa;}
+        /* Top Bar */
+        .header { margin-top: 20px; text-align: center; width: 100%; }
+        .header h1 { font-size: 1.2rem; color: #aaa; margin: 0 0 10px 0; }
+        .status-badge { padding: 8px 15px; border-radius: 20px; font-weight: bold; background: #333; font-size: 0.85rem; display: inline-block; transition: 0.3s;}
+        .status-badge.connected { background: var(--primary); color: #000; box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);}
 
-        .top-controls {
-            display: flex; gap: 10px; margin-bottom: 15px; width: 100%; max-width: 400px;
-            justify-content: center; padding: 0 10px; box-sizing: border-box; flex-wrap: wrap;
-        }
+        /* Containers */
+        .container { width: 100%; max-width: 400px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* QR Section */
+        .setup-card { background: var(--surface); padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #333; }
+        #qr-canvas { background: white; padding: 10px; border-radius: 10px; margin-bottom: 15px; width: 180px; height: 180px;}
+        .link-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: var(--primary); text-align: center; font-family: monospace; font-size: 0.9rem; margin-bottom: 10px; box-sizing: border-box; cursor: pointer;}
+        .btn-copy { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer;}
 
-        .status-badge {
-            padding: 8px 15px; border-radius: 10px;
-            font-weight: bold; background: #333; font-size: 0.8rem; flex-grow: 1;
-        }
-        .status-badge.connected { background: var(--accent-color); color: #000; }
-
-        .btn-stealth {
-            background: #2a2a2a; border: 1px solid #555; color: white;
-            padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;
-        }
-        .btn-stealth.activo { background: var(--accent-color); color: #000; border-color: var(--accent-color); }
-
-        #setup-screen, #active-screen {
-            width: 100%; max-width: 400px; padding: 10px; box-sizing: border-box;
-        }
-
-        #qr-section { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 15px;}
-        #qr-canvas { background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px;}
-        .link-box { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #555; background: #222; color: var(--accent-color); text-align: center; box-sizing: border-box; }
-
-        /* ---- MODO PRUEBA ---- */
-        #test-banner {
-            display: none; width: 100%; max-width: 400px; box-sizing: border-box;
-            background: #3a2a00; border: 1px solid #ffb300; color: #ffd54f;
-            padding: 10px; border-radius: 12px; margin-bottom: 12px; font-size: 0.85rem;
-        }
-        #test-banner .btn-probar-todas {
-            margin-top: 8px; width: 100%; padding: 10px; border-radius: 8px;
-            border: none; background: #ffb300; color: #000; font-weight: bold; cursor: pointer;
-        }
-        body.test-mode #test-banner { display: block; }
-
-        .aviso-vibracion {
-            display: none; width: 100%; max-width: 400px; box-sizing: border-box;
-            background: #4a1010; border: 1px solid #ef5350; color: #ffcdd2;
-            padding: 10px; border-radius: 12px; margin-bottom: 12px; font-size: 0.85rem;
-        }
-        body.no-vibra .aviso-vibracion { display: block; }
-
-        .btn-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .btn-carta {
-            border-radius: 15px; padding: 18px 5px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; background: #1e1e1e; border: 1px solid #333;
-            transition: transform 0.05s, background 0.1s;
-        }
+        /* Grid Botones */
+        .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .btn-carta { border: 1px solid #333; border-radius: 15px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--surface); transition: transform 0.05s, background 0.1s; }
         .btn-carta:active { transform: scale(0.95); background: #333; }
-
-        .icono { font-size: 2.2rem; margin-bottom: 2px; pointer-events: none; }
+        .icono { font-size: 2.2rem; margin-bottom: 5px; pointer-events: none; }
         .nombre { font-size: 1rem; font-weight: bold; color: #ddd; margin-bottom: 2px; pointer-events: none;}
-        .ritmo { font-size: 0.7rem; color: #888; pointer-events: none; }
+        .ritmo { font-size: 0.75rem; color: #888; pointer-events: none; }
 
-        body.stealth-mode { background-color: #000 !important; color: #000; }
-        body.stealth-mode h1, body.stealth-mode #setup-screen, body.stealth-mode .top-controls,
-        body.stealth-mode #test-banner, body.stealth-mode .aviso-vibracion { display: none; }
+        /* Controles Inferiores */
+        .bottom-controls { margin-top: auto; padding-bottom: 30px; width: 100%; max-width: 400px; text-align: center;}
+        .btn-stealth { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 1rem; width: 90%; }
 
-        body.stealth-mode .btn-carta {
-            background: #000; border: 1px solid #0a0a0a;
-            height: 90px;
-        }
-        body.stealth-mode .btn-carta * { display: none; }
+        /* Toast Notifications */
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 20px; padding: 12px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; }
 
-        /* ---- PULSOS (modo sigilo) ---- */
-        #stealth-pad {
-            display: none; position: fixed; inset: 0; z-index: 5; background: #000;
-        }
-        body.stealth-mode #stealth-pad { display: block; }
-
-        #pulse-counter {
-            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-            font-size: 1rem; color: #1a1a1a; font-weight: bold; z-index: 6;
-            letter-spacing: 3px; pointer-events: none;
-        }
-        body:not(.stealth-mode) #pulse-counter { display: none; }
-
-        #btn-exit-stealth {
-            display: none; position: fixed; top: 10px; right: 10px; z-index: 10;
-            background: none; border: none; color: #222; font-size: 2rem; padding: 20px;
-        }
-        body.stealth-mode #btn-exit-stealth { display: block; }
+        /* Modo Sigilo (Pantalla OLED Apagada) */
+        #stealth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; }
+        #stealth-overlay.active { display: flex; }
+        .stealth-zone { flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; color: #111; font-size: 1.5rem; font-weight: bold; }
+        #zone-left { border-right: 1px solid #050505; }
+        
+        .exit-stealth { position: absolute; top: 20px; right: 20px; color: #333; font-size: 1.5rem; background: none; border: none; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <h1 id="main-title">Señas de Truco</h1>
-
-    <div class="top-controls">
-        <div id="status" class="status-badge">Prueba Local</div>
-        <button id="btn-test" class="btn-stealth" onclick="togglePrueba()">🧪 Prueba</button>
-        <button class="btn-stealth" onclick="toggleStealth()">Modo Sigilo 👁️</button>
+    <div class="header">
+        <h1>Señas de Truco</h1>
+        <div id="status" class="status-badge">Iniciando Servidor...</div>
     </div>
 
-    <div class="aviso-vibracion">
-        ⚠️ <b>Este navegador no soporta vibración.</b> Las señas solo funcionan en <b>Chrome de Android</b>. iPhone no vibra desde la web.
-    </div>
-
-    <div id="test-banner">
-        🧪 <b>MODO PRUEBA:</b> tocá cualquier seña abajo para sentir cómo vibra <b>este</b> teléfono. No hace falta conexión.
-        <button class="btn-probar-todas" onclick="probarTodas()">▶ Probar todas las señas</button>
-    </div>
-
-    <div id="setup-screen">
-        <div id="qr-section">
-            <p style="margin: 0 0 10px 0; font-size:0.9rem; color:#aaa;">Escaneá para conectar al compañero:</p>
+    <div class="container" id="setup-screen">
+        <div class="setup-card">
+            <p style="margin: 0 0 15px 0; font-size:0.9rem; color:#aaa;">Escaneá para conectar al compañero:</p>
             <canvas id="qr-canvas"></canvas>
-            <input type="text" id="manual-link" class="link-box" readonly onclick="this.select();" value="Generando link...">
+            <input type="text" id="manual-link" class="link-box" readonly value="Generando link...">
+            <button class="btn-copy" onclick="copiarLink()">Copiar Link Manual</button>
         </div>
     </div>
 
-    <div id="active-screen">
-        <div class="btn-grid" id="button-container">
-            <!-- Botones dinámicos -->
-        </div>
+    <div class="container" id="active-screen" style="display: none;">
+        <div class="btn-grid" id="button-container"></div>
     </div>
 
-    <!-- Pad invisible del modo sigilo: cada toque = 1 pulso -->
-    <div id="stealth-pad"></div>
-    <div id="pulse-counter"></div>
+    <div class="bottom-controls">
+        <button class="btn-stealth" onclick="activarSigilo()">Modo Sigilo (Bolsillo) 👁️</button>
+    </div>
 
-    <button id="btn-exit-stealth" onclick="toggleStealth()">×</button>
+    <div id="toast">Notificación</div>
+
+    <!-- Capa negra para el bolsillo -->
+    <div id="stealth-overlay">
+        <button class="exit-stealth" onclick="desactivarSigilo()">X</button>
+        <div class="stealth-zone" id="zone-left" onclick="sigiloCiclar()">[ CAMBIAR ]<br>Seña</div>
+        <div class="stealth-zone" id="zone-right" onclick="sigiloEnviar()">[ ENVIAR ]<br>Confirmar</div>
+    </div>
 
     <script>
-        const SENAS = {
-            'MACHO': { nombre: '1 Espada', icono: '♠️', ritmo: '1 Largo', patron: [700] },
-            'HEMBRA': { nombre: '1 Basto', icono: '🪵', ritmo: '2 Largos', patron: [400, 200, 400] },
-            '7ESPADA': { nombre: '7 Espada', icono: '⚔️', ritmo: '3 Rápidos', patron: [150, 100, 150, 100, 150] },
-            '7ORO': { nombre: '7 Oro', icono: '🪙', ritmo: '4 Rápidos', patron: [100, 80, 100, 80, 100, 80, 100] },
-            'TRES': { nombre: 'Los Tres', icono: '3️⃣', ritmo: '3 Medios', patron: [250, 150, 250, 150, 250] },
-            'DOS': { nombre: 'Los Dos', icono: '2️⃣', ritmo: '2 Medios', patron: [250, 150, 250] },
-            'ENVIDO': { nombre: 'Envido/Tantos', icono: '🗣️', ritmo: 'Corto - Largo', patron: [150, 150, 600] },
-            'MALAS': { nombre: 'Malas (Ciego)', icono: '👎', ritmo: '1 Toquecito', patron: [50] }
-        };
+        // CONFIGURACIÓN DE SEÑAS Y VIBRACIONES
+        // Patrones en milisegundos: [Vibra, Pausa, Vibra, Pausa...]
+        const SENAS = [
+            { id: 'MACHO', nombre: '1 Espada', icono: '♠️', ritmo: '1 Largo', patron: [700] },
+            { id: 'HEMBRA', nombre: '1 Basto', icono: '🪵', ritmo: '2 Largos', patron: [400, 200, 400] },
+            { id: '7ESPADA', nombre: '7 Espada', icono: '⚔️', ritmo: '3 Rápidos', patron: [150, 100, 150, 100, 150] },
+            { id: '7ORO', nombre: '7 Oro', icono: '🪙', ritmo: '4 Rápidos', patron: [100, 80, 100, 80, 100, 80, 100] },
+            { id: 'TRES', nombre: 'Los Tres', icono: '3️⃣', ritmo: '3 Medios', patron: [250, 150, 250, 150, 250] },
+            { id: 'DOS', nombre: 'Los Dos', icono: '2️⃣', ritmo: '2 Medios', patron: [250, 150, 250] },
+            { id: 'ENVIDO', nombre: 'Envido/Tantos', icono: '🗣️', ritmo: 'Corto - Largo', patron: [150, 150, 600] },
+            { id: 'MALAS', nombre: 'Malas (Ciego)', icono: '👎', ritmo: '1 Toquecito', patron: [50] }
+        ];
 
-        const soportaVibracion = ('vibrate' in navigator);
-        if (!soportaVibracion) document.body.classList.add('no-vibra');
-
-        let peer;
-        let conexion;
+        let peer, conexion;
         let esHost = true;
-        let modoPrueba = false;
+        let wakeLock = null;
+        let sigiloIndex = 0; // Para saber qué seña elegimos en el bolsillo
 
+        // Detectar si venimos de un link
         const urlObj = new URL(window.location.href);
-        const guestJoinId = urlObj.searchParams.get('join');
+        const guestJoinId = urlObj.searchParams.get('join'); 
         if (guestJoinId) esHost = false;
 
+        // Referencias UI
         const UI = {
             status: document.getElementById('status'),
             setupScreen: document.getElementById('setup-screen'),
+            activeScreen: document.getElementById('active-screen'),
             btnContainer: document.getElementById('button-container'),
             manualLink: document.getElementById('manual-link'),
-            btnTest: document.getElementById('btn-test'),
-            stealthPad: document.getElementById('stealth-pad'),
-            pulseCounter: document.getElementById('pulse-counter')
+            stealthOverlay: document.getElementById('stealth-overlay')
         };
 
-        function vibrar(patron) {
-            if (!soportaVibracion) return;
-            try { navigator.vibrate(patron); } catch (e) {}
-        }
-
-        for (const [clave, datos] of Object.entries(SENAS)) {
-            const btn = document.createElement('button');
+        // Generar Botones Visibles
+        SENAS.forEach(sena => {
+            const btn = document.createElement('div');
             btn.className = 'btn-carta';
             btn.innerHTML = `
-                <span class="icono">${datos.icono}</span>
-                <span class="nombre">${datos.nombre}</span>
-                <span class="ritmo">${datos.ritmo}</span>
+                <span class="icono">${sena.icono}</span>
+                <span class="nombre">${sena.nombre}</span>
+                <span class="ritmo">${sena.ritmo}</span>
             `;
-            btn.onclick = () => procesarToque(clave);
+            btn.onclick = () => procesarEnvio(sena);
             UI.btnContainer.appendChild(btn);
-        }
-
-        let wakeLock = null;
-        async function mantenerPantallaEncendida() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                }
-            } catch (err) { console.log('WakeLock error:', err); }
-        }
-        // Primer toque en cualquier lado: habilita vibración (gesto de usuario requerido por Chrome) + pantalla encendida
-        document.body.addEventListener('click', mantenerPantallaEncendida, { once: true });
-
-        function toggleStealth() {
-            document.body.classList.toggle('stealth-mode');
-            mantenerPantallaEncendida();
-        }
-
-        // ---------- MODO PRUEBA ----------
-        function togglePrueba() {
-            modoPrueba = !modoPrueba;
-            document.body.classList.toggle('test-mode', modoPrueba);
-            UI.btnTest.classList.toggle('activo', modoPrueba);
-            if (modoPrueba) {
-                vibrar([100, 60, 100, 60, 350]); // confirmación: vibración corta-larga
-                setStatus('Modo Prueba 🧪', true);
-            } else {
-                setStatus(conexion && conexion.open ? '¡Conectados!' : 'Prueba Local', conexion && conexion.open);
-            }
-        }
-
-        let probando = false;
-        function probarTodas() {
-            if (probando) return;
-            probando = true;
-            const entradas = Object.values(SENAS);
-            let i = 0;
-            function siguiente() {
-                if (i >= entradas.length) { probando = false; return; }
-                const s = entradas[i];
-                setStatus(`Probando: ${s.nombre}...`, true);
-                vibrar(s.patron);
-                const duracion = s.patron.reduce((a, b) => a + b, 0);
-                i++;
-                setTimeout(siguiente, duracion + 500);
-            }
-            siguiente();
-        }
-
-        // ---------- PULSOS (1 a 10) ----------
-        let contadorPulsos = 0;
-        let timeoutContador = null;
-
-        function mostrarContador() {
-            UI.pulseCounter.textContent = contadorPulsos > 0 ? '·'.repeat(contadorPulsos) : '';
-        }
-
-        function enviarPulso() {
-            contadorPulsos = Math.min(contadorPulsos + 1, 10);
-            if (conexion && conexion.open && !modoPrueba) {
-                conexion.send({ tipo: 'pulso' });
-            }
-            vibrar([130]); // cada toque vibra UNA vez (tuyo y del compañero)
-            mostrarContador();
-            clearTimeout(timeoutContador);
-            // Sin tocar por 1.6s -> el contador se reinicia para poder volver a contar
-            timeoutContador = setTimeout(() => { contadorPulsos = 0; mostrarContador(); }, 1600);
-        }
-
-        // Tocar la pantalla en modo sigilo = un pulso
-        UI.stealthPad.addEventListener('touchstart', (e) => { e.preventDefault(); enviarPulso(); }, { passive: false });
-        UI.stealthPad.addEventListener('mousedown', (e) => { e.preventDefault(); enviarPulso(); });
-
-        // Teclas de volumen (funciona en Chrome escritorio / teclados externos;
-        // la mayoría de los navegadores de celular NO exponen los botones físicos de volumen)
-        document.addEventListener('keydown', (e) => {
-            const esVolumen = ['AudioVolumeUp', 'AudioVolumeDown', 'VolumeUp', 'VolumeDown'].includes(e.key)
-                || [24, 25, 174, 175].includes(e.keyCode);
-            if (esVolumen) {
-                e.preventDefault();
-                enviarPulso();
-            }
         });
 
-        function setStatus(text, isConnected = false) {
-            UI.status.innerText = text;
-            UI.status.className = 'status-badge';
-            if (isConnected) UI.status.classList.add('connected');
-        }
-
+        // ================= RED Y PEERJS =================
         function inicializar() {
             peer = new Peer();
             peer.on('open', (id) => {
                 if (esHost) iniciarHost(id);
                 else iniciarGuest(guestJoinId);
             });
-            peer.on('error', (err) => {
-                if (!modoPrueba) setStatus('Error de red');
-                console.log('Peer error:', err);
-            });
+            peer.on('error', (err) => showToast("Error de conexión"));
         }
 
         function iniciarHost(myId) {
-            const currentUrl = new URL(window.location.href);
+            const currentUrl = new URL(window.location.href.split('?')[0]);
             currentUrl.searchParams.set('join', myId);
             const joinUrl = currentUrl.toString();
-
+            
             UI.manualLink.value = joinUrl;
-            try {
-                new QRious({ element: document.getElementById('qr-canvas'), value: joinUrl, size: 200 });
-            } catch (e) { console.log('QR error:', e); }
+            new QRious({ element: document.getElementById('qr-canvas'), value: joinUrl, size: 250, level: 'M' });
 
             peer.on('connection', configurarConexion);
+            setStatus('Esperando compañero...');
         }
 
         function iniciarGuest(hostId) {
             UI.setupScreen.style.display = 'none';
-            setStatus('Conectando...');
+            UI.activeScreen.style.display = 'block';
+            setStatus('Conectando al Host...');
             configurarConexion(peer.connect(hostId));
         }
 
         function configurarConexion(conn) {
             conexion = conn;
             conexion.on('open', () => {
-                setStatus('¡Conectados!', true);
-                UI.setupScreen.style.display = 'none';
-                vibrar([80, 60, 80, 60, 300]); // aviso de conexión
+                setStatus('¡Sincronizados!', true);
+                UI.setupScreen.style.display = 'none'; 
+                UI.activeScreen.style.display = 'block';
+                showToast("Conexión segura establecida", "success");
             });
+            
             conexion.on('data', (data) => {
-                if (data.carta) ejecutarVibracion(data.carta);
-                if (data.tipo === 'pulso') vibrar([130]);
+                if (data.senaId) recibirVibracion(data.senaId);
             });
+            
             conexion.on('close', () => {
                 setStatus('Desconectado');
-                if (esHost) UI.setupScreen.style.display = 'block';
+                showToast("Compañero desconectado");
+                if(esHost) {
+                    UI.setupScreen.style.display = 'flex';
+                    UI.activeScreen.style.display = 'none';
+                }
             });
         }
 
-        function procesarToque(carta) {
-            if (modoPrueba) {
-                ejecutarVibracion(carta); // prueba local: no se envía nada
-                return;
-            }
+        // ================= VIBRACIÓN Y ENVÍO =================
+        function procesarEnvio(sena) {
             if (conexion && conexion.open) {
-                conexion.send({ carta: carta });
+                conexion.send({ senaId: sena.id });
+                showToast(`Enviado: ${sena.nombre}`);
+            } else {
+                showToast("Error: No estás conectado", "error");
             }
-            ejecutarVibracion(carta);
+            ejecutarVibracion(sena.patron);
         }
 
-        function ejecutarVibracion(carta) {
-            const config = SENAS[carta];
-            vibrar(config.patron);
-
-            if (!document.body.classList.contains('stealth-mode')) {
-                let paso = 0;
-                function parpadear() {
-                    if (paso >= config.patron.length) {
-                        document.body.style.backgroundColor = 'var(--bg-color)';
-                        return;
-                    }
-                    document.body.style.backgroundColor = (paso % 2 === 0) ? '#333' : 'var(--bg-color)';
-                    paso++;
-                    setTimeout(parpadear, config.patron[paso - 1]);
+        function recibirVibracion(senaId) {
+            const sena = SENAS.find(s => s.id === senaId);
+            if (sena) {
+                ejecutarVibracion(sena.patron);
+                // Si la pantalla no está en sigilo, mostramos visualmente qué llegó
+                if (!UI.stealthOverlay.classList.contains('active')) {
+                    document.body.style.backgroundColor = 'var(--primary)';
+                    setTimeout(() => document.body.style.backgroundColor = 'var(--bg)', 300);
                 }
-                parpadear();
             }
         }
 
-        inicializar();
+        function ejecutarVibracion(patron) {
+            if (navigator.vibrate) {
+                navigator.vibrate(patron);
+            }
+        }
+
+        // ================= MODO SIGILO (BOLSILLO) =================
+        async function activarSigilo() {
+            UI.stealthOverlay.classList.add('active');
+            sigiloIndex = 0;
+            
+            try { // Mantener pantalla prendida
+                if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+            } catch (err) { console.log('WakeLock error:', err); }
+            
+            ejecutarVibracion([50]); // Feedback de activación
+        }
+
+        function desactivarSigilo() {
+            UI.stealthOverlay.classList.remove('active');
+            if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+            ejecutarVibracion([50, 50, 50]); 
+        }
+
+        function sigiloCiclar() {
+            // Avanzamos por el array de señas
+            sigiloIndex++;
+            if(sigiloIndex >= SENAS.length) sigiloIndex = 0;
+            
+            // Vibramos cortito para saber en qué número de lista estamos
+            // Ej: 1 vibracion = Macho, 2 = Hembra, 3 = 7 Espada
+            let patronFeedback = [];
+            for(let i=0; i <= sigiloIndex; i++) { patronFeedback.push(80, 100); }
+            ejecutarVibracion(patronFeedback);
+        }
+
+        function sigiloEnviar() {
+            // Mandamos la seña actual del ciclo
+            const senaElegida = SENAS[sigiloIndex];
+            if (conexion && conexion.open) {
+                conexion.send({ senaId: senaElegida.id });
+            }
+            // Vibramos nosotros para confirmar con el patrón real
+            ejecutarVibracion(senaElegida.patron);
+            // Reseteamos el ciclo
+            sigiloIndex = 0; 
+        }
+
+        // ================= UTILS =================
+        function setStatus(text, isConnected = false) {
+            UI.status.innerText = text;
+            UI.status.className = isConnected ? 'status-badge connected' : 'status-badge';
+        }
+
+        function copiarLink() {
+            UI.manualLink.select();
+            document.execCommand('copy');
+            showToast("¡Link copiado!");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById("toast");
+            toast.innerText = msg;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        // Iniciar App
+        window.onload = inicializar;
+
     </script>
 </body>
 </html>
