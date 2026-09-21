@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juego - Mando y Receptor</title>
+    <title>Comunicador - Cartas</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
         :root {
             --bg-color: #121212;
             --text-color: #ffffff;
-            --btn-a: #ff4757; /* Rojo - Sube Volumen */
-            --btn-b: #1e90ff; /* Azul - Baja Volumen */
-            --btn-c: #2ed573; /* Verde */
-            --btn-d: #ffa502; /* Amarillo */
+            --accent-color: #4CAF50;
+            
+            /* Colores de las cartas */
+            --c-oro: #ffd700;
+            --c-copa: #ff4757;
+            --c-espada: #1e90ff;
+            --c-basto: #2ed573;
         }
         body {
             margin: 0; padding: 0;
@@ -21,249 +24,274 @@
             background-color: var(--bg-color); color: var(--text-color);
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; text-align: center;
-            transition: background-color 0.1s;
+            transition: background-color 0.05s; /* Muy rápido para el flash */
         }
-        h1 { margin-top: 30px; font-size: 1.5rem; }
+        h1 { margin-top: 20px; font-size: 1.3rem; color: #aaa;}
         
         .status-badge {
-            margin-bottom: 20px; padding: 8px 20px; border-radius: 20px;
+            margin: 10px 0 20px 0; padding: 8px 20px; border-radius: 20px;
             font-weight: bold; background: #333; font-size: 0.9rem;
         }
-        .status-badge.connected { background: var(--btn-c); color: #000; }
-        .status-badge.error { background: var(--btn-a); color: #fff; }
+        .status-badge.connected { background: var(--accent-color); color: #000; }
+        .status-badge.error { background: #ff4757; color: #fff; }
 
-        #emisor-screen, #receptor-screen {
-            display: none; width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box;
+        /* Contenedores */
+        #setup-screen, #active-screen {
+            width: 100%; max-width: 400px; padding: 15px; box-sizing: border-box;
         }
+        #active-screen { display: none; } 
 
-        /* BOTONES EMISOR */
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .btn-signal {
-            border: none; border-radius: 15px; padding: 40px 0;
-            font-size: 2rem; font-weight: bold; color: white;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            transition: transform 0.1s, opacity 0.2s;
-        }
-        .btn-signal:active { transform: scale(0.92); }
-        .btn-signal:disabled { opacity: 0.3; cursor: not-allowed; }
-        .btn-a { background-color: var(--btn-a); }
-        .btn-b { background-color: var(--btn-b); }
-        .btn-c { background-color: var(--btn-c); color: #000; }
-        .btn-d { background-color: var(--btn-d); color: #000; }
-
-        /* SECCIÓN QR Y LINK */
-        #qr-section { margin-top: 30px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; }
-        #qr-canvas { background: white; padding: 10px; border-radius: 10px; }
-        .help-text { font-size: 0.85rem; color: #aaa; margin-top: 10px; }
+        /* SECCIÓN DE EMPAREJAMIENTO */
+        #qr-section { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; }
+        #qr-canvas { background: white; padding: 10px; border-radius: 10px; margin-bottom: 15px;}
+        .help-text { font-size: 0.85rem; color: #aaa; margin: 10px 0; }
         .link-box {
-            width: 100%; padding: 10px; margin-top: 15px; border-radius: 8px;
-            border: 1px solid #555; background: #222; color: #00ff00;
+            width: 100%; padding: 10px; border-radius: 8px;
+            border: 1px solid #555; background: #222; color: var(--accent-color);
             font-size: 0.8rem; box-sizing: border-box; text-align: center;
         }
 
-        /* PANTALLA RECEPTOR */
+        /* PANEL DE BOTONES (CARTAS) */
+        .btn-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            margin-top: 10px; 
+        }
+        
+        .btn-carta {
+            border: none; border-radius: 20px; padding: 30px 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+            transition: transform 0.1s;
+            user-select: none; -webkit-user-select: none;
+        }
+        .btn-carta:active { transform: scale(0.92); }
+        .btn-carta:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        .btn-carta .icono { font-size: 3.5rem; margin-bottom: 5px; }
+        .btn-carta .nombre { font-size: 1.3rem; font-weight: bold; color: #000; margin-bottom: 5px;}
+        .btn-carta .ritmo { font-size: 0.8rem; color: rgba(0,0,0,0.7); font-weight: 600;}
+
+        /* Colores específicos */
+        .btn-oro { background-color: var(--c-oro); }
+        .btn-copa { background-color: var(--c-copa); }
+        .btn-espada { background-color: var(--c-espada); }
+        .btn-basto { background-color: var(--c-basto); }
+
+        /* VISUALIZADOR DE RECEPCIÓN */
+        #receive-area {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.05);
+            min-height: 100px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
         #last-signal {
-            font-size: 6rem; font-weight: bold; margin: 40px 0;
-            min-height: 140px; display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; font-weight: bold; color: #555;
+            margin: 0; line-height: 1.2; display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-        .btn-test {
-            background: #333; color: white; border: none; padding: 15px 30px;
-            font-size: 1.1rem; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 20px;
-        }
-        .btn-test:active { background: #555; }
     </style>
 </head>
 <body>
 
-    <h1 id="main-title">Iniciando...</h1>
-    <div id="status" class="status-badge">Conectando al servidor...</div>
+    <h1 id="main-title">Señas Ocultas</h1>
+    <div id="status" class="status-badge">Inicializando...</div>
 
-    <!-- PANTALLA EMISOR -->
-    <div id="emisor-screen">
-        <div class="btn-grid">
-            <button class="btn-signal btn-a" onclick="enviarSenal('A')" disabled>A (Vol +)</button>
-            <button class="btn-signal btn-b" onclick="enviarSenal('B')" disabled>B (Vol -)</button>
-            <button class="btn-signal btn-c" onclick="enviarSenal('C')" disabled>C</button>
-            <button class="btn-signal btn-d" onclick="enviarSenal('D')" disabled>D</button>
-        </div>
-        
+    <!-- PANTALLA DE EMPAREJAMIENTO -->
+    <div id="setup-screen">
         <div id="qr-section">
-            <p>Escanea este QR con el otro celular</p>
+            <p style="margin-top:0;"><strong>1.</strong> Escanea con el otro celular</p>
             <canvas id="qr-canvas"></canvas>
-            <p class="help-text">O si el QR falla, pásale este link por WhatsApp:</p>
+            <p class="help-text">O comparte este link directamente:</p>
             <input type="text" id="manual-link" class="link-box" readonly onclick="this.select();">
         </div>
     </div>
 
-    <!-- PANTALLA RECEPTOR -->
-    <div id="receptor-screen">
-        <p>Última señal recibida:</p>
-        <div id="last-signal">-</div>
-        <button class="btn-test" onclick="probarVibracion()">Probar Vibración (A)</button>
+    <!-- PANTALLA DE CARTAS -->
+    <div id="active-screen">
+        <div id="receive-area">
+            <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 10px;">ÚLTIMA RECIBIDA:</div>
+            <div id="last-signal">Ninguna</div>
+        </div>
+        
+        <div class="btn-grid" id="button-container">
+            <button class="btn-carta btn-oro" onclick="enviarSenal('ORO')">
+                <span class="icono">🪙</span>
+                <span class="nombre">ORO</span>
+                <span class="ritmo">1 Corto</span>
+            </button>
+            <button class="btn-carta btn-copa" onclick="enviarSenal('COPA')">
+                <span class="icono">🍷</span>
+                <span class="nombre">COPA</span>
+                <span class="ritmo">2 Cortos</span>
+            </button>
+            <button class="btn-carta btn-espada" onclick="enviarSenal('ESPADA')">
+                <span class="icono">⚔️</span>
+                <span class="nombre">ESPADA</span>
+                <span class="ritmo">3 Cortos</span>
+            </button>
+            <button class="btn-carta btn-basto" onclick="enviarSenal('BASTO')">
+                <span class="icono">🪵</span>
+                <span class="nombre">BASTO</span>
+                <span class="ritmo">1 Largo</span>
+            </button>
+        </div>
     </div>
 
     <script>
+        // CONFIGURACIÓN DE LOS RITMOS DE VIBRACIÓN Y FLASH
+        const RITMOS = {
+            'ORO': { 
+                color: 'var(--c-oro)', 
+                icono: '🪙',
+                // 150ms vibrando
+                patron: [150] 
+            },
+            'COPA': { 
+                color: 'var(--c-copa)', 
+                icono: '🍷',
+                // 150ms ON, 150ms pausa, 150ms ON
+                patron: [150, 150, 150] 
+            },
+            'ESPADA': { 
+                color: 'var(--c-espada)', 
+                icono: '⚔️',
+                // 150ms ON, 150ms pausa, 150ms ON, 150ms pausa, 150ms ON
+                patron: [150, 150, 150, 150, 150] 
+            },
+            'BASTO': { 
+                color: 'var(--c-basto)', 
+                icono: '🪵',
+                // 800ms vibrando corrido (Muy largo)
+                patron: [800] 
+            }
+        };
+
         let peer;
         let conexion;
+        let esHost = true;
+        let bloqueado = false;
         
-        // Método más seguro para leer si somos receptor, a prueba de fallos de GitHub Pages
         const urlObj = new URL(window.location.href);
-        const receptorModeId = urlObj.searchParams.get('join'); 
+        const guestJoinId = urlObj.searchParams.get('join'); 
+        if (guestJoinId) esHost = false;
         
         const UI = {
             status: document.getElementById('status'),
-            title: document.getElementById('main-title'),
-            emisorScreen: document.getElementById('emisor-screen'),
-            receptorScreen: document.getElementById('receptor-screen'),
-            qrSection: document.getElementById('qr-section'),
-            botones: document.querySelectorAll('.btn-signal'),
+            setupScreen: document.getElementById('setup-screen'),
+            activeScreen: document.getElementById('active-screen'),
             lastSignal: document.getElementById('last-signal'),
             manualLink: document.getElementById('manual-link')
         };
 
-        function setStatus(text, isConnected = false, isError = false) {
+        function setStatus(text, state = 'normal') {
             UI.status.innerText = text;
             UI.status.className = 'status-badge';
-            if (isConnected) UI.status.classList.add('connected');
-            if (isError) UI.status.classList.add('error');
+            if (state === 'connected') UI.status.classList.add('connected');
+            if (state === 'error') UI.status.classList.add('error');
         }
 
         function inicializar() {
             peer = new Peer();
-
             peer.on('open', (id) => {
-                if (receptorModeId) {
-                    iniciarReceptor(id);
-                } else {
-                    iniciarEmisor(id);
-                }
+                if (esHost) iniciarHost(id);
+                else iniciarGuest(guestJoinId);
             });
-
             peer.on('error', (err) => {
-                setStatus('Error de conexión', false, true);
-                console.error(err);
+                setStatus('Error de conexión', 'error');
             });
         }
 
-        // --- LÓGICA DEL EMISOR ---
-        function iniciarEmisor(myId) {
-            UI.title.innerText = "Modo: EMISOR";
-            UI.emisorScreen.style.display = 'block';
-            setStatus('Esperando al receptor...');
+        function iniciarHost(myId) {
+            setStatus('Esperando compañero...');
+            UI.setupScreen.style.display = 'block';
 
-            // Generación de URL a prueba de fallos para GitHub Pages
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('join', myId);
             const joinUrl = currentUrl.toString();
             
-            // Mostrar link en texto por si falla el QR
             UI.manualLink.value = joinUrl;
 
-            // Generar código QR
-            new QRious({
-                element: document.getElementById('qr-canvas'),
-                value: joinUrl,
-                size: 200
-            });
+            new QRious({ element: document.getElementById('qr-canvas'), value: joinUrl, size: 220 });
 
-            // Capturar eventos de botones de volumen (Funciona en algunos Android Chrome)
-            window.addEventListener('keydown', (e) => {
-                if (!conexion || !conexion.open) return;
-                
-                if (e.key === 'VolumeUp' || e.keyCode === 175) {
-                    enviarSenal('A');
-                    e.preventDefault(); // Intenta bloquear que suba el volumen real
-                }
-                if (e.key === 'VolumeDown' || e.keyCode === 174) {
-                    enviarSenal('B');
-                    e.preventDefault(); // Intenta bloquear que baje el volumen real
-                }
-            });
-
-            peer.on('connection', (conn) => {
-                conexion = conn;
-                UI.qrSection.style.display = 'none'; 
-                setStatus('Conectado', true);
-                UI.botones.forEach(btn => btn.disabled = false);
-
-                conexion.on('close', () => {
-                    setStatus('Desconectado. Recarga la página.', false, true);
-                    UI.botones.forEach(btn => btn.disabled = true);
-                });
-            });
+            peer.on('connection', configurarConexion);
         }
 
-        function enviarSenal(letra) {
-            if (conexion && conexion.open) {
-                conexion.send({ signal: letra });
-                
-                // Efecto visual en el botón tocado (opcional, para saber que se envió)
-                const btn = document.querySelector(`.btn-${letra.toLowerCase()}`);
-                if (btn) {
-                    btn.style.transform = 'scale(0.9)';
-                    setTimeout(() => btn.style.transform = 'scale(1)', 100);
-                }
-            }
+        function iniciarGuest(hostId) {
+            setStatus('Conectando...');
+            UI.setupScreen.style.display = 'none';
+            configurarConexion(peer.connect(hostId));
         }
 
-        // --- LÓGICA DEL RECEPTOR ---
-        function iniciarReceptor(myId) {
-            UI.title.innerText = "Modo: RECEPTOR";
-            UI.receptorScreen.style.display = 'block';
-            setStatus('Conectando al Emisor...');
-
-            conexion = peer.connect(receptorModeId);
-
+        function configurarConexion(conn) {
+            conexion = conn;
             conexion.on('open', () => {
-                setStatus('Conectado', true);
+                setStatus('¡Conectados!', 'connected');
+                UI.setupScreen.style.display = 'none';
+                UI.activeScreen.style.display = 'block';
             });
-
             conexion.on('data', (data) => {
-                if (data.signal) {
-                    recibirSenal(data.signal);
-                }
+                if (data.carta) ejecutarRecepcion(data.carta);
             });
-
             conexion.on('close', () => {
-                setStatus('Emisor desconectado', false, true);
+                setStatus('Compañero desconectado', 'error');
+                UI.activeScreen.style.display = 'none';
+                if(esHost) UI.setupScreen.style.display = 'block';
             });
         }
 
-        function recibirSenal(letra) {
-            UI.lastSignal.innerText = letra;
-            UI.lastSignal.style.color = getComputedStyle(document.body).getPropertyValue('--btn-' + letra.toLowerCase());
+        function enviarSenal(carta) {
+            if (bloqueado || !conexion || !conexion.open) return; 
             
-            let vibPattern = [];
-            let flashCount = 0;
+            bloqueado = true; // Bloquea los botones medio segundo para no hacer spam
+            conexion.send({ carta: carta });
+            
+            // Reflejo visual propio sutil
+            UI.lastSignal.innerHTML = `Enviando: ${RITMOS[carta].icono} ${carta}`;
+            UI.lastSignal.style.color = '#888';
+            
+            setTimeout(() => { bloqueado = false; }, 500);
+        }
 
-            if (letra === 'A') { vibPattern = [200]; flashCount = 1; }
-            if (letra === 'B') { vibPattern = [200, 200, 200]; flashCount = 2; }
-            if (letra === 'C') { vibPattern = [200, 200, 200, 200, 200]; flashCount = 3; }
-            if (letra === 'D') { vibPattern = [200, 200, 200, 200, 200, 200, 200]; flashCount = 4; }
-
-            // Vibración nativa para Android
+        function ejecutarRecepcion(carta) {
+            const config = RITMOS[carta];
+            
+            // 1. Mostrar en pantalla
+            UI.lastSignal.innerHTML = `${config.icono} ${carta}`;
+            UI.lastSignal.style.color = config.color;
+            
+            // 2. Vibración Física (Android)
             if (navigator.vibrate) {
-                navigator.vibrate(vibPattern);
+                navigator.vibrate(config.patron);
             }
 
-            // Destello visual (alternativa iOS)
-            ejecutarDestello(flashCount);
-        }
+            // 3. Destello de Pantalla Exacto (Fallback iOS)
+            // Recorre el array de tiempos. Los índices pares (0, 2, 4) ENCIENDEN, los impares (1, 3) APAGAN.
+            let pasoActual = 0;
 
-        function probarVibracion() {
-            recibirSenal('A');
-        }
-
-        function ejecutarDestello(veces) {
-            let count = 0;
-            const intervalo = setInterval(() => {
-                document.body.style.backgroundColor = (document.body.style.backgroundColor === 'white') ? 'var(--bg-color)' : 'white';
-                count++;
-                if (count >= veces * 2) {
-                    clearInterval(intervalo);
+            function parpadear() {
+                if (pasoActual >= config.patron.length) {
+                    document.body.style.backgroundColor = 'var(--bg-color)'; // Fin, volver a negro
+                    return; 
+                }
+                
+                const tiempoActual = config.patron[pasoActual];
+                
+                // Si es un índice par (0, 2, 4...) es tiempo de vibrar/iluminar
+                if (pasoActual % 2 === 0) {
+                    document.body.style.backgroundColor = config.color;
+                } else {
+                    // Si es impar (1, 3...) es tiempo de pausa/oscuridad
                     document.body.style.backgroundColor = 'var(--bg-color)';
                 }
-            }, 200);
+
+                pasoActual++;
+                setTimeout(parpadear, tiempoActual);
+            }
+
+            parpadear();
         }
 
         inicializar();
