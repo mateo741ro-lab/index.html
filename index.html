@@ -5,96 +5,375 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Truco - Modo Espía</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
-        :root { --bg-color: #121212; --text-color: #ffffff; --accent-color: #4CAF50; }
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --accent-color: #4CAF50;
+        }
         body {
-            margin: 0; padding: 0; font-family: sans-serif;
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color); color: var(--text-color);
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; text-align: center;
+            transition: background-color 0.1s;
+            user-select: none; -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
+
         h1 { margin-top: 15px; font-size: 1.2rem; color: #aaa;}
-        .top-controls { display: flex; gap: 10px; margin-bottom: 15px; width: 100%; max-width: 400px; justify-content: center; padding: 0 10px; box-sizing: border-box; }
-        .status-badge { padding: 8px 15px; border-radius: 10px; font-weight: bold; background: #333; font-size: 0.8rem; flex-grow: 1; }
-        .btn-stealth { background: #2a2a2a; border: 1px solid #555; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        #active-screen { width: 100%; max-width: 400px; padding: 10px; box-sizing: border-box; }
-        .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        
+
+        .top-controls {
+            display: flex; gap: 10px; margin-bottom: 15px; width: 100%; max-width: 400px;
+            justify-content: center; padding: 0 10px; box-sizing: border-box; flex-wrap: wrap;
+        }
+
+        .status-badge {
+            padding: 8px 15px; border-radius: 10px;
+            font-weight: bold; background: #333; font-size: 0.8rem; flex-grow: 1;
+        }
+        .status-badge.connected { background: var(--accent-color); color: #000; }
+
+        .btn-stealth {
+            background: #2a2a2a; border: 1px solid #555; color: white;
+            padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;
+        }
+        .btn-stealth.activo { background: var(--accent-color); color: #000; border-color: var(--accent-color); }
+
+        #setup-screen, #active-screen {
+            width: 100%; max-width: 400px; padding: 10px; box-sizing: border-box;
+        }
+
+        #qr-section { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 15px;}
+        #qr-canvas { background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px;}
+        .link-box { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #555; background: #222; color: var(--accent-color); text-align: center; box-sizing: border-box; }
+
+        /* ---- MODO PRUEBA ---- */
+        #test-banner {
+            display: none; width: 100%; max-width: 400px; box-sizing: border-box;
+            background: #3a2a00; border: 1px solid #ffb300; color: #ffd54f;
+            padding: 10px; border-radius: 12px; margin-bottom: 12px; font-size: 0.85rem;
+        }
+        #test-banner .btn-probar-todas {
+            margin-top: 8px; width: 100%; padding: 10px; border-radius: 8px;
+            border: none; background: #ffb300; color: #000; font-weight: bold; cursor: pointer;
+        }
+        body.test-mode #test-banner { display: block; }
+
+        .aviso-vibracion {
+            display: none; width: 100%; max-width: 400px; box-sizing: border-box;
+            background: #4a1010; border: 1px solid #ef5350; color: #ffcdd2;
+            padding: 10px; border-radius: 12px; margin-bottom: 12px; font-size: 0.85rem;
+        }
+        body.no-vibra .aviso-vibracion { display: block; }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
         .btn-carta {
-            border: none; border-radius: 15px; padding: 18px 5px;
+            border-radius: 15px; padding: 18px 5px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; background: #1e1e1e; border: 1px solid #333;
+            transition: transform 0.05s, background 0.1s;
         }
-        .btn-carta:active { background: #333; }
+        .btn-carta:active { transform: scale(0.95); background: #333; }
+
         .icono { font-size: 2.2rem; margin-bottom: 2px; pointer-events: none; }
         .nombre { font-size: 1rem; font-weight: bold; color: #ddd; margin-bottom: 2px; pointer-events: none;}
-        
-        /* Debug consola en pantalla */
-        #debug-log { margin-top: 20px; font-size: 0.8rem; color: #ff5555; max-width: 90%; text-align: left; }
+        .ritmo { font-size: 0.7rem; color: #888; pointer-events: none; }
+
+        body.stealth-mode { background-color: #000 !important; color: #000; }
+        body.stealth-mode h1, body.stealth-mode #setup-screen, body.stealth-mode .top-controls,
+        body.stealth-mode #test-banner, body.stealth-mode .aviso-vibracion { display: none; }
+
+        body.stealth-mode .btn-carta {
+            background: #000; border: 1px solid #0a0a0a;
+            height: 90px;
+        }
+        body.stealth-mode .btn-carta * { display: none; }
+
+        /* ---- PULSOS (modo sigilo) ---- */
+        #stealth-pad {
+            display: none; position: fixed; inset: 0; z-index: 5; background: #000;
+        }
+        body.stealth-mode #stealth-pad { display: block; }
+
+        #pulse-counter {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            font-size: 1rem; color: #1a1a1a; font-weight: bold; z-index: 6;
+            letter-spacing: 3px; pointer-events: none;
+        }
+        body:not(.stealth-mode) #pulse-counter { display: none; }
+
+        #btn-exit-stealth {
+            display: none; position: fixed; top: 10px; right: 10px; z-index: 10;
+            background: none; border: none; color: #222; font-size: 2rem; padding: 20px;
+        }
+        body.stealth-mode #btn-exit-stealth { display: block; }
     </style>
 </head>
 <body>
 
-    <h1 id="main-title">Prueba de Vibración Directa</h1>
-    
+    <h1 id="main-title">Señas de Truco</h1>
+
     <div class="top-controls">
-        <div id="status" class="status-badge">Modo Diagnóstico</div>
+        <div id="status" class="status-badge">Prueba Local</div>
+        <button id="btn-test" class="btn-stealth" onclick="togglePrueba()">🧪 Prueba</button>
+        <button class="btn-stealth" onclick="toggleStealth()">Modo Sigilo 👁️</button>
+    </div>
+
+    <div class="aviso-vibracion">
+        ⚠️ <b>Este navegador no soporta vibración.</b> Las señas solo funcionan en <b>Chrome de Android</b>. iPhone no vibra desde la web.
+    </div>
+
+    <div id="test-banner">
+        🧪 <b>MODO PRUEBA:</b> tocá cualquier seña abajo para sentir cómo vibra <b>este</b> teléfono. No hace falta conexión.
+        <button class="btn-probar-todas" onclick="probarTodas()">▶ Probar todas las señas</button>
+    </div>
+
+    <div id="setup-screen">
+        <div id="qr-section">
+            <p style="margin: 0 0 10px 0; font-size:0.9rem; color:#aaa;">Escaneá para conectar al compañero:</p>
+            <canvas id="qr-canvas"></canvas>
+            <input type="text" id="manual-link" class="link-box" readonly onclick="this.select();" value="Generando link...">
+        </div>
     </div>
 
     <div id="active-screen">
         <div class="btn-grid" id="button-container">
-            <!-- Botones generados acá -->
+            <!-- Botones dinámicos -->
         </div>
-        <div id="debug-log"></div>
     </div>
+
+    <!-- Pad invisible del modo sigilo: cada toque = 1 pulso -->
+    <div id="stealth-pad"></div>
+    <div id="pulse-counter"></div>
+
+    <button id="btn-exit-stealth" onclick="toggleStealth()">×</button>
 
     <script>
         const SENAS = {
-            'MACHO': { nombre: '1 Espada', icono: '♠️', patron: [700] },
-            'HEMBRA': { nombre: '1 Basto', icono: '🪵', patron: [400, 200, 400] },
-            '7ESPADA': { nombre: '7 Espada', icono: '⚔️', patron: [150, 100, 150, 100, 150] },
-            '7ORO': { nombre: '7 Oro', icono: '🪙', patron: [100, 80, 100, 80, 100, 80, 100] }
+            'MACHO': { nombre: '1 Espada', icono: '♠️', ritmo: '1 Largo', patron: [700] },
+            'HEMBRA': { nombre: '1 Basto', icono: '🪵', ritmo: '2 Largos', patron: [400, 200, 400] },
+            '7ESPADA': { nombre: '7 Espada', icono: '⚔️', ritmo: '3 Rápidos', patron: [150, 100, 150, 100, 150] },
+            '7ORO': { nombre: '7 Oro', icono: '🪙', ritmo: '4 Rápidos', patron: [100, 80, 100, 80, 100, 80, 100] },
+            'TRES': { nombre: 'Los Tres', icono: '3️⃣', ritmo: '3 Medios', patron: [250, 150, 250, 150, 250] },
+            'DOS': { nombre: 'Los Dos', icono: '2️⃣', ritmo: '2 Medios', patron: [250, 150, 250] },
+            'ENVIDO': { nombre: 'Envido/Tantos', icono: '🗣️', ritmo: 'Corto - Largo', patron: [150, 150, 600] },
+            'MALAS': { nombre: 'Malas (Ciego)', icono: '👎', ritmo: '1 Toquecito', patron: [50] }
         };
 
-        const btnContainer = document.getElementById('button-container');
-        const debugLog = document.getElementById('debug-log');
+        const soportaVibracion = ('vibrate' in navigator);
+        if (!soportaVibracion) document.body.classList.add('no-vibra');
+
+        let peer;
+        let conexion;
+        let esHost = true;
+        let modoPrueba = false;
+
+        const urlObj = new URL(window.location.href);
+        const guestJoinId = urlObj.searchParams.get('join');
+        if (guestJoinId) esHost = false;
+
+        const UI = {
+            status: document.getElementById('status'),
+            setupScreen: document.getElementById('setup-screen'),
+            btnContainer: document.getElementById('button-container'),
+            manualLink: document.getElementById('manual-link'),
+            btnTest: document.getElementById('btn-test'),
+            stealthPad: document.getElementById('stealth-pad'),
+            pulseCounter: document.getElementById('pulse-counter')
+        };
+
+        function vibrar(patron) {
+            if (!soportaVibracion) return;
+            try { navigator.vibrate(patron); } catch (e) {}
+        }
 
         for (const [clave, datos] of Object.entries(SENAS)) {
             const btn = document.createElement('button');
             btn.className = 'btn-carta';
-            btn.innerHTML = `<span class="icono">${datos.icono}</span><span class="nombre">${datos.nombre}</span>`;
-            
-            // Usamos un listener directo y nativo
-            btn.addEventListener('click', function() {
-                ejecutarVibracion(datos.patron, datos.nombre);
-            });
-            
-            btnContainer.appendChild(btn);
+            btn.innerHTML = `
+                <span class="icono">${datos.icono}</span>
+                <span class="nombre">${datos.nombre}</span>
+                <span class="ritmo">${datos.ritmo}</span>
+            `;
+            btn.onclick = () => procesarToque(clave);
+            UI.btnContainer.appendChild(btn);
         }
 
-        function ejecutarVibracion(patron, nombre) {
-            if ("vibrate" in navigator) {
-                // El navegador devuelve TRUE si vibró, o FALSE si lo bloqueó
-                let funciono = navigator.vibrate(patron);
-                
-                if (!funciono) {
-                    debugLog.innerHTML = `⚠️ <b>Chrome bloqueó la vibración para "${nombre}".</b><br><br>
-                    Posibles causas:<br>
-                    1. Tenés el "Ahorro de batería" activado (apagalo).<br>
-                    2. Abriste el link desde WhatsApp/Instagram (Tocá los 3 puntitos y poné "Abrir en Chrome").<br>
-                    3. Tiiny.host está bloqueando los permisos (probá subirlo a GitHub Pages o abrir el archivo HTML directo en el celu).`;
-                } else {
-                    debugLog.innerHTML = `✅ Vibrando: ${nombre}`;
+        let wakeLock = null;
+        async function mantenerPantallaEncendida() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
                 }
-            } else {
-                debugLog.innerHTML = `❌ Tu navegador no soporta vibración web.`;
-            }
-
-            // Destello visual
-            document.body.style.backgroundColor = '#333';
-            setTimeout(() => { document.body.style.backgroundColor = 'var(--bg-color)'; }, 150);
+            } catch (err) { console.log('WakeLock error:', err); }
         }
+        // Primer toque en cualquier lado: habilita vibración (gesto de usuario requerido por Chrome) + pantalla encendida
+        document.body.addEventListener('click', mantenerPantallaEncendida, { once: true });
+
+        function toggleStealth() {
+            document.body.classList.toggle('stealth-mode');
+            mantenerPantallaEncendida();
+        }
+
+        // ---------- MODO PRUEBA ----------
+        function togglePrueba() {
+            modoPrueba = !modoPrueba;
+            document.body.classList.toggle('test-mode', modoPrueba);
+            UI.btnTest.classList.toggle('activo', modoPrueba);
+            if (modoPrueba) {
+                vibrar([100, 60, 100, 60, 350]); // confirmación: vibración corta-larga
+                setStatus('Modo Prueba 🧪', true);
+            } else {
+                setStatus(conexion && conexion.open ? '¡Conectados!' : 'Prueba Local', conexion && conexion.open);
+            }
+        }
+
+        let probando = false;
+        function probarTodas() {
+            if (probando) return;
+            probando = true;
+            const entradas = Object.values(SENAS);
+            let i = 0;
+            function siguiente() {
+                if (i >= entradas.length) { probando = false; return; }
+                const s = entradas[i];
+                setStatus(`Probando: ${s.nombre}...`, true);
+                vibrar(s.patron);
+                const duracion = s.patron.reduce((a, b) => a + b, 0);
+                i++;
+                setTimeout(siguiente, duracion + 500);
+            }
+            siguiente();
+        }
+
+        // ---------- PULSOS (1 a 10) ----------
+        let contadorPulsos = 0;
+        let timeoutContador = null;
+
+        function mostrarContador() {
+            UI.pulseCounter.textContent = contadorPulsos > 0 ? '·'.repeat(contadorPulsos) : '';
+        }
+
+        function enviarPulso() {
+            contadorPulsos = Math.min(contadorPulsos + 1, 10);
+            if (conexion && conexion.open && !modoPrueba) {
+                conexion.send({ tipo: 'pulso' });
+            }
+            vibrar([130]); // cada toque vibra UNA vez (tuyo y del compañero)
+            mostrarContador();
+            clearTimeout(timeoutContador);
+            // Sin tocar por 1.6s -> el contador se reinicia para poder volver a contar
+            timeoutContador = setTimeout(() => { contadorPulsos = 0; mostrarContador(); }, 1600);
+        }
+
+        // Tocar la pantalla en modo sigilo = un pulso
+        UI.stealthPad.addEventListener('touchstart', (e) => { e.preventDefault(); enviarPulso(); }, { passive: false });
+        UI.stealthPad.addEventListener('mousedown', (e) => { e.preventDefault(); enviarPulso(); });
+
+        // Teclas de volumen (funciona en Chrome escritorio / teclados externos;
+        // la mayoría de los navegadores de celular NO exponen los botones físicos de volumen)
+        document.addEventListener('keydown', (e) => {
+            const esVolumen = ['AudioVolumeUp', 'AudioVolumeDown', 'VolumeUp', 'VolumeDown'].includes(e.key)
+                || [24, 25, 174, 175].includes(e.keyCode);
+            if (esVolumen) {
+                e.preventDefault();
+                enviarPulso();
+            }
+        });
+
+        function setStatus(text, isConnected = false) {
+            UI.status.innerText = text;
+            UI.status.className = 'status-badge';
+            if (isConnected) UI.status.classList.add('connected');
+        }
+
+        function inicializar() {
+            peer = new Peer();
+            peer.on('open', (id) => {
+                if (esHost) iniciarHost(id);
+                else iniciarGuest(guestJoinId);
+            });
+            peer.on('error', (err) => {
+                if (!modoPrueba) setStatus('Error de red');
+                console.log('Peer error:', err);
+            });
+        }
+
+        function iniciarHost(myId) {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('join', myId);
+            const joinUrl = currentUrl.toString();
+
+            UI.manualLink.value = joinUrl;
+            try {
+                new QRious({ element: document.getElementById('qr-canvas'), value: joinUrl, size: 200 });
+            } catch (e) { console.log('QR error:', e); }
+
+            peer.on('connection', configurarConexion);
+        }
+
+        function iniciarGuest(hostId) {
+            UI.setupScreen.style.display = 'none';
+            setStatus('Conectando...');
+            configurarConexion(peer.connect(hostId));
+        }
+
+        function configurarConexion(conn) {
+            conexion = conn;
+            conexion.on('open', () => {
+                setStatus('¡Conectados!', true);
+                UI.setupScreen.style.display = 'none';
+                vibrar([80, 60, 80, 60, 300]); // aviso de conexión
+            });
+            conexion.on('data', (data) => {
+                if (data.carta) ejecutarVibracion(data.carta);
+                if (data.tipo === 'pulso') vibrar([130]);
+            });
+            conexion.on('close', () => {
+                setStatus('Desconectado');
+                if (esHost) UI.setupScreen.style.display = 'block';
+            });
+        }
+
+        function procesarToque(carta) {
+            if (modoPrueba) {
+                ejecutarVibracion(carta); // prueba local: no se envía nada
+                return;
+            }
+            if (conexion && conexion.open) {
+                conexion.send({ carta: carta });
+            }
+            ejecutarVibracion(carta);
+        }
+
+        function ejecutarVibracion(carta) {
+            const config = SENAS[carta];
+            vibrar(config.patron);
+
+            if (!document.body.classList.contains('stealth-mode')) {
+                let paso = 0;
+                function parpadear() {
+                    if (paso >= config.patron.length) {
+                        document.body.style.backgroundColor = 'var(--bg-color)';
+                        return;
+                    }
+                    document.body.style.backgroundColor = (paso % 2 === 0) ? '#333' : 'var(--bg-color)';
+                    paso++;
+                    setTimeout(parpadear, config.patron[paso - 1]);
+                }
+                parpadear();
+            }
+        }
+
+        inicializar();
     </script>
 </body>
 </html>
