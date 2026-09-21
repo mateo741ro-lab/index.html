@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Comunicador - Cartas</title>
+    <title>Truco - Modo Espía</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
@@ -11,12 +11,6 @@
             --bg-color: #121212;
             --text-color: #ffffff;
             --accent-color: #4CAF50;
-            
-            /* Colores de las cartas */
-            --c-oro: #ffd700;
-            --c-copa: #ff4757;
-            --c-espada: #1e90ff;
-            --c-basto: #2ed573;
         }
         body {
             margin: 0; padding: 0;
@@ -24,155 +18,120 @@
             background-color: var(--bg-color); color: var(--text-color);
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; text-align: center;
-            transition: background-color 0.05s; /* Muy rápido para el flash */
+            transition: background-color 0.1s;
+            user-select: none; -webkit-user-select: none;
         }
-        h1 { margin-top: 20px; font-size: 1.3rem; color: #aaa;}
+        
+        h1 { margin-top: 15px; font-size: 1.2rem; color: #aaa;}
+        
+        /* Controles superiores */
+        .top-controls {
+            display: flex; gap: 10px; margin-bottom: 15px; width: 100%; max-width: 400px;
+            justify-content: center; padding: 0 10px; box-sizing: border-box;
+        }
         
         .status-badge {
-            margin: 10px 0 20px 0; padding: 8px 20px; border-radius: 20px;
-            font-weight: bold; background: #333; font-size: 0.9rem;
+            padding: 8px 15px; border-radius: 10px;
+            font-weight: bold; background: #333; font-size: 0.8rem; flex-grow: 1;
         }
         .status-badge.connected { background: var(--accent-color); color: #000; }
-        .status-badge.error { background: #ff4757; color: #fff; }
+        
+        .btn-stealth {
+            background: #2a2a2a; border: 1px solid #555; color: white;
+            padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;
+        }
 
-        /* Contenedores */
+        /* Pantallas */
         #setup-screen, #active-screen {
-            width: 100%; max-width: 400px; padding: 15px; box-sizing: border-box;
+            width: 100%; max-width: 400px; padding: 10px; box-sizing: border-box;
         }
-        #active-screen { display: none; } 
+        
+        /* SECCIÓN CÓDIGO QR */
+        #qr-section { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 15px;}
+        #qr-canvas { background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px;}
+        .link-box { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #555; background: #222; color: var(--accent-color); text-align: center; }
 
-        /* SECCIÓN DE EMPAREJAMIENTO */
-        #qr-section { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; }
-        #qr-canvas { background: white; padding: 10px; border-radius: 10px; margin-bottom: 15px;}
-        .help-text { font-size: 0.85rem; color: #aaa; margin: 10px 0; }
-        .link-box {
-            width: 100%; padding: 10px; border-radius: 8px;
-            border: 1px solid #555; background: #222; color: var(--accent-color);
-            font-size: 0.8rem; box-sizing: border-box; text-align: center;
-        }
-
-        /* PANEL DE BOTONES (CARTAS) */
+        /* GRILLA DE SEÑAS DEL TRUCO (8 Botones) */
         .btn-grid { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            margin-top: 10px; 
+            gap: 10px; 
         }
         
         .btn-carta {
-            border: none; border-radius: 20px; padding: 30px 10px;
+            border: none; border-radius: 15px; padding: 18px 5px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 6px 15px rgba(0,0,0,0.4);
-            transition: transform 0.1s;
-            user-select: none; -webkit-user-select: none;
+            cursor: pointer; background: #1e1e1e; border: 1px solid #333;
+            transition: transform 0.05s, background 0.1s;
         }
-        .btn-carta:active { transform: scale(0.92); }
-        .btn-carta:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-carta:active { transform: scale(0.95); background: #333; }
         
-        .btn-carta .icono { font-size: 3.5rem; margin-bottom: 5px; }
-        .btn-carta .nombre { font-size: 1.3rem; font-weight: bold; color: #000; margin-bottom: 5px;}
-        .btn-carta .ritmo { font-size: 0.8rem; color: rgba(0,0,0,0.7); font-weight: 600;}
+        .icono { font-size: 2.2rem; margin-bottom: 2px; }
+        .nombre { font-size: 1rem; font-weight: bold; color: #ddd; margin-bottom: 2px;}
+        .ritmo { font-size: 0.7rem; color: #888; }
 
-        /* Colores específicos */
-        .btn-oro { background-color: var(--c-oro); }
-        .btn-copa { background-color: var(--c-copa); }
-        .btn-espada { background-color: var(--c-espada); }
-        .btn-basto { background-color: var(--c-basto); }
-
-        /* VISUALIZADOR DE RECEPCIÓN */
-        #receive-area {
-            margin-bottom: 25px;
-            padding: 20px;
-            border-radius: 15px;
-            background: rgba(255,255,255,0.05);
-            min-height: 100px;
-            display: flex; flex-direction: column; justify-content: center;
+        /* MODO SIGILO (Pantalla Negra) */
+        body.stealth-mode { background-color: #000 !important; color: #000; }
+        body.stealth-mode h1, body.stealth-mode #setup-screen, body.stealth-mode .top-controls { display: none; }
+        
+        /* En modo sigilo, los botones son negros pero con un borde hiper sutil para que sepas dónde están si mirás fijo */
+        body.stealth-mode .btn-carta { 
+            background: #000; border: 1px solid #0a0a0a; 
+            height: 90px; /* Mantienen el tamaño */
         }
-        #last-signal {
-            font-size: 2.5rem; font-weight: bold; color: #555;
-            margin: 0; line-height: 1.2; display: flex; align-items: center; justify-content: center; gap: 10px;
+        body.stealth-mode .btn-carta * { display: none; /* Oculta iconos y texto */ }
+        
+        #btn-exit-stealth {
+            display: none; position: fixed; top: 10px; right: 10px;
+            background: none; border: none; color: #222; font-size: 2rem; padding: 20px;
         }
+        body.stealth-mode #btn-exit-stealth { display: block; }
     </style>
 </head>
 <body>
 
-    <h1 id="main-title">Señas Ocultas</h1>
-    <div id="status" class="status-badge">Inicializando...</div>
+    <h1 id="main-title">Señas de Truco</h1>
+    
+    <div class="top-controls">
+        <div id="status" class="status-badge">Prueba Local (Sin conectar)</div>
+        <button class="btn-stealth" onclick="toggleStealth()">Modo Sigilo 👁️</button>
+    </div>
 
-    <!-- PANTALLA DE EMPAREJAMIENTO -->
+    <!-- PANTALLA DE EMPAREJAMIENTO (Solo visible hasta conectar) -->
     <div id="setup-screen">
         <div id="qr-section">
-            <p style="margin-top:0;"><strong>1.</strong> Escanea con el otro celular</p>
+            <p style="margin: 0 0 10px 0; font-size:0.9rem; color:#aaa;">Escaneá para conectar al compañero:</p>
             <canvas id="qr-canvas"></canvas>
-            <p class="help-text">O comparte este link directamente:</p>
-            <input type="text" id="manual-link" class="link-box" readonly onclick="this.select();">
+            <input type="text" id="manual-link" class="link-box" readonly onclick="this.select();" value="Generando link...">
         </div>
     </div>
 
-    <!-- PANTALLA DE CARTAS -->
+    <!-- PANTALLA DE CARTAS (Siempre visible para poder probar localmente) -->
     <div id="active-screen">
-        <div id="receive-area">
-            <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 10px;">ÚLTIMA RECIBIDA:</div>
-            <div id="last-signal">Ninguna</div>
-        </div>
-        
         <div class="btn-grid" id="button-container">
-            <button class="btn-carta btn-oro" onclick="enviarSenal('ORO')">
-                <span class="icono">🪙</span>
-                <span class="nombre">ORO</span>
-                <span class="ritmo">1 Corto</span>
-            </button>
-            <button class="btn-carta btn-copa" onclick="enviarSenal('COPA')">
-                <span class="icono">🍷</span>
-                <span class="nombre">COPA</span>
-                <span class="ritmo">2 Cortos</span>
-            </button>
-            <button class="btn-carta btn-espada" onclick="enviarSenal('ESPADA')">
-                <span class="icono">⚔️</span>
-                <span class="nombre">ESPADA</span>
-                <span class="ritmo">3 Cortos</span>
-            </button>
-            <button class="btn-carta btn-basto" onclick="enviarSenal('BASTO')">
-                <span class="icono">🪵</span>
-                <span class="nombre">BASTO</span>
-                <span class="ritmo">1 Largo</span>
-            </button>
+            <!-- Botones generados por JS -->
         </div>
     </div>
+
+    <!-- Botón oculto para salir del modo sigilo -->
+    <button id="btn-exit-stealth" onclick="toggleStealth()">×</button>
 
     <script>
-        // CONFIGURACIÓN DE LOS RITMOS DE VIBRACIÓN Y FLASH
-        const RITMOS = {
-            'ORO': { 
-                color: 'var(--c-oro)', 
-                icono: '🪙',
-                // 150ms vibrando
-                patron: [150] 
-            },
-            'COPA': { 
-                color: 'var(--c-copa)', 
-                icono: '🍷',
-                // 150ms ON, 150ms pausa, 150ms ON
-                patron: [150, 150, 150] 
-            },
-            'ESPADA': { 
-                color: 'var(--c-espada)', 
-                icono: '⚔️',
-                // 150ms ON, 150ms pausa, 150ms ON, 150ms pausa, 150ms ON
-                patron: [150, 150, 150, 150, 150] 
-            },
-            'BASTO': { 
-                color: 'var(--c-basto)', 
-                icono: '🪵',
-                // 800ms vibrando corrido (Muy largo)
-                patron: [800] 
-            }
+        // EL DICCIONARIO DEL TRUCO Y SUS VIBRACIONES
+        const SENAS = {
+            'MACHO': { nombre: '1 Espada', icono: '♠️', ritmo: '1 Largo', patron: [700] },
+            'HEMBRA': { nombre: '1 Basto', icono: '🪵', ritmo: '2 Largos', patron: [400, 200, 400] },
+            '7ESPADA': { nombre: '7 Espada', icono: '⚔️', ritmo: '3 Rápidos', patron: [150, 100, 150, 100, 150] },
+            '7ORO': { nombre: '7 Oro', icono: '🪙', ritmo: '4 Rápidos', patron: [100, 80, 100, 80, 100, 80, 100] },
+            'TRES': { nombre: 'Los Tres', icono: '3️⃣', ritmo: '3 Medios', patron: [250, 150, 250, 150, 250] },
+            'DOS': { nombre: 'Los Dos', icono: '2️⃣', ritmo: '2 Medios', patron: [250, 150, 250] },
+            'ENVIDO': { nombre: 'Envido/Tantos', icono: '🗣️', ritmo: 'Corto - Largo', patron: [150, 150, 600] },
+            'MALAS': { nombre: 'Malas (Ciego)', icono: '👎', ritmo: '1 Toquecito', patron: [50] } // Vibración súper sutil
         };
 
         let peer;
         let conexion;
         let esHost = true;
-        let bloqueado = false;
         
         const urlObj = new URL(window.location.href);
         const guestJoinId = urlObj.searchParams.get('join'); 
@@ -181,117 +140,125 @@
         const UI = {
             status: document.getElementById('status'),
             setupScreen: document.getElementById('setup-screen'),
-            activeScreen: document.getElementById('active-screen'),
-            lastSignal: document.getElementById('last-signal'),
+            btnContainer: document.getElementById('button-container'),
             manualLink: document.getElementById('manual-link')
         };
 
-        function setStatus(text, state = 'normal') {
-            UI.status.innerText = text;
-            UI.status.className = 'status-badge';
-            if (state === 'connected') UI.status.classList.add('connected');
-            if (state === 'error') UI.status.classList.add('error');
+        // 1. Generar botones dinámicamente
+        for (const [clave, datos] of Object.entries(SENAS)) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-carta';
+            btn.innerHTML = `
+                <span class="icono">${datos.icono}</span>
+                <span class="nombre">${datos.nombre}</span>
+                <span class="ritmo">${datos.ritmo}</span>
+            `;
+            btn.onclick = () => procesarToque(clave);
+            UI.btnContainer.appendChild(btn);
         }
 
+        // 2. Sistema de pantalla siempre activa (WakeLock)
+        let wakeLock = null;
+        async function mantenerPantallaEncendida() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) { console.log('WakeLock error:', err); }
+        }
+        // Pedir permiso al primer toque en la pantalla (requerimiento de los navegadores)
+        document.body.addEventListener('click', mantenerPantallaEncendida, { once: true });
+
+        // 3. Modo Sigilo (Pantalla Apagada)
+        function toggleStealth() {
+            document.body.classList.toggle('stealth-mode');
+            // Al tocar para entrar/salir de sigilo, intentamos forzar que la pantalla no se apague
+            mantenerPantallaEncendida(); 
+        }
+
+        function setStatus(text, isConnected = false) {
+            UI.status.innerText = text;
+            UI.status.className = 'status-badge';
+            if (isConnected) UI.status.classList.add('connected');
+        }
+
+        // 4. Inicializar Conexión P2P
         function inicializar() {
             peer = new Peer();
             peer.on('open', (id) => {
                 if (esHost) iniciarHost(id);
                 else iniciarGuest(guestJoinId);
             });
-            peer.on('error', (err) => {
-                setStatus('Error de conexión', 'error');
-            });
         }
 
         function iniciarHost(myId) {
-            setStatus('Esperando compañero...');
-            UI.setupScreen.style.display = 'block';
-
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('join', myId);
             const joinUrl = currentUrl.toString();
             
             UI.manualLink.value = joinUrl;
-
-            new QRious({ element: document.getElementById('qr-canvas'), value: joinUrl, size: 220 });
+            new QRious({ element: document.getElementById('qr-canvas'), value: joinUrl, size: 200 });
 
             peer.on('connection', configurarConexion);
         }
 
         function iniciarGuest(hostId) {
-            setStatus('Conectando...');
             UI.setupScreen.style.display = 'none';
+            setStatus('Conectando al compañero...');
             configurarConexion(peer.connect(hostId));
         }
 
         function configurarConexion(conn) {
             conexion = conn;
             conexion.on('open', () => {
-                setStatus('¡Conectados!', 'connected');
-                UI.setupScreen.style.display = 'none';
-                UI.activeScreen.style.display = 'block';
+                setStatus('¡Conectados!', true);
+                UI.setupScreen.style.display = 'none'; // Oculta QR
             });
             conexion.on('data', (data) => {
-                if (data.carta) ejecutarRecepcion(data.carta);
+                if (data.carta) ejecutarVibracion(data.carta);
             });
             conexion.on('close', () => {
-                setStatus('Compañero desconectado', 'error');
-                UI.activeScreen.style.display = 'none';
+                setStatus('Compañero desconectado');
                 if(esHost) UI.setupScreen.style.display = 'block';
             });
         }
 
-        function enviarSenal(carta) {
-            if (bloqueado || !conexion || !conexion.open) return; 
-            
-            bloqueado = true; // Bloquea los botones medio segundo para no hacer spam
-            conexion.send({ carta: carta });
-            
-            // Reflejo visual propio sutil
-            UI.lastSignal.innerHTML = `Enviando: ${RITMOS[carta].icono} ${carta}`;
-            UI.lastSignal.style.color = '#888';
-            
-            setTimeout(() => { bloqueado = false; }, 500);
+        // 5. Procesar cuando tocas un botón
+        function procesarToque(carta) {
+            // Si estamos conectados con el compañero, enviamos la señal
+            if (conexion && conexion.open) {
+                conexion.send({ carta: carta });
+            } else {
+                // SI NO ESTAMOS CONECTADOS: vibra en este mismo celular para que el usuario practique
+                ejecutarVibracion(carta);
+            }
         }
 
-        function ejecutarRecepcion(carta) {
-            const config = RITMOS[carta];
+        // 6. Ejecutar la vibración (y pequeño flash por si tienen iPhone)
+        function ejecutarVibracion(carta) {
+            const config = SENAS[carta];
             
-            // 1. Mostrar en pantalla
-            UI.lastSignal.innerHTML = `${config.icono} ${carta}`;
-            UI.lastSignal.style.color = config.color;
-            
-            // 2. Vibración Física (Android)
+            // Vibración física en Android
             if (navigator.vibrate) {
                 navigator.vibrate(config.patron);
             }
 
-            // 3. Destello de Pantalla Exacto (Fallback iOS)
-            // Recorre el array de tiempos. Los índices pares (0, 2, 4) ENCIENDEN, los impares (1, 3) APAGAN.
-            let pasoActual = 0;
-
-            function parpadear() {
-                if (pasoActual >= config.patron.length) {
-                    document.body.style.backgroundColor = 'var(--bg-color)'; // Fin, volver a negro
-                    return; 
+            // Destello visual MUY oscuro (para que no ilumine la mesa en iOS)
+            // Solo parpadea si NO estamos en modo sigilo, para evitar revelar el celular.
+            if (!document.body.classList.contains('stealth-mode')) {
+                let paso = 0;
+                function parpadear() {
+                    if (paso >= config.patron.length) {
+                        document.body.style.backgroundColor = 'var(--bg-color)';
+                        return; 
+                    }
+                    // Usa un gris súper oscuro (#222) en lugar de blanco para no llamar la atención
+                    document.body.style.backgroundColor = (paso % 2 === 0) ? '#333' : 'var(--bg-color)';
+                    paso++;
+                    setTimeout(parpadear, config.patron[paso - 1]);
                 }
-                
-                const tiempoActual = config.patron[pasoActual];
-                
-                // Si es un índice par (0, 2, 4...) es tiempo de vibrar/iluminar
-                if (pasoActual % 2 === 0) {
-                    document.body.style.backgroundColor = config.color;
-                } else {
-                    // Si es impar (1, 3...) es tiempo de pausa/oscuridad
-                    document.body.style.backgroundColor = 'var(--bg-color)';
-                }
-
-                pasoActual++;
-                setTimeout(parpadear, tiempoActual);
+                parpadear();
             }
-
-            parpadear();
         }
 
         inicializar();
