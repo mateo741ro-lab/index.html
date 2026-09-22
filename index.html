@@ -186,7 +186,7 @@
             </div>
 
             <button id="btn-cam" class="btn btn-outline" onclick="toggleCamara()">Iniciar Cámara Trasera</button>
-            <button class="btn btn-primary" onclick="analizarMesa()">Analizar Mesa 📸</button>
+            <button class="btn btn-primary" onclick="iniciarAnalisisConGesto()">Analizar Mesa 📸</button>
             <button class="btn btn-warning" onclick="activarModoBolsillo()">Activar Modo Bolsillo 👁️</button>
         </div>
 
@@ -217,7 +217,6 @@
         let wakeLock = null;
         let isProcessing = false;
 
-        // Recuperar la clave guardada en memoria
         window.addEventListener('DOMContentLoaded', () => {
             const savedKey = localStorage.getItem('truco_gemini_key');
             if (savedKey) apiKeyInput.value = savedKey;
@@ -231,6 +230,20 @@
             const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             logBox.innerText = `[${timestamp}] ${msg}`;
             console.log(msg);
+        }
+
+        // Desbloquear motor de voz en iOS/Android durante el toque del usuario
+        function prepararAudio() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.resume();
+                const u = new SpeechSynthesisUtterance('');
+                window.speechSynthesis.speak(u);
+            }
+        }
+
+        function iniciarAnalisisConGesto() {
+            prepararAudio();
+            analizarMesa();
         }
 
         async function toggleCamara() {
@@ -297,15 +310,25 @@
             vibrar(60);
             log("Analizando imagen...");
 
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
+            // Escalar imagen a un máximo de 800px para carga ultra-rápida
+            const maxW = 800;
+            let srcW = video.videoWidth || 640;
+            let srcH = video.videoHeight || 480;
+            
+            if (srcW > maxW) {
+                srcH = Math.round((srcH * maxW) / srcW);
+                srcW = maxW;
+            }
+
+            canvas.width = srcW;
+            canvas.height = srcH;
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, 0, 0, srcW, srcH);
 
-            const base64Data = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+            // Calidad 0.6 para comprimir datos en Base64
+            const base64Data = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-            // Endpoint actualizado a Gemini 3.6 Flash
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
             const promptTexto = "Identifica las cartas de Truco visibles en la mesa y dame la mejor jugada corta en 5 palabras.";
 
             const requestBody = {
@@ -317,30 +340,47 @@
                 }]
             };
 
+            // Timeout de 10 segundos
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
             try {
                 const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
                 });
 
+                clearTimeout(timeoutId);
+
                 const data = await res.json();
+
+                if (!res.ok) {
+                    const msgError = data.error?.message || `Error HTTP ${res.status}`;
+                    log("Error API: " + msgError);
+                    hablar("Error en la solicitud");
+                    return;
+                }
 
                 if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
                     const respuesta = data.candidates[0].content.parts[0].text.trim();
                     log("IA: " + respuesta);
                     vibrar([40, 60, 40]);
                     hablar(respuesta);
-                } else if (data.error) {
-                    log("Error API: " + data.error.message);
-                    hablar("Error en la clave de API");
                 } else {
                     log("No se pudo interpretar la imagen.");
                     hablar("No vi cartas claras");
                 }
             } catch (err) {
-                log("Error de conexión: " + err.message);
-                hablar("Error de conexión");
+                clearTimeout(timeoutId);
+                if (err.name === 'AbortError') {
+                    log("Tiempo agotado (Red lenta)");
+                    hablar("Tiempo de espera agotado");
+                } else {
+                    log("Error de conexión: " + err.message);
+                    hablar("Error de conexión");
+                }
             } finally {
                 isProcessing = false;
             }
@@ -360,6 +400,7 @@
         }
 
         async function activarModoBolsillo() {
+            prepararAudio();
             if (!stream) {
                 const ok = await iniciarCamara();
                 if (!ok) return;
@@ -378,6 +419,7 @@
         }
 
         function handlePocketTap(event) {
+            prepararAudio();
             analizarMesa();
         }
 
