@@ -10,16 +10,15 @@
             --card-bg: #18181b;
             --border: #27272a;
             --primary: #22c55e;
-            --primary-hover: #16a34a;
             --warning: #f59e0b;
+            --danger: #ef4444;
             --text: #f4f4f5;
             --text-muted: #a1a1aa;
         }
 
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
@@ -42,22 +41,9 @@
             gap: 14px;
         }
 
-        header {
-            text-align: center;
-            padding: 8px 0;
-        }
-
-        header h1 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
-
-        header p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
+        header { text-align: center; padding: 8px 0; }
+        header h1 { font-size: 1.4rem; font-weight: 700; }
+        header p { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
 
         .card {
             background: var(--card-bg);
@@ -74,7 +60,6 @@
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
         }
 
         input[type="password"] {
@@ -88,9 +73,7 @@
             outline: none;
         }
 
-        input[type="password"]:focus {
-            border-color: var(--primary);
-        }
+        input[type="password"]:focus { border-color: var(--primary); }
 
         .video-container {
             position: relative;
@@ -102,34 +85,26 @@
             border: 1px solid var(--border);
         }
 
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        video { width: 100%; height: 100%; object-fit: cover; }
 
         .badge {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
+            top: 10px; left: 10px;
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(4px);
             padding: 4px 8px;
             border-radius: 6px;
             font-size: 0.75rem;
-            color: #ef4444;
+            color: var(--danger);
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .badge.active {
-            color: var(--primary);
-        }
+        .badge.active { color: var(--primary); }
 
         .dot {
-            width: 8px;
-            height: 8px;
+            width: 8px; height: 8px;
             border-radius: 50%;
             background-color: currentColor;
         }
@@ -142,32 +117,13 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            transition: transform 0.1s;
         }
 
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: #000;
-        }
-
-        .btn-warning {
-            background-color: var(--warning);
-            color: #000;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--primary); color: #000; }
+        .btn-warning { background-color: var(--warning); color: #000; }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
 
         .log-box {
             background: #000;
@@ -183,33 +139,27 @@
             word-break: break-word;
         }
 
-        /* Modo Bolsillo / Sigilo */
+        /* Modo Bolsillo */
         #pocket-mode-overlay {
             display: none;
             position: fixed;
             inset: 0;
             background-color: #000000;
             z-index: 99999;
-            width: 100vw;
-            height: 100vh;
             touch-action: manipulation;
         }
 
-        #pocket-mode-overlay.active {
-            display: block;
-        }
+        #pocket-mode-overlay.active { display: block; }
 
         .exit-pocket-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 20px; right: 20px;
             background: rgba(255, 255, 255, 0.05);
-            color: #333333;
-            border: 1px solid #111111;
+            color: #333;
+            border: 1px solid #111;
             padding: 10px 16px;
             border-radius: 20px;
             font-size: 0.8rem;
-            z-index: 100000;
         }
     </style>
 </head>
@@ -218,12 +168,12 @@
     <div class="app-container">
         <header>
             <h1>Truco Vision AI</h1>
-            <p>Asistente visual en tiempo real para bolsillo</p>
+            <p>Asistente de cartas en tiempo real</p>
         </header>
 
         <div class="card">
             <label for="api-key">Gemini API Key</label>
-            <input type="password" id="api-key" placeholder="AIzaSy..." autocomplete="off">
+            <input type="password" id="api-key" placeholder="Pegá tu API Key aquí..." autocomplete="off">
         </div>
 
         <div class="card">
@@ -246,9 +196,9 @@
         </div>
     </div>
 
-    <!-- Capa negra completa para el Bolsillo -->
+    <!-- Pantalla negra para el bolsillo -->
     <div id="pocket-mode-overlay" onclick="handlePocketTap(event)">
-        <button class="exit-pocket-btn" onclick="event.stopPropagation(); desactivarModoBolsillo();">Salir de Modo Bolsillo</button>
+        <button class="exit-pocket-btn" onclick="event.stopPropagation(); desactivarModoBolsillo();">Salir</button>
     </div>
 
     <canvas id="canvas" style="display: none;"></canvas>
@@ -267,7 +217,7 @@
         let wakeLock = null;
         let isProcessing = false;
 
-        // Cargar API Key guardada
+        // Recuperar la clave guardada en memoria
         window.addEventListener('DOMContentLoaded', () => {
             const savedKey = localStorage.getItem('truco_gemini_key');
             if (savedKey) apiKeyInput.value = savedKey;
@@ -283,36 +233,26 @@
             console.log(msg);
         }
 
-        // 1. GESTIÓN DE CÁMARA TRASERA
         async function toggleCamara() {
-            if (stream) {
-                detenerCamara();
-            } else {
-                await iniciarCamara();
-            }
+            if (stream) detenerCamara();
+            else await iniciarCamara();
         }
 
         async function iniciarCamara() {
-            log("Iniciando cámara trasera...");
+            log("Conectando cámara...");
             try {
-                // Intentar forzar cámara trasera principal
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { exact: "environment" },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
+                    video: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
                     audio: false
                 });
             } catch (err) {
-                // Fallback a selector flexible
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: "environment" },
                         audio: false
                     });
                 } catch (e) {
-                    log("Error de acceso a cámara: " + e.message);
+                    log("Error de cámara: " + e.message);
                     return false;
                 }
             }
@@ -321,7 +261,7 @@
             camStatus.classList.add('active');
             camStatusText.innerText = "Cámara Activa";
             btnCam.innerText = "Detener Cámara";
-            log("Cámara trasera conectada.");
+            log("Cámara conectada.");
             return true;
         }
 
@@ -337,13 +277,12 @@
             }
         }
 
-        // 2. CAPTURA Y ENVIÓ A GEMINI VISION API
         async function analizarMesa() {
             if (isProcessing) return;
 
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
-                const msg = "Falta la API Key de Gemini";
+                const msg = "Ingresá una API Key válida";
                 log(msg);
                 hablar(msg);
                 return;
@@ -358,16 +297,15 @@
             vibrar(60);
             log("Analizando imagen...");
 
-            // Tomar fotograma del vídeo
             canvas.width = video.videoWidth || 640;
             canvas.height = video.videoHeight || 480;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // Convertir a JPEG Base64
             const base64Data = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
 
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            // Endpoint usando Gemini 2.0 Flash
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
             const promptTexto = "Identifica las cartas de Truco visibles en la mesa y dame la mejor jugada corta en 5 palabras.";
 
             const requestBody = {
@@ -376,11 +314,7 @@
                         { text: promptTexto },
                         { inline_data: { mime_type: "image/jpeg", data: base64Data } }
                     ]
-                }],
-                generationConfig: {
-                    maxOutputTokens: 30,
-                    temperature: 0.2
-                }
+                }]
             };
 
             try {
@@ -395,59 +329,51 @@
                 if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
                     const respuesta = data.candidates[0].content.parts[0].text.trim();
                     log("IA: " + respuesta);
-                    vibrar([40, 60, 40]); // Patrón de doble pulso para indicar éxito
+                    vibrar([40, 60, 40]);
                     hablar(respuesta);
                 } else if (data.error) {
                     log("Error API: " + data.error.message);
-                    hablar("Error de API");
+                    hablar("Error en la clave de API");
                 } else {
-                    log("No se detectó respuesta válida.");
-                    hablar("No pude ver nada");
+                    log("No se pudo interpretar la imagen.");
+                    hablar("No vi cartas claras");
                 }
             } catch (err) {
-                log("Error de red: " + err.message);
+                log("Error de conexión: " + err.message);
                 hablar("Error de conexión");
             } finally {
                 isProcessing = false;
             }
         }
 
-        // 3. SINTETIZADOR DE VOZ
         function hablar(texto) {
             if (!('speechSynthesis' in window)) return;
-
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-ES';
-            utterance.rate = 1.1; // Ligeramente más acelerado
-            utterance.pitch = 1.0;
-
+            utterance.rate = 1.1;
             window.speechSynthesis.speak(utterance);
         }
 
         function vibrar(patron) {
-            if ('vibrate' in navigator) {
-                navigator.vibrate(patron);
-            }
+            if ('vibrate' in navigator) navigator.vibrate(patron);
         }
 
-        // 4. MODO BOLSILLO & WAKE LOCK
         async function activarModoBolsillo() {
             if (!stream) {
                 const ok = await iniciarCamara();
                 if (!ok) return;
             }
-
             pocketOverlay.classList.add('active');
             solicitarWakeLock();
-            log("Modo Bolsillo activado (Pantalla Negra)");
+            log("Modo Bolsillo Activo");
             vibrar(100);
         }
 
         function desactivarModoBolsillo() {
             pocketOverlay.classList.remove('active');
             liberarWakeLock();
-            log("Modo Bolsillo desactivado");
+            log("Modo Bolsillo Desactivado");
             vibrar(50);
         }
 
@@ -457,12 +383,8 @@
 
         async function solicitarWakeLock() {
             try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                }
-            } catch (err) {
-                console.log("WakeLock error:", err.message);
-            }
+                if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+            } catch (err) {}
         }
 
         function liberarWakeLock() {
@@ -470,13 +392,6 @@
                 wakeLock.release().then(() => { wakeLock = null; });
             }
         }
-
-        // Mantener WakeLock activo si se cambia de pestaña
-        document.addEventListener('visibilitychange', async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-                await solicitarWakeLock();
-            }
-        });
     </script>
 </body>
 </html>
