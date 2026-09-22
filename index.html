@@ -1,663 +1,339 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0d1117">
-<title>Truco Táctico — Asistente Offline</title>
-<style>
-  :root{ --bg:#0d1117; --panel:#161b22; --border:#30363d; --fg:#c9d1d9; --accent:#2ea043; --warn:#d29922; --bad:#f85149; --info:#58a6ff; }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{ background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,sans-serif; min-height:100vh; padding:12px; }
-  header{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;}
-  h1{font-size:1.05rem; color:#fff;} h1 small{color:var(--info); font-weight:400;}
-  .status-bar{display:flex; gap:6px; flex-wrap:wrap;}
-  .chip{font-size:.7rem; padding:3px 8px; border-radius:12px; border:1px solid var(--border); background:var(--panel); white-space:nowrap;}
-  .chip.on{color:var(--accent); border-color:var(--accent);} .chip.off{color:var(--bad);} .chip.warn{color:var(--warn);}
-  .banner{display:none; padding:10px 12px; border-radius:8px; margin-bottom:10px; font-size:.8rem; line-height:1.5;}
-  .banner.err{display:block; background:#3d1214; border:1px solid var(--bad); color:#ffb3ae;}
-  .banner.warnb{display:block; background:#2d2410; border:1px solid var(--warn); color:#f0d493;}
-  .banner code{background:#000; padding:1px 5px; border-radius:4px; color:#fff;}
-  .layout{display:grid; grid-template-columns:1fr; gap:12px;}
-  @media(min-width:900px){ .layout{grid-template-columns:1.2fr 1fr;} }
-  .panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px;}
-  .panel h2{font-size:.85rem; color:var(--info); margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em;}
-  video,#canvasPreview{width:100%; border-radius:8px; background:#000; display:block;}
-  #canvasPreview{margin-top:8px; max-height:200px; object-fit:contain;}
-  .btn-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
-  button{background:#21262d; color:var(--fg); border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-size:.85rem; cursor:pointer; transition:.15s; touch-action:manipulation;}
-  button:hover{border-color:var(--info);} button.primary{background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600;}
-  button.gold{background:var(--warn); color:#000; border-color:var(--warn); font-weight:600;}
-  button:disabled{opacity:.4; cursor:not-allowed;}
-  .recommendation{font-size:1.4rem; font-weight:700; color:var(--accent); text-align:center; padding:16px 8px; min-height:60px; display:flex; align-items:center; justify-content:center;}
-  .stats{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;}
-  .stat{background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px; text-align:center;}
-  .stat b{display:block; font-size:1.3rem; color:#fff;} .stat span{font-size:.68rem; color:#8b949e;}
-  #logPanel{max-height:200px; overflow-y:auto; font-family:ui-monospace,monospace; font-size:.72rem; background:#010409; border-radius:8px; padding:8px; border:1px solid var(--border); margin-top:10px;}
-  #logPanel div{padding:2px 0; border-bottom:1px solid #161b22;}
-  #logPanel .err{color:var(--bad);} #logPanel .ok{color:var(--accent);} #logPanel .warn{color:var(--warn);}
-  .cards-input{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
-  select{background:#0d1117; color:var(--fg); border:1px solid var(--border); border-radius:6px; padding:8px; font-size:.85rem; flex:1; min-width:90px;}
-  .calib-box{margin-top:10px; padding:10px; border:1px dashed var(--warn); border-radius:8px; display:none;}
-  .calib-box.active{display:block;}
-  .calib-box .target{font-size:1.1rem; font-weight:700; color:var(--warn); text-align:center; margin:6px 0;}
-  .progress{height:6px; background:#21262d; border-radius:3px; margin-top:8px; overflow:hidden;}
-  .progress i{display:block; height:100%; width:0%; background:var(--accent); transition:.3s;}
-  .footer-note{margin-top:14px; font-size:.68rem; color:#8b949e; text-align:center;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Truco Communicator PeerJS</title>
+    <!-- PeerJS para conexión P2P -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <!-- QRCode.js para generación de código QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --bg: #09090b;
+            --card-bg: #18181b;
+            --border: #27272a;
+            --primary: #22c55e;
+            --primary-hover: #16a34a;
+            --danger: #ef4444;
+            --text: #f4f4f5;
+            --text-muted: #a1a1aa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        header { text-align: center; padding: 10px 0; }
+        header h1 { font-size: 1.5rem; font-weight: 700; }
+        header p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background-color: var(--primary); color: #000; }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-danger { background-color: var(--danger); color: #fff; }
+
+        .grid-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .grid-btn {
+            background: #27272a;
+            color: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .grid-btn:active {
+            background: var(--primary);
+            color: #000;
+        }
+
+        #qrcode {
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #27272a;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .status-badge.connected {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        /* Pantalla de sigilo (Modo Bolsillo) */
+        #stealth-screen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            color: #222;
+        }
+
+        #stealth-screen.active {
+            display: flex;
+        }
+    </style>
 </head>
 <body>
 
-<header>
-  <h1>🃏 Truco Táctico <small>v2.0 · offline · mazo Naveta 738</small></h1>
-  <div class="status-bar">
-    <span class="chip off" id="stCam">📷 Cámara</span>
-    <span class="chip off" id="stDB">🗄️ DB</span>
-    <span class="chip off" id="stCV">🧠 CV</span>
-    <span class="chip off" id="stCalib">🎯 Calibración</span>
-    <span class="chip off" id="stLock">🔒 WakeLock</span>
-    <span class="chip off" id="stVoice">🔊 Voz</span>
-  </div>
-</header>
+    <div class="container">
+        <header>
+            <h1>Truco Communicator</h1>
+            <p>Conexión táctil P2P por Vibración</p>
+        </header>
 
-<div class="banner err" id="bannerFile">
-  ⚠️ Estás abriendo el archivo con <b>file://</b>. El navegador bloquea la cámara así.
-  Servilo por localhost: <code>cd truco-tactico</code> → <code>python -m http.server 8080</code> → abrí <code>http://localhost:8080</code>
-</div>
-<div class="banner warnb" id="bannerCv" style="display:none">
-  ⏳ Cargando OpenCV.js… si estás sin internet, descargá <code>opencv.js</code> (4.8.0) en la carpeta <code>/libs/</code>.
-  Mientras tanto, el <b>modo manual</b> de abajo funciona igual.
-</div>
+        <!-- Selector de Rol -->
+        <div id="role-selector" class="card">
+            <h3>Seleccionar Modo</h3>
+            <button class="btn btn-primary" onclick="setRole('receiver')">📱 Teléfono Bolsillo (Receptor)</button>
+            <button class="btn btn-outline" onclick="setRole('sender')">🎮 Teléfono Control (Emisor)</button>
+        </div>
 
-<div class="layout">
-  <div class="panel">
-    <h2>Percepción en tiempo real</h2>
-    <video id="video" autoplay playsinline muted></video>
-    <canvas id="canvasPreview"></canvas>
-    <div class="btn-row">
-      <button class="primary" id="btnStart">▶ Iniciar cámara</button>
-      <button id="btnCapture" disabled>📸 Analizar ahora</button>
-      <button class="gold" id="btnCalib">🎯 Calibrar mi mazo</button>
-      <button id="btnWakeLock">🔒 Modo bolsillo</button>
-      <button id="btnVoice">🔊 Voz</button>
-    </div>
-    <div class="calib-box" id="calibBox">
-      <div style="font-size:.8rem">Mostrá esta carta a la cámara (bien centrada, sin reflejos):</div>
-      <div class="target" id="calibTarget">—</div>
-      <div class="btn-row" style="margin-top:6px">
-        <button class="primary" id="btnCalibCapture">✅ Capturar carta</button>
-        <button id="btnCalibSkip">⏭ Saltar</button>
-        <button id="btnCalibStop">✖ Cancelar</button>
-      </div>
-      <div class="progress"><i id="calibProg"></i></div>
-      <div style="font-size:.7rem;margin-top:4px" id="calibCount">0 / 40</div>
-    </div>
-    <div class="footer-note">Calibrá UNA vez tu mazo Naveta y el reconocimiento queda guardado en tu celular para siempre. Si el CV no carga, usá la carga manual →</div>
-  </div>
+        <!-- MODO RECEPTOR (BOLSILLO) -->
+        <div id="receiver-panel" class="card" style="display: none;">
+            <div id="receiver-status" class="status-badge">Esperando conexión...</div>
+            <p style="font-size: 0.85rem; text-align: center; color: var(--text-muted);">
+                Escaneá este código QR con el teléfono control o ingresá la clave.
+            </p>
+            <div id="qrcode"></div>
+            <p style="font-size: 0.9rem; font-weight: bold;">ID: <span id="peer-id-display">Cargando...</span></p>
+            
+            <button class="btn btn-primary" onclick="activarModoBolsillo()">👁️ Activar Modo Bolsillo (Pantalla Negra)</button>
+        </div>
 
-  <div class="panel">
-    <h2>Recomendación táctica</h2>
-    <div class="recommendation" id="recommendation">Tocá tus cartas abajo 👇</div>
-    <div class="stats">
-      <div class="stat"><b id="stEnvido">—</b><span>Puntos de Envido</span></div>
-      <div class="stat"><b id="stFuerza">—</b><span>Fuerza (jer. máx)</span></div>
-      <div class="stat"><b id="stWinRate">—</b><span>% victorias sesión</span></div>
-      <div class="stat"><b id="stDetects">0</b><span>Detecciones sesión</span></div>
+        <!-- MODO EMISOR (CONTROL) -->
+        <div id="sender-panel" class="card" style="display: none;">
+            <div id="sender-status" class="status-badge">Desconectado</div>
+            <div id="connect-form" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
+                <input type="text" id="target-id" placeholder="Ingresar ID del Receptor" autocomplete="off">
+                <button class="btn btn-primary" onclick="conectarAEmisor()">Conectar</button>
+            </div>
+
+            <!-- Botonera táctil de señales -->
+            <div id="controls" class="grid-buttons" style="display: none;">
+                <button class="grid-btn" onclick="enviarVibracion('envido')">1. Envido<br><small>(1 Corto)</small></button>
+                <button class="grid-btn" onclick="enviarVibracion('real_envido')">2. Real Envido<br><small>(2 Cortos)</small></button>
+                <button class="grid-btn" onclick="enviarVibracion('falta_envido')">3. Falta Envido<br><small>(1 Largo)</small></button>
+                <button class="grid-btn" onclick="enviarVibracion('truco')">4. Truco<br><small>(3 Cortos)</small></button>
+                <button class="grid-btn" onclick="enviarVibracion('re_truco')">5. Re Truco<br><small>(1 Largo + 1 Corto)</small></button>
+                <button class="grid-btn" onclick="enviarVibracion('vale_cuatro')">6. Vale 4<br><small>(2 Largos)</small></button>
+                <button class="grid-btn" onclick="enviarVibracion('quiero')">7. Quiero<br><small>(Doble pulso rápido)</small></button>
+                <button class="grid-btn" style="background: #ef4444;" onclick="enviarVibracion('no_quiero')">8. No Quiero<br><small>(1 Continuo)</small></button>
+            </div>
+        </div>
     </div>
 
-    <h2 style="margin-top:14px;">Mis cartas (manual — siempre funciona)</h2>
-    <div class="cards-input" id="manualCards"></div>
-    <div class="btn-row">
-      <button class="primary" id="btnEval">⚖️ Evaluar mano</button>
-      <button id="btnEnvido">🗣️ "Quiero envido"</button>
-      <button id="btnTruco">🗣️ "Quiero truco"</button>
-      <button id="btnReset">↺ Nueva mano</button>
+    <!-- Pantalla negra para receptor -->
+    <div id="stealth-screen" onclick="desactivarModoBolsillo()">
+        <p style="font-size: 0.7rem; color: #222;">Toca 2 veces para salir</p>
     </div>
-    <div id="logPanel"></div>
-  </div>
-</div>
 
-<script>
-/* ============================================================================
-   OpenCV.js: local primero, CDN de respaldo. Sin OpenCV → modo manual.
-   ============================================================================ */
-(function loadOpenCv(){
-  const local = document.createElement('script');
-  local.src = './libs/opencv.js';
-  local.onerror = () => {
-    UI_log('No hay ./libs/opencv.js local — probando CDN…','warn');
-    const cdn = document.createElement('script');
-    cdn.src = 'https://docs.opencv.org/4.8.0/opencv.js';
-    let done = false;
-    cdn.onload = () => { done = true; onCvReady(); };
-    setTimeout(() => { if(!done) { UI_log('Sin OpenCV: modo manual activo. Descargá opencv.js en /libs/ para reconocimiento.','err'); document.getElementById('bannerCv').style.display='block'; } }, 12000);
-    document.head.appendChild(cdn);
-  };
-  local.onload = onCvReady;
-  document.head.appendChild(local);
-  function onCvReady(){
-    if (window.cv) cv.onRuntimeInitialized = () => {
-      window.CVREADY = true;
-      UI_setChip('stCV','on','🧠 CV listo');
-      document.getElementById('btnCapture').disabled = false;
-      UI_log('OpenCV.js inicializado','ok');
-    };
-  }
-})();
-</script>
+    <script>
+        let peer = null;
+        let conn = null;
+        let wakeLock = null;
 
-<script>
-'use strict';
-/* ============================================================================
-   CAPA 1 — BASE DE DATOS (IndexedDB con fallback en memoria si falla)
-   ============================================================================ */
-const DBEngine = (() => {
-  let db = null, memFallback = { cartas:{}, historial:[], sesion:{}, embeddings:{} };
-  const useMem = () => !db;
+        // Patrones de vibración en milisegundos [vibrar, pausar, vibrar...]
+        const patrones = {
+            envido: [200],
+            real_envido: [200, 150, 200],
+            falta_envido: [800],
+            truco: [150, 100, 150, 100, 150],
+            re_truco: [600, 150, 200],
+            vale_cuatro: [600, 200, 600],
+            quiero: [100, 50, 100],
+            no_quiero: [1200]
+        };
 
-  function buildDeck() {
-    const palos = ['espada','basto','oro','copa'];
-    const trucoRank = { '1_espada':14,'1_basto':13,'7_espada':12,'7_oro':11,'3_espada':10,'3_basto':10,'3_oro':10,'3_copa':10,
-      '2_espada':9,'2_basto':9,'2_oro':9,'2_copa':9,'1_oro':8,'1_copa':8,'12_espada':7,'12_basto':7,'12_oro':7,'12_copa':7,
-      '11_espada':6,'11_basto':6,'11_oro':6,'11_copa':6,'10_espada':5,'10_basto':5,'10_oro':5,'10_copa':5,
-      '7_basto':4,'7_copa':4,'6_espada':3,'6_basto':3,'6_oro':3,'6_copa':3,'5_espada':2,'5_basto':2,'5_oro':2,'5_copa':2,
-      '4_espada':1,'4_basto':1,'4_oro':1,'4_copa':1 };
-    const deck = [];
-    for (const palo of palos) for (let n=1; n<=7; n++) deck.push(mk(n,palo));
-    for (const palo of palos) for (const n of [10,11,12]) deck.push(mk(n,palo));
-    function mk(n,palo){ return { id:`${n}_${palo}`, numero:n, palo, jerarquia:trucoRank[`${n}_${palo}`], envido:(n<=7?n:0) }; }
-    return deck;
-  }
+        // Comprobar parámetros en URL por si se escaneó un QR
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const connectId = urlParams.get('connect');
+            if (connectId) {
+                setRole('sender');
+                document.getElementById('target-id').value = connectId;
+                conectarAEmisor();
+            }
+        });
 
-  function open() {
-    return new Promise((res) => {
-      let req;
-      try { req = indexedDB.open('truco-tactico', 1); } catch(e) { res(null); return; }
-      req.onupgradeneeded = e => {
-        const d = e.target.result;
-        ['cartas','historial','sesion','embeddings'].forEach(s => { if(!d.objectStoreNames.contains(s)) d.createObjectStore(s, { keyPath: s==='historial'?'ts':'id' }); });
-        // embeddings usa keyPath 'id'; sesion necesita clave flexible → usamos put({id:k, v})
-      };
-      req.onsuccess = e => { db = e.target.result; res(db); };
-      req.onerror   = () => { db = null; res(null); };
-    });
-  }
-  function tx(store, mode, fn) {
-    return new Promise((res, rej) => {
-      const t = db.transaction(store, mode), s = t.objectStore(store);
-      const out = fn(s);
-      t.oncomplete = () => res(out && out.result !== undefined ? out.result : out);
-      t.onerror = () => rej(t.error);
-    });
-  }
-
-  async function init() {
-    await open();
-    if (useMem()) { UI_log('IndexedDB no disponible (file://?) — usando memoria temporal. Los datos no persistirán.','warn'); return; }
-    const count = await tx('cartas','readonly', s => s.count());
-    if (count === 0) {
-      const deck = buildDeck();
-      await tx('cartas','readwrite', s => deck.forEach(c => s.put(c)));
-    }
-    UI_log('DB lista: 40 naipes de truco (se descartan 8s y 9s del mazo de 50)','ok');
-  }
-  const allCards  = ()  => useMem() ? Object.values(memFallback.cartas) : tx('cartas','readonly', s => s.getAll());
-  const getCard   = id  => useMem() ? memFallback.cartas[id] : tx('cartas','readonly', s => s.get(id));
-  const saveEvent = e   => useMem() ? memFallback.historial.push({ts:Date.now(),...e}) : tx('historial','readwrite', s => s.put({ ts: Date.now(), ...e }));
-  const saveEmbedding = emb => useMem() ? memFallback.embeddings[emb.id]=emb : tx('embeddings','readwrite', s => s.put(emb));
-  const getEmbeddings   = ()  => useMem() ? Object.values(memFallback.embeddings) : tx('embeddings','readonly', s => s.getAll());
-  const getEmbedding    = id  => useMem() ? memFallback.embeddings[id] : tx('embeddings','readonly', s => s.get(id));
-  const setStat = (id,v) => useMem() ? memFallback.sesion[id]=v : tx('sesion','readwrite', s => s.put({ id, v }));
-  const getStat = id => useMem() ? (memFallback.sesion[id]??null) : tx('sesion','readonly', s => s.get(id)).then(r=>r?r.v:null);
-
-  return { init, allCards, getCard, saveEvent, saveEmbedding, getEmbeddings, getEmbedding, setStat, getStat };
-})();
-
-/* ============================================================================
-   CAPA 2 — MOTOR TÁCTICO (puro y determinístico)
-   ============================================================================ */
-const TacticsEngine = (() => {
-  function envidoPoints(cards) {
-    const byPalo = {};
-    cards.forEach(c => (byPalo[c.palo] = byPalo[c.palo] || []).push(c.envido));
-    let best = 0;
-    for (const palo in byPalo) {
-      const vals = byPalo[palo].sort((a,b)=>b-a);
-      if (vals.length >= 2) best = Math.max(best, 20 + vals[0] + vals[1]);
-    }
-    return best;
-  }
-  function handStrength(cards) { return Math.max(...cards.map(c=>c.jerarquia), 0); }
-  function recommend(cards, mesa=[]) {
-    if (!cards || cards.length === 0) return { texto:'Sin cartas — cargalas abajo 👇', tipo:'info', envido:0, fuerza:0 };
-    const envido = envidoPoints(cards), fuerza = handStrength(cards);
-    const mejor = [...cards].sort((a,b)=>b.jerarquia-a.jerarquia)[0];
-    let texto, tipo='ok';
-    if (mesa.length && mesa.some(m => m.jerarquia > mejor.jerarquia)) {
-      texto = mejor.jerarquia >= 11 ? `Rival va ganando — ${label(mejor)} no alcanza. Considerá irte al mazo.`
-                                    : `Rival va ganando — jugá ${label(mejor)} para matar o bajá una débil.`;
-      tipo='warn';
-    } else if (envido >= 31 && fuerza >= 10) texto = `¡Mano fuerte! Cantá TRUCO y mandá ENVIDO (${envido} pts)`;
-    else if (envido >= 27)   texto = `Mandá ENVIDO (${envido} puntos)`;
-    else if (fuerza >= 12)   texto = `Guardá el ${label(mejor)} — cantá TRUCO y jugá la 2ª mejor primero`;
-    else if (fuerza >= 8)    texto = `Cantá TRUCO. Si se pone dura, jugá ${label(mejor)}`;
-    else if (envido >= 20)   texto = `Envido flojo (${envido}). No cantes — jugá tranquilo`;
-    else { texto = `Mano débil. Bajá la más baja y esperá el error rival`; tipo='warn'; }
-    return { texto, tipo, envido, fuerza, mejor: mejor.id };
-  }
-  const label = c => `${c.numero===1?'Ancho':c.numero} de ${c.palo}${c.palo==='espada'&&c.numero===1?'':''}`;
-  return { envidoPoints, handStrength, recommend };
-})();
-
-/* ============================================================================
-   CAPA 3 — VISIÓN (OpenCV.js) + CLASIFICADOR ORB calibrado para TU mazo
-   ============================================================================ */
-const CVEngine = (() => {
-  let stream = null, analyzing = false;
-  const video = document.getElementById('video');
-  const preview = document.getElementById('canvasPreview');
-  const cvOk = () => window.cv && window.CVREADY === true;
-
-  async function startCamera() {
-    if (stream) return true;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode:{ ideal:'environment' }, width:{ideal:1280}, height:{ideal:720} }, audio:false });
-      video.srcObject = stream;
-      await video.play();
-      UI_setChip('stCam','on','📷 Cámara');
-      UI_log('Cámara activa','ok');
-      document.getElementById('btnCapture').disabled = !cvOk();
-      return true;
-    } catch(e) {
-      UI_log('Error cámara: '+e.message,'err');
-      if (location.protocol === 'file:') document.getElementById('bannerFile').style.display='block';
-      return false;
-    }
-  }
-
-  // Filtro anti falsos positivos: brillo + nitidez (Laplaciana)
-  function frameQuality(src) {
-    const g = new cv.Mat(); cv.cvtColor(src, g, cv.COLOR_RGBA2GRAY);
-    const mean = cv.mean(g)[0];
-    const lap = new cv.Mat(); cv.Laplacian(g, lap, cv.CV_64F);
-    const focus = Math.abs(cv.mean(lap)[0]);
-    g.delete(); lap.delete();
-    if (mean < 40 || mean > 220) return { ok:false, razon:`brillo extremo (${mean.toFixed(0)})` };
-    if (focus < 6) return { ok:false, razon:'muy desenfocado' };
-    return { ok:true };
-  }
-
-  // Detecta el contorno más parecido a una carta y devuelve el parche warpeado 200x300
-  function grabCard() {
-    if (!cvOk() || analyzing || video.readyState < 2) return null;
-    analyzing = true;
-    try {
-      const cap = new cv.VideoCapture(video);
-      const frame = new cv.Mat(video.videoHeight, video.videoWidth, cv.CV_8UC4);
-      cap.read(frame);
-      const q = frameQuality(frame);
-      if (!q.ok) { UI_log('Frame descartado: '+q.razon,'warn'); cleanup(frame); analyzing=false; return null; }
-
-      const gray = new cv.Mat(); cv.cvtColor(frame, gray, cv.COLOR_RGBA2GRAY);
-      cv.GaussianBlur(gray, gray, new cv.Size(5,5), 0);
-      const edges = new cv.Mat(); cv.Canny(gray, edges, 50, 150);
-      cv.dilate(edges, edges, cv.Mat.ones(3,3,cv.CV_8U));
-      const contours = new cv.MatVector(), hier = new cv.Mat();
-      cv.findContours(edges, contours, hier, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
-      const imgArea = frame.rows * frame.cols;
-      let best = null;
-      for (let i=0; i<contours.size(); i++) {
-        const cnt = contours.get(i);
-        const area = cv.contourArea(cnt);
-        if (area < imgArea*0.015 || area > imgArea*0.6) { cnt.delete(); continue; }
-        const peri = cv.arcLength(cnt, true);
-        const approx = new cv.Mat(); cv.approxPolyDP(cnt, approx, 0.05*peri, true);
-        if (approx.rows === 4 && cv.isContourConvex(approx)) {
-          const pts = [];
-          for (let j=0; j<4; j++) pts.push({ x:approx.intPtr(j,0)[0], y:approx.intPtr(j,0)[1] });
-          if (!best || area > best.area) best = { corners: orderPoints(pts), area };
+        function setRole(role) {
+            document.getElementById('role-selector').style.display = 'none';
+            if (role === 'receiver') {
+                document.getElementById('receiver-panel').style.display = 'flex';
+                iniciarReceptor();
+            } else {
+                document.getElementById('sender-panel').style.display = 'flex';
+                iniciarEmisor();
+            }
         }
-        approx.delete(); cnt.delete();
-      }
-      let patch = null;
-      if (best) {
-        patch = warpCard(frame, best.corners);
-        // Dibujar preview con el contorno encontrado
-        const vis = frame.clone();
-        const color = new cv.Scalar(46,160,67,255);
-        for (let j=0;j<4;j++) cv.line(vis, best.corners[j], best.corners[(j+1)%4], color, 4);
-        cv.imshow(preview, vis); vis.delete();
-      } else {
-        cv.imshow(preview, frame);
-      }
-      cleanup(frame,gray,edges,contours,hier);
-      analyzing = false;
-      return patch;
-    } catch(e) { UI_log('Error CV: '+e.message,'err'); analyzing=false; return null; }
-  }
-  function cleanup(...mats){ mats.forEach(m => m && m.delete && m.delete()); }
-  function orderPoints(pts) {
-    const s = pts.slice().sort((a,b)=>a.y-b.y);
-    const [tl,tr] = s.slice(0,2).sort((a,b)=>a.x-b.x);
-    const [bl,br] = s.slice(2,4).sort((a,b)=>a.x-b.x);
-    return [tl,tr,br,bl];
-  }
-  function warpCard(frame, pts) {
-    const W=200, H=300;
-    const dst = cv.matFromArray(4,1,cv.CV_32FC2,[0,0,W,0,W,H,0,H]);
-    const src = cv.matFromArray(4,1,cv.CV_32FC2,[pts[0].x,pts[0].y,pts[1].x,pts[1].y,pts[2].x,pts[2].y,pts[3].x,pts[3].y]);
-    const M = cv.getPerspectiveTransform(src,dst);
-    const out = new cv.Mat(); cv.warpPerspective(frame,out,M,new cv.Size(W,H));
-    src.delete(); dst.delete(); M.delete();
-    return out;
-  }
 
-  // Descriptores ORB de un parche (para calibración y para runtime)
-  function orbOf(mat) {
-    const orb = new cv.ORB(300);
-    const kps = new cv.KeyPointVector(), desc = new cv.Mat();
-    const g = new cv.Mat(); cv.cvtColor(mat, g, cv.COLOR_RGBA2GRAY);
-    orb.detectAndCompute(g, new cv.Mat(), kps, desc);
-    const data = { rows: desc.rows, cols: desc.cols, data: desc.rows>0 ? Array.from(desc.data) : [], kps: kps.size() };
-    orb.delete(); kps.delete(); desc.delete(); g.delete();
-    return data;
-  }
+        // --- LÓGICA DEL RECEPTOR (BOLSILLO) ---
+        function iniciarReceptor() {
+            peer = new Peer();
 
-  /* Clasificación: ORB match con ratio test (Lowe 0.75) contra embeddings
-     calibrados. Prefiltro por color de palo (diseño Naveta) y fallback a
-     búsqueda completa si la confianza es baja. */
-  function guessPaloByColor(mat) {
-    const hsv = new cv.Mat(); cv.cvtColor(mat, hsv, cv.COLOR_RGBA2RGB);
-    cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
-    let hSum=0, n=0;
-    // región central (evita bordes blancos): 25%-75% en x e y
-    for (let y=Math.floor(mat.rows*0.3); y<mat.rows*0.7; y+=4)
-      for (let x=Math.floor(mat.cols*0.3); x<mat.cols*0.7; x+=4) {
-        hSum += hsv.ucharPtr(y,x)[0]; n++;
-      }
-    hsv.delete();
-    if (!n) return null;
-    const h = hSum/n;
-    if (h < 15 || h > 165) return 'copa';   // rojo
-    if (h < 38)  return 'oro';              // amarillo/dorado
-    if (h < 95)  return 'basto';            // verde
-    return 'espada';                        // azul
-  }
+            peer.on('open', (id) => {
+                document.getElementById('peer-id-display').innerText = id;
+                
+                // Generar código QR con la URL de conexión directa
+                const directUrl = `${window.location.origin}${window.location.pathname}?connect=${id}`;
+                new QRCode(document.getElementById("qrcode"), {
+                    text: directUrl,
+                    width: 160,
+                    height: 160
+                });
+            });
 
-  async function classify(patch) {
-    if (!cvOk()) return { id:null, conf:0 };
-    const embs = await DBEngine.getEmbeddings();
-    if (embs.length === 0) return { id:null, conf:0, razon:'sin calibración' };
+            peer.on('connection', (connection) => {
+                conn = connection;
+                actualizarEstado('receiver-status', '🎮 Control Conectado', true);
+                
+                conn.on('data', (cmd) => {
+                    ejecutarVibracion(cmd);
+                });
 
-    const paloGuess = guessPaloByColor(patch);
-    let candidates = embs.filter(e => e.palo === paloGuess);
-    if (candidates.length === 0) candidates = embs;
+                conn.on('close', () => {
+                    actualizarEstado('receiver-status', 'Control Desconectado', false);
+                });
+            });
+        }
 
-    let best = matchSet(patch, candidates);
-    if (best.conf < 0.45) { // baja confianza → reintentar contra todo el mazo
-      const full = matchSet(patch, embs);
-      if (full.conf > best.conf) best = full;
-    }
-    return best;
-  }
+        function ejecutarVibracion(comando) {
+            if (patrones[comando] && 'vibrate' in navigator) {
+                navigator.vibrate(patrones[comando]);
+            }
+        }
 
-  function matchSet(patch, candidates) {
-    const desc1 = orbOf(patch);
-    if (desc1.rows === 0 || desc1.data.length === 0) return { id:null, conf:0 };
-    const d1 = cv.matFromArray(desc1.rows, desc1.cols, cv.CV_8U, desc1.data);
-    const bf = new cv.BFMatcher(cv.NORM_HAMMING, false);
-    let best = { id:null, conf:0 };
-    for (const ref of candidates) {
-      if (!ref.desc || !ref.desc.data || ref.desc.data.length === 0) continue;
-      const d2 = cv.matFromArray(ref.desc.rows, ref.desc.cols, cv.CV_8U, ref.desc.data);
-      const matches = new cv.DMatchVectorVector();
-      bf.knnMatch(d1, d2, matches, 2);
-      let good = 0;
-      for (let i=0; i<matches.size(); i++) {
-        const m = matches.get(i);
-        if (m.size() === 2 && m.get(0).distance < 0.75 * m.get(1).distance) good++;
-        else if (m.size() === 1) good++;
-        m.delete();
-      }
-      const conf = Math.min(1, good / 25); // ~25 good matches = muy seguro
-      if (conf > best.conf) best = { id: ref.id, conf, good };
-      d2.delete(); matches.delete();
-    }
-    d1.delete(); bf.delete();
-    return best;
-  }
+        // --- LÓGICA DEL EMISOR (CONTROL) ---
+        function iniciarEmisor() {
+            peer = new Peer();
+        }
 
-  return { startCamera, grabCard, classify, orbOf, cvOk, get stream(){return stream;} };
-})();
-window.CVREADY = false;
+        function conectarAEmisor() {
+            const targetId = document.getElementById('target-id').value.trim();
+            if (!targetId) return;
 
-/* ============================================================================
-   CAPA 4 — VOZ / WAKE LOCK / UI
-   ============================================================================ */
-let wakeLock = null;
-const VoiceUI = (() => {
-  let voiceOn = false, lastSpoken = '';
-  function enableVoice() {
-    voiceOn = true; UI_setChip('stVoice','on','🔊 Voz ES');
-    UI_log('Voz activada','ok');
-  }
-  function speak(text, force=false) {
-    if (!voiceOn || !('speechSynthesis' in window)) return;
-    if (!force && text === lastSpoken) return;
-    lastSpoken = text;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'es-AR'; u.rate = 1.05;
-    const v = speechSynthesis.getVoices().find(v=>v.lang && v.lang.startsWith('es'));
-    if (v) u.voice = v;
-    speechSynthesis.speak(u);
-  }
-  async function toggleWakeLock() {
-    try {
-      if (wakeLock) { await wakeLock.release(); wakeLock=null; UI_setChip('stLock','off','🔒 WakeLock'); }
-      else {
-        wakeLock = await navigator.wakeLock.request('screen');
-        UI_setChip('stLock','on','🔒 Pantalla activa');
-        wakeLock.addEventListener('release', ()=> UI_setChip('stLock','off','🔒 WakeLock'));
-      }
-    } catch(e) { UI_log('WakeLock: '+e.message,'warn'); }
-  }
-  return { enableVoice, speak, toggleWakeLock, get voiceOn(){return voiceOn;} };
-})();
+            actualizarEstado('sender-status', 'Conectando...', false);
+            conn = peer.connect(targetId);
 
-function UI_setChip(id, cls, txt) { const el = document.getElementById(id); el.className = 'chip '+cls; el.textContent = txt; }
-function UI_log(msg, type='') {
-  const p = document.getElementById('logPanel');
-  const d = document.createElement('div'); d.className = type;
-  d.textContent = `[${new Date().toLocaleTimeString('es-AR')}] ${msg}`;
-  p.prepend(d);
-  while (p.children.length > 120) p.lastChild.remove();
-  if (DBEngine) DBEngine.saveEvent({ tipo:'log', nivel:type, msg }).catch(()=>{});
-}
-function UI_setRec(rec) {
-  const el = document.getElementById('recommendation');
-  el.textContent = rec.texto;
-  el.style.color = rec.tipo==='warn' ? 'var(--warn)' : rec.tipo==='info' ? 'var(--fg)' : 'var(--accent)';
-  document.getElementById('stEnvido').textContent = rec.envido || '—';
-  document.getElementById('stFuerza').textContent = rec.fuerza || '—';
-}
+            conn.on('open', () => {
+                actualizarEstado('sender-status', '📱 Conectado al Bolsillo', true);
+                document.getElementById('connect-form').style.display = 'none';
+                document.getElementById('controls').style.display = 'grid';
+            });
 
-/* ============================================================================
-   ORQUESTADOR + CALIBRACIÓN DEL MAZO
-   ============================================================================ */
-const App = (() => {
-  let hand = [], loopId = null, detects = 0, wins = 0, played = 0;
-  let calib = { active:false, queue:[], idx:0 };
+            conn.on('close', () => {
+                actualizarEstado('sender-status', 'Conexión perdida', false);
+                document.getElementById('connect-form').style.display = 'flex';
+                document.getElementById('controls').style.display = 'none';
+            });
+        }
 
-  async function init() {
-    if (location.protocol === 'file:') document.getElementById('bannerFile').style.display='block';
-    try { await DBEngine.init(); UI_setChip('stDB','on','🗄️ DB lista'); }
-    catch(e) { UI_log('DB: '+e.message,'err'); }
+        function enviarVibracion(tipo) {
+            if (conn && conn.open) {
+                conn.send(tipo);
+                // Vibración háptica local de confirmación corta
+                if ('vibrate' in navigator) navigator.vibrate(40);
+            }
+        }
 
-    buildManualInputs();
-    await loadSession();
-    registerSW();
+        function actualizarEstado(elementId, texto, conectado) {
+            const el = document.getElementById(elementId);
+            el.innerText = texto;
+            if (conectado) el.classList.add('connected');
+            else el.classList.remove('connected');
+        }
 
-    document.getElementById('btnStart').onclick    = async () => { if (await CVEngine.startCamera()) { document.getElementById('btnCapture').disabled = !CVEngine.cvOk(); } };
-    document.getElementById('btnCapture').onclick  = analyzeOnce;
-    document.getElementById('btnWakeLock').onclick = VoiceUI.toggleWakeLock;
-    document.getElementById('btnVoice').onclick    = () => { VoiceUI.enableVoice(); VoiceUI.speak('Asistente listo.', true); };
-    document.getElementById('btnEval').onclick     = evaluateHand;
-    document.getElementById('btnEnvido').onclick   = () => { UI_log('Evento: quiso envido','ok'); DBEngine.saveEvent({tipo:'envido'}); };
-    document.getElementById('btnTruco').onclick    = () => { UI_log('Evento: quiso truco','ok'); DBEngine.saveEvent({tipo:'truco'}); };
-    document.getElementById('btnReset').onclick    = resetHand;
-    document.getElementById('btnCalib').onclick    = startCalibration;
-    document.getElementById('btnCalibCapture').onclick = captureCalibCard;
-    document.getElementById('btnCalibSkip').onclick    = skipCalibCard;
-    document.getElementById('btnCalibStop').onclick    = stopCalibration;
+        // --- MODO BOLSILLO Y WAKE LOCK ---
+        async function activarModoBolsillo() {
+            document.getElementById('stealth-screen').classList.add('active');
+            try {
+                if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+            } catch (err) {}
+        }
 
-    document.addEventListener('visibilitychange', async () => {
-      if (document.visibilityState === 'visible' && !wakeLock && VoiceUI.voiceOn) {
-        try { wakeLock = await navigator.wakeLock.request('screen'); UI_setChip('stLock','on','🔒 Pantalla activa'); } catch(e){}
-      }
-    });
-  }
-
-  /* ----- flujo principal ----- */
-  async function analyzeOnce() {
-    if (!CVEngine.stream) { UI_log('Primero iniciá la cámara','warn'); return; }
-    if (!CVEngine.cvOk())  { UI_log('OpenCV no está listo — usá el modo manual de abajo','warn'); return; }
-    const patch = CVEngine.grabCard();
-    if (!patch) { UI_log('No se detectó ninguna carta — acercala y evitá reflejos','warn'); return; }
-    const res = await CVEngine.classify(patch);
-    patch.delete();
-    if (!res.id) { UI_log(res.razon ? 'Sin calibración: tocá "Calibrar mi mazo" primero' : `Carta no reconocida (conf ${(res.conf*100).toFixed(0)}%)`,'warn'); return; }
-    const card = await DBEngine.getCard(res.id);
-    if (!card) return;
-    if (hand.some(c=>c.id===card.id)) { UI_log(`${card.numero} de ${card.palo} ya está en tu mano`,'warn'); return; }
-    hand.push(card); detects++;
-    document.getElementById('stDetects').textContent = detects;
-    UI_log(`✔ ${card.numero} de ${card.palo} (jer. ${card.jerarquia}, conf ${(res.conf*100).toFixed(0)}%)`,'ok');
-    DBEngine.saveEvent({ tipo:'deteccion', carta:card.id, conf:res.conf });
-    if (hand.length >= 3) evaluateHand();
-  }
-
-  async function evaluateHand() {
-    if (hand.length === 0) { UI_log('Sin cartas para evaluar','warn'); return; }
-    const rec = TacticsEngine.recommend(hand);
-    UI_setRec(rec);
-    VoiceUI.speak(rec.texto);
-    DBEngine.saveEvent({ tipo:'recomendacion', texto:rec.texto, envido:rec.envido, fuerza:rec.fuerza, mano:hand.map(c=>c.id) });
-    played++; persistSession();
-  }
-
-  function resetHand() {
-    hand = [];
-    document.querySelectorAll('#manualCards select').forEach(s=>s.value='');
-    document.getElementById('recommendation').textContent = 'Nueva mano — cargá tus cartas';
-    UI_log('Mano reiniciada','ok');
-    VoiceUI.speak('Nueva mano.', true);
-  }
-
-  /* ----- modo manual ----- */
-  function buildManualInputs() {
-    const wrap = document.getElementById('manualCards');
-    const palos = ['espada','basto','oro','copa'];
-    for (let i=0;i<3;i++) {
-      const sel = document.createElement('select');
-      sel.innerHTML = `<option value="">carta ${i+1}</option>` +
-        palos.map(p => `<optgroup label="${p.toUpperCase()}">` +
-          [1,2,3,4,5,6,7,10,11,12].map(n=>`<option value="${n}_${p}">${n} ${p}</option>`).join('') +
-        `</optgroup>`).join('');
-      sel.onchange = onManual;
-      wrap.appendChild(sel);
-    }
-  }
-  function onManual() {
-    const ids = [...document.querySelectorAll('#manualCards select')].map(s=>s.value).filter(Boolean);
-    Promise.all(ids.map(id=>DBEngine.getCard(id))).then(cards=>{
-      hand = cards.filter(Boolean);
-      if (hand.length === 3) evaluateHand();
-    });
-  }
-
-  /* ----- calibración del mazo ----- */
-  async function startCalibration() {
-    if (!await CVEngine.startCamera()) return;
-    if (!CVEngine.cvOk()) { UI_log('Necesito OpenCV.js cargado para calibrar','err'); return; }
-    const deck = await DBEngine.allCards();
-    calib = { active:true, queue: deck.map(c=>c.id), idx:0 };
-    document.getElementById('calibBox').classList.add('active');
-    document.getElementById('btnCalib').disabled = true;
-    UI_setChip('stCalib','warn','🎯 Calibrando…');
-    nextCalibTarget();
-  }
-  function nextCalibTarget() {
-    if (calib.idx >= calib.queue.length) return finishCalibration();
-    const id = calib.queue[calib.idx];
-    const card = id.split('_');
-    document.getElementById('calibTarget').textContent = `${card[0]} de ${card[1].toUpperCase()}`;
-    document.getElementById('calibCount').textContent = `${calib.idx} / ${calib.queue.length}`;
-    document.getElementById('calibProg').style.width = (calib.idx/calib.queue.length*100)+'%';
-  }
-  function captureCalibCard() {
-    const patch = CVEngine.grabCard();
-    if (!patch) { UI_log('No veo la carta — centrála en cámara','warn'); return; }
-    const desc = CVEngine.orbOf(patch);
-    patch.delete();
-    if (desc.rows < 10) { UI_log('Pocos descriptores — mejor iluminación / enfocá','warn'); return; }
-    const id = calib.queue[calib.idx];
-    const [,palo] = id.split('_');
-    DBEngine.saveEmbedding({ id, palo, desc });
-    calib.idx++;
-    UI_log(`Calibrada ${id} (${desc.kps} keypoints)`,'ok');
-    nextCalibTarget();
-  }
-  function skipCalibCard() { calib.idx++; nextCalibTarget(); }
-  function stopCalibration() {
-    calib.active = false;
-    document.getElementById('calibBox').classList.remove('active');
-    document.getElementById('btnCalib').disabled = false;
-    UI_setChip('stCalib','off','🎯 Calibración');
-  }
-  async function finishCalibration() {
-    stopCalibration();
-    UI_setChip('stCalib','on','🎯 Mazo calibrado ✔');
-    UI_log('¡Calibración completa! El reconocimiento de tu mazo quedó guardado en el celular.','ok');
-    VoiceUI.speak('Mazo calibrado. Listo para jugar.', true);
-  }
-
-  /* ----- sesión ----- */
-  async function loadSession() {
-    detects = await DBEngine.getStat('detects') || 0;
-    wins    = await DBEngine.getStat('wins')    || 0;
-    played  = await DBEngine.getStat('played')  || 0;
-    document.getElementById('stDetects').textContent = detects;
-    updateWinRate();
-    const nEmb = (await DBEngine.getEmbeddings()).length;
-    if (nEmb >= 40) UI_setChip('stCalib','on',`🎯 Calibrado (${nEmb})`);
-  }
-  async function persistSession() {
-    await DBEngine.setStat('detects', detects);
-    await DBEngine.setStat('wins', wins);
-    await DBEngine.setStat('played', played);
-    updateWinRate();
-  }
-  function updateWinRate() {
-    document.getElementById('stWinRate').textContent = played ? Math.round(wins/played*100)+'%' : '—';
-  }
-
-  function registerSW() {
-    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-      const sw = `self.addEventListener('install',e=>{self.skipWaiting()});
-self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});
-self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).then(n=>{const cl=n.clone();caches.open('truco-v2').then(c=>c.put(e.request,cl));return n}).catch(()=>caches.match(e.request)))});`;
-      navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'})))
-        .then(()=>UI_log('PWA activa — cacheá la página una vez y funciona offline','ok'))
-        .catch(e=>UI_log('SW: '+e.message,'warn'));
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', init);
-  return {};
-})();
-</script>
+        function desactivarModoBolsillo() {
+            document.getElementById('stealth-screen').classList.remove('active');
+            if (wakeLock) {
+                wakeLock.release().then(() => { wakeLock = null; });
+            }
+        }
+    </script>
 </body>
 </html>
