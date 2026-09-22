@@ -2,296 +2,481 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#121212">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Truco - Espía</title>
-    
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Asistente de Truco AI</title>
     <style>
         :root {
-            --bg: #121212;
-            --surface: #1e1e1e;
-            --primary: #4CAF50;
-            --text: #ffffff;
+            --bg: #0e0e10;
+            --card-bg: #18181b;
+            --border: #27272a;
+            --primary: #22c55e;
+            --primary-hover: #16a34a;
+            --warning: #f59e0b;
+            --text: #f4f4f5;
+            --text-muted: #a1a1aa;
         }
-        
-        body {
-            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg); color: var(--text);
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; overflow: hidden; user-select: none;
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Top Bar */
-        .header { margin-top: 20px; text-align: center; width: 100%; }
-        .header h1 { font-size: 1.2rem; color: #aaa; margin: 0 0 10px 0; }
-        .status-badge { padding: 8px 15px; border-radius: 20px; font-weight: bold; background: #333; font-size: 0.85rem; display: inline-block; transition: 0.3s;}
-        .status-badge.connected { background: var(--primary); color: #000; box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);}
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+        }
 
-        /* Containers */
-        .container { width: 100%; max-width: 400px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; gap: 15px; }
-        
-        /* QR Section */
-        .setup-card { background: var(--surface); padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #333; }
-        #qr-canvas { background: white; padding: 10px; border-radius: 10px; margin-bottom: 15px; width: 180px; height: 180px;}
-        .link-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: var(--primary); text-align: center; font-family: monospace; font-size: 0.9rem; margin-bottom: 10px; box-sizing: border-box; cursor: pointer;}
-        .btn-copy { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer;}
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
 
-        /* Grid Botones */
-        .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .btn-carta { border: 1px solid #333; border-radius: 15px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--surface); transition: transform 0.05s, background 0.1s; }
-        .btn-carta:active { transform: scale(0.95); background: #333; }
-        .icono { font-size: 2.2rem; margin-bottom: 5px; pointer-events: none; }
-        .nombre { font-size: 1rem; font-weight: bold; color: #ddd; margin-bottom: 2px; pointer-events: none;}
-        .ritmo { font-size: 0.75rem; color: #888; pointer-events: none; }
+        header {
+            text-align: center;
+            padding: 8px 0;
+        }
 
-        /* Controles Inferiores */
-        .bottom-controls { margin-top: auto; padding-bottom: 30px; width: 100%; max-width: 400px; text-align: center;}
-        .btn-stealth { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 1rem; width: 90%; }
+        header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
 
-        /* Toast Notifications */
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 20px; padding: 12px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; }
-        #toast.show { visibility: visible; opacity: 1; }
+        header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
 
-        /* Modo Sigilo (Pantalla OLED Apagada) */
-        #stealth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; }
-        #stealth-overlay.active { display: flex; }
-        .stealth-zone { flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; color: #111; font-size: 1.5rem; font-weight: bold; }
-        #zone-left { border-right: 1px solid #050505; }
-        
-        .exit-stealth { position: absolute; top: 20px; right: 20px; color: #333; font-size: 1.5rem; background: none; border: none; padding: 20px; }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        input[type="password"]:focus {
+            border-color: var(--primary);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge.active {
+            color: var(--primary);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #000;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: #000;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .log-box {
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            min-height: 60px;
+            max-height: 100px;
+            overflow-y: auto;
+            word-break: break-word;
+        }
+
+        /* Modo Bolsillo / Sigilo */
+        #pocket-mode-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: #000000;
+            z-index: 99999;
+            width: 100vw;
+            height: 100vh;
+            touch-action: manipulation;
+        }
+
+        #pocket-mode-overlay.active {
+            display: block;
+        }
+
+        .exit-pocket-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #333333;
+            border: 1px solid #111111;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 100000;
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Señas de Truco</h1>
-        <div id="status" class="status-badge">Iniciando Servidor...</div>
-    </div>
+    <div class="app-container">
+        <header>
+            <h1>Truco Vision AI</h1>
+            <p>Asistente visual en tiempo real para bolsillo</p>
+        </header>
 
-    <div class="container" id="setup-screen">
-        <div class="setup-card">
-            <p style="margin: 0 0 15px 0; font-size:0.9rem; color:#aaa;">Escaneá para conectar al compañero:</p>
-            <canvas id="qr-canvas"></canvas>
-            <input type="text" id="manual-link" class="link-box" readonly value="Generando link...">
-            <button class="btn-copy" onclick="copiarLink()">Copiar Link Manual</button>
+        <div class="card">
+            <label for="api-key">Gemini API Key</label>
+            <input type="password" id="api-key" placeholder="AIzaSy..." autocomplete="off">
+        </div>
+
+        <div class="card">
+            <div class="video-container">
+                <video id="webcam" autoplay playsinline muted></video>
+                <div id="cam-status" class="badge">
+                    <span class="dot"></span>
+                    <span id="cam-status-text">Cámara apagada</span>
+                </div>
+            </div>
+
+            <button id="btn-cam" class="btn btn-outline" onclick="toggleCamara()">Iniciar Cámara Trasera</button>
+            <button class="btn btn-primary" onclick="analizarMesa()">Analizar Mesa 📸</button>
+            <button class="btn btn-warning" onclick="activarModoBolsillo()">Activar Modo Bolsillo 👁️</button>
+        </div>
+
+        <div class="card">
+            <label>Estado / Respuesta</label>
+            <div id="log" class="log-box">Listo para iniciar.</div>
         </div>
     </div>
 
-    <div class="container" id="active-screen" style="display: none;">
-        <div class="btn-grid" id="button-container"></div>
+    <!-- Capa negra completa para el Bolsillo -->
+    <div id="pocket-mode-overlay" onclick="handlePocketTap(event)">
+        <button class="exit-pocket-btn" onclick="event.stopPropagation(); desactivarModoBolsillo();">Salir de Modo Bolsillo</button>
     </div>
 
-    <div class="bottom-controls">
-        <button class="btn-stealth" onclick="activarSigilo()">Modo Sigilo (Bolsillo) 👁️</button>
-    </div>
-
-    <div id="toast">Notificación</div>
-
-    <!-- Capa negra para el bolsillo -->
-    <div id="stealth-overlay">
-        <button class="exit-stealth" onclick="desactivarSigilo()">X</button>
-        <div class="stealth-zone" id="zone-left" onclick="sigiloCiclar()">[ CAMBIAR ]<br>Seña</div>
-        <div class="stealth-zone" id="zone-right" onclick="sigiloEnviar()">[ ENVIAR ]<br>Confirmar</div>
-    </div>
+    <canvas id="canvas" style="display: none;"></canvas>
 
     <script>
-        // CONFIGURACIÓN DE SEÑAS Y VIBRACIONES
-        // Patrones en milisegundos: [Vibra, Pausa, Vibra, Pausa...]
-        const SENAS = [
-            { id: 'MACHO', nombre: '1 Espada', icono: '♠️', ritmo: '1 Largo', patron: [700] },
-            { id: 'HEMBRA', nombre: '1 Basto', icono: '🪵', ritmo: '2 Largos', patron: [400, 200, 400] },
-            { id: '7ESPADA', nombre: '7 Espada', icono: '⚔️', ritmo: '3 Rápidos', patron: [150, 100, 150, 100, 150] },
-            { id: '7ORO', nombre: '7 Oro', icono: '🪙', ritmo: '4 Rápidos', patron: [100, 80, 100, 80, 100, 80, 100] },
-            { id: 'TRES', nombre: 'Los Tres', icono: '3️⃣', ritmo: '3 Medios', patron: [250, 150, 250, 150, 250] },
-            { id: 'DOS', nombre: 'Los Dos', icono: '2️⃣', ritmo: '2 Medios', patron: [250, 150, 250] },
-            { id: 'ENVIDO', nombre: 'Envido/Tantos', icono: '🗣️', ritmo: 'Corto - Largo', patron: [150, 150, 600] },
-            { id: 'MALAS', nombre: 'Malas (Ciego)', icono: '👎', ritmo: '1 Toquecito', patron: [50] }
-        ];
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const logBox = document.getElementById('log');
+        const apiKeyInput = document.getElementById('api-key');
+        const camStatus = document.getElementById('cam-status');
+        const camStatusText = document.getElementById('cam-status-text');
+        const btnCam = document.getElementById('btn-cam');
+        const pocketOverlay = document.getElementById('pocket-mode-overlay');
 
-        let peer, conexion;
-        let esHost = true;
+        let stream = null;
         let wakeLock = null;
-        let sigiloIndex = 0; // Para saber qué seña elegimos en el bolsillo
+        let isProcessing = false;
 
-        // Detectar si venimos de un link
-        const urlObj = new URL(window.location.href);
-        const guestJoinId = urlObj.searchParams.get('join'); 
-        if (guestJoinId) esHost = false;
-
-        // Referencias UI
-        const UI = {
-            status: document.getElementById('status'),
-            setupScreen: document.getElementById('setup-screen'),
-            activeScreen: document.getElementById('active-screen'),
-            btnContainer: document.getElementById('button-container'),
-            manualLink: document.getElementById('manual-link'),
-            stealthOverlay: document.getElementById('stealth-overlay')
-        };
-
-        // Generar Botones Visibles
-        SENAS.forEach(sena => {
-            const btn = document.createElement('div');
-            btn.className = 'btn-carta';
-            btn.innerHTML = `
-                <span class="icono">${sena.icono}</span>
-                <span class="nombre">${sena.nombre}</span>
-                <span class="ritmo">${sena.ritmo}</span>
-            `;
-            btn.onclick = () => procesarEnvio(sena);
-            UI.btnContainer.appendChild(btn);
+        // Cargar API Key guardada
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('truco_gemini_key');
+            if (savedKey) apiKeyInput.value = savedKey;
         });
 
-        // ================= RED Y PEERJS =================
-        function inicializar() {
-            peer = new Peer();
-            peer.on('open', (id) => {
-                if (esHost) iniciarHost(id);
-                else iniciarGuest(guestJoinId);
-            });
-            peer.on('error', (err) => showToast("Error de conexión"));
+        apiKeyInput.addEventListener('change', () => {
+            localStorage.setItem('truco_gemini_key', apiKeyInput.value.trim());
+        });
+
+        function log(msg) {
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            logBox.innerText = `[${timestamp}] ${msg}`;
+            console.log(msg);
         }
 
-        function iniciarHost(myId) {
-            const currentUrl = new URL(window.location.href.split('?')[0]);
-            currentUrl.searchParams.set('join', myId);
-            const joinUrl = currentUrl.toString();
-            
-            UI.manualLink.value = joinUrl;
-            new QRious({ element: document.getElementById('qr-canvas'), value: joinUrl, size: 250, level: 'M' });
-
-            peer.on('connection', configurarConexion);
-            setStatus('Esperando compañero...');
-        }
-
-        function iniciarGuest(hostId) {
-            UI.setupScreen.style.display = 'none';
-            UI.activeScreen.style.display = 'block';
-            setStatus('Conectando al Host...');
-            configurarConexion(peer.connect(hostId));
-        }
-
-        function configurarConexion(conn) {
-            conexion = conn;
-            conexion.on('open', () => {
-                setStatus('¡Sincronizados!', true);
-                UI.setupScreen.style.display = 'none'; 
-                UI.activeScreen.style.display = 'block';
-                showToast("Conexión segura establecida", "success");
-            });
-            
-            conexion.on('data', (data) => {
-                if (data.senaId) recibirVibracion(data.senaId);
-            });
-            
-            conexion.on('close', () => {
-                setStatus('Desconectado');
-                showToast("Compañero desconectado");
-                if(esHost) {
-                    UI.setupScreen.style.display = 'flex';
-                    UI.activeScreen.style.display = 'none';
-                }
-            });
-        }
-
-        // ================= VIBRACIÓN Y ENVÍO =================
-        function procesarEnvio(sena) {
-            if (conexion && conexion.open) {
-                conexion.send({ senaId: sena.id });
-                showToast(`Enviado: ${sena.nombre}`);
+        // 1. GESTIÓN DE CÁMARA TRASERA
+        async function toggleCamara() {
+            if (stream) {
+                detenerCamara();
             } else {
-                showToast("Error: No estás conectado", "error");
+                await iniciarCamara();
             }
-            ejecutarVibracion(sena.patron);
         }
 
-        function recibirVibracion(senaId) {
-            const sena = SENAS.find(s => s.id === senaId);
-            if (sena) {
-                ejecutarVibracion(sena.patron);
-                // Si la pantalla no está en sigilo, mostramos visualmente qué llegó
-                if (!UI.stealthOverlay.classList.contains('active')) {
-                    document.body.style.backgroundColor = 'var(--primary)';
-                    setTimeout(() => document.body.style.backgroundColor = 'var(--bg)', 300);
+        async function iniciarCamara() {
+            log("Iniciando cámara trasera...");
+            try {
+                // Intentar forzar cámara trasera principal
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { exact: "environment" },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+            } catch (err) {
+                // Fallback a selector flexible
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: "environment" },
+                        audio: false
+                    });
+                } catch (e) {
+                    log("Error de acceso a cámara: " + e.message);
+                    return false;
                 }
             }
+
+            video.srcObject = stream;
+            camStatus.classList.add('active');
+            camStatusText.innerText = "Cámara Activa";
+            btnCam.innerText = "Detener Cámara";
+            log("Cámara trasera conectada.");
+            return true;
         }
 
-        function ejecutarVibracion(patron) {
-            if (navigator.vibrate) {
+        function detenerCamara() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video.srcObject = null;
+                camStatus.classList.remove('active');
+                camStatusText.innerText = "Cámara apagada";
+                btnCam.innerText = "Iniciar Cámara Trasera";
+                log("Cámara detenida.");
+            }
+        }
+
+        // 2. CAPTURA Y ENVIÓ A GEMINI VISION API
+        async function analizarMesa() {
+            if (isProcessing) return;
+
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                const msg = "Falta la API Key de Gemini";
+                log(msg);
+                hablar(msg);
+                return;
+            }
+
+            if (!stream) {
+                const ok = await iniciarCamara();
+                if (!ok) return;
+            }
+
+            isProcessing = true;
+            vibrar(60);
+            log("Analizando imagen...");
+
+            // Tomar fotograma del vídeo
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convertir a JPEG Base64
+            const base64Data = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const promptTexto = "Identifica las cartas de Truco visibles en la mesa y dame la mejor jugada corta en 5 palabras.";
+
+            const requestBody = {
+                contents: [{
+                    parts: [
+                        { text: promptTexto },
+                        { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+                    ]
+                }],
+                generationConfig: {
+                    maxOutputTokens: 30,
+                    temperature: 0.2
+                }
+            };
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await res.json();
+
+                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                    const respuesta = data.candidates[0].content.parts[0].text.trim();
+                    log("IA: " + respuesta);
+                    vibrar([40, 60, 40]); // Patrón de doble pulso para indicar éxito
+                    hablar(respuesta);
+                } else if (data.error) {
+                    log("Error API: " + data.error.message);
+                    hablar("Error de API");
+                } else {
+                    log("No se detectó respuesta válida.");
+                    hablar("No pude ver nada");
+                }
+            } catch (err) {
+                log("Error de red: " + err.message);
+                hablar("Error de conexión");
+            } finally {
+                isProcessing = false;
+            }
+        }
+
+        // 3. SINTETIZADOR DE VOZ
+        function hablar(texto) {
+            if (!('speechSynthesis' in window)) return;
+
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.1; // Ligeramente más acelerado
+            utterance.pitch = 1.0;
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function vibrar(patron) {
+            if ('vibrate' in navigator) {
                 navigator.vibrate(patron);
             }
         }
 
-        // ================= MODO SIGILO (BOLSILLO) =================
-        async function activarSigilo() {
-            UI.stealthOverlay.classList.add('active');
-            sigiloIndex = 0;
-            
-            try { // Mantener pantalla prendida
-                if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
-            } catch (err) { console.log('WakeLock error:', err); }
-            
-            ejecutarVibracion([50]); // Feedback de activación
-        }
-
-        function desactivarSigilo() {
-            UI.stealthOverlay.classList.remove('active');
-            if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
-            ejecutarVibracion([50, 50, 50]); 
-        }
-
-        function sigiloCiclar() {
-            // Avanzamos por el array de señas
-            sigiloIndex++;
-            if(sigiloIndex >= SENAS.length) sigiloIndex = 0;
-            
-            // Vibramos cortito para saber en qué número de lista estamos
-            // Ej: 1 vibracion = Macho, 2 = Hembra, 3 = 7 Espada
-            let patronFeedback = [];
-            for(let i=0; i <= sigiloIndex; i++) { patronFeedback.push(80, 100); }
-            ejecutarVibracion(patronFeedback);
-        }
-
-        function sigiloEnviar() {
-            // Mandamos la seña actual del ciclo
-            const senaElegida = SENAS[sigiloIndex];
-            if (conexion && conexion.open) {
-                conexion.send({ senaId: senaElegida.id });
+        // 4. MODO BOLSILLO & WAKE LOCK
+        async function activarModoBolsillo() {
+            if (!stream) {
+                const ok = await iniciarCamara();
+                if (!ok) return;
             }
-            // Vibramos nosotros para confirmar con el patrón real
-            ejecutarVibracion(senaElegida.patron);
-            // Reseteamos el ciclo
-            sigiloIndex = 0; 
+
+            pocketOverlay.classList.add('active');
+            solicitarWakeLock();
+            log("Modo Bolsillo activado (Pantalla Negra)");
+            vibrar(100);
         }
 
-        // ================= UTILS =================
-        function setStatus(text, isConnected = false) {
-            UI.status.innerText = text;
-            UI.status.className = isConnected ? 'status-badge connected' : 'status-badge';
+        function desactivarModoBolsillo() {
+            pocketOverlay.classList.remove('active');
+            liberarWakeLock();
+            log("Modo Bolsillo desactivado");
+            vibrar(50);
         }
 
-        function copiarLink() {
-            UI.manualLink.select();
-            document.execCommand('copy');
-            showToast("¡Link copiado!");
+        function handlePocketTap(event) {
+            analizarMesa();
         }
 
-        function showToast(msg) {
-            const toast = document.getElementById("toast");
-            toast.innerText = msg;
-            toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        async function solicitarWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log("WakeLock error:", err.message);
+            }
         }
 
-        // Iniciar App
-        window.onload = inicializar;
+        function liberarWakeLock() {
+            if (wakeLock) {
+                wakeLock.release().then(() => { wakeLock = null; });
+            }
+        }
 
+        // Mantener WakeLock activo si se cambia de pestaña
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                await solicitarWakeLock();
+            }
+        });
     </script>
 </body>
 </html>
