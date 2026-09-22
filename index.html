@@ -3,437 +3,381 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Asistente de Truco AI</title>
+    <title>Asistente Truco PWA</title>
+    <!-- Se incluye OpenCV.js vía CDN para el procesamiento de imágenes -->
+    <script async src="https://docs.opencv.org/4.8.0/opencv.js"></script>
     <style>
         :root {
-            --bg: #0e0e10;
-            --card-bg: #18181b;
-            --border: #27272a;
-            --primary: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #f4f4f5;
-            --text-muted: #a1a1aa;
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #00e676;
+            --text-color: #e0e0e0;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0; padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 16px;
+            height: 100vh;
+            box-sizing: border-box;
         }
-
-        .app-container {
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #fff;
         }
-
-        header { text-align: center; padding: 8px 0; }
-        header h1 { font-size: 1.4rem; font-weight: 700; }
-        header p { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            background: #000;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        input[type="password"]:focus { border-color: var(--primary); }
-
-        .video-container {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 4 / 3;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        video { width: 100%; height: 100%; object-fit: cover; }
-
-        .badge {
-            position: absolute;
-            top: 10px; left: 10px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            color: var(--danger);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .badge.active { color: var(--primary); }
-
-        .dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background-color: currentColor;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
+        #start-btn {
+            background-color: var(--primary-color);
+            color: #000;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 25px 30px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
             cursor: pointer;
-            transition: transform 0.1s;
+            box-shadow: 0 8px 20px rgba(0, 230, 118, 0.3);
+            transition: transform 0.1s, background-color 0.2s;
         }
-
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background-color: var(--primary); color: #000; }
-        .btn-warning { background-color: var(--warning); color: #000; }
-        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-
-        .log-box {
-            background: #000;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            min-height: 60px;
-            max-height: 100px;
+        #start-btn:active {
+            transform: scale(0.96);
+        }
+        #start-btn.running {
+            background-color: #f44336;
+            box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
+        }
+        #status-bar {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #888;
+            text-align: center;
+            width: 100%;
+        }
+        #video-container {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none; /* Oculto para ahorrar batería visual, pero activo en DOM */
+        }
+        video {
+            width: 100%;
+            display: block;
+        }
+        canvas {
+            display: none; /* Canvas de procesamiento interno */
+        }
+        #logs {
+            background-color: var(--surface-color);
+            width: 100%;
+            max-width: 400px;
+            flex-grow: 1;
+            margin-top: 20px;
+            border-radius: 12px;
+            padding: 15px;
             overflow-y: auto;
-            word-break: break-word;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.85rem;
+            border: 1px solid #333;
+            box-sizing: border-box;
         }
-
-        /* Modo Bolsillo */
-        #pocket-mode-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background-color: #000000;
-            z-index: 99999;
-            touch-action: manipulation;
+        .log-entry {
+            margin-bottom: 8px;
+            border-bottom: 1px solid #2a2a2a;
+            padding-bottom: 6px;
+            line-height: 1.3;
         }
-
-        #pocket-mode-overlay.active { display: block; }
-
-        .exit-pocket-btn {
-            position: absolute;
-            top: 20px; right: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #333;
-            border: 1px solid #111;
-            padding: 10px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+        .log-time {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <header>
-            <h1>Truco Vision AI</h1>
-            <p>Asistente de cartas en tiempo real</p>
-        </header>
-
-        <div class="card">
-            <label for="api-key">Gemini API Key</label>
-            <input type="password" id="api-key" placeholder="Pegá tu API Key aquí..." autocomplete="off">
-        </div>
-
-        <div class="card">
-            <div class="video-container">
-                <video id="webcam" autoplay playsinline muted></video>
-                <div id="cam-status" class="badge">
-                    <span class="dot"></span>
-                    <span id="cam-status-text">Cámara apagada</span>
-                </div>
-            </div>
-
-            <button id="btn-cam" class="btn btn-outline" onclick="toggleCamara()">Iniciar Cámara Trasera</button>
-            <button class="btn btn-primary" onclick="iniciarAnalisisConGesto()">Analizar Mesa 📸</button>
-            <button class="btn btn-warning" onclick="activarModoBolsillo()">Activar Modo Bolsillo 👁️</button>
-        </div>
-
-        <div class="card">
-            <label>Estado / Respuesta</label>
-            <div id="log" class="log-box">Listo para iniciar.</div>
-        </div>
+    <h1>Asistente Táctico Truco</h1>
+    
+    <button id="start-btn">INICIAR ASISTENTE</button>
+    
+    <div id="status-bar">
+        Cámara: <span id="cam-status">Inactiva</span> | WakeLock: <span id="wake-status">Inactivo</span>
     </div>
 
-    <!-- Pantalla negra para el bolsillo -->
-    <div id="pocket-mode-overlay" onclick="handlePocketTap(event)">
-        <button class="exit-pocket-btn" onclick="event.stopPropagation(); desactivarModoBolsillo();">Salir</button>
+    <div id="video-container">
+        <video id="video" autoplay playsinline></video>
     </div>
+    <canvas id="canvas"></canvas>
 
-    <canvas id="canvas" style="display: none;"></canvas>
+    <div id="logs">
+        <div class="log-entry"><span class="log-time">[SISTEMA]</span> Listo para iniciar. Asegúrate de tener el volumen encendido.</div>
+    </div>
 
     <script>
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('canvas');
-        const logBox = document.getElementById('log');
-        const apiKeyInput = document.getElementById('api-key');
-        const camStatus = document.getElementById('cam-status');
-        const camStatusText = document.getElementById('cam-status-text');
-        const btnCam = document.getElementById('btn-cam');
-        const pocketOverlay = document.getElementById('pocket-mode-overlay');
-
-        let stream = null;
+        // --- VARIABLES GLOBALES ---
+        let isRunning = false;
         let wakeLock = null;
-        let isProcessing = false;
+        let loopInterval = null;
+        let lastSpokenMessage = "";
+        let mockIndex = 0; // Solo para simulación
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedKey = localStorage.getItem('truco_gemini_key');
-            if (savedKey) apiKeyInput.value = savedKey;
-        });
+        const btn = document.getElementById('start-btn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const logsDiv = document.getElementById('logs');
+        const camStatus = document.getElementById('cam-status');
+        const wakeStatus = document.getElementById('wake-status');
 
-        apiKeyInput.addEventListener('change', () => {
-            localStorage.setItem('truco_gemini_key', apiKeyInput.value.trim());
-        });
-
-        function log(msg) {
-            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            logBox.innerText = `[${timestamp}] ${msg}`;
-            console.log(msg);
-        }
-
-        // Desbloquear motor de voz en iOS/Android durante el toque del usuario
-        function prepararAudio() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.resume();
-                const u = new SpeechSynthesisUtterance('');
-                window.speechSynthesis.speak(u);
+        // --- SISTEMA DE LOGS ---
+        function log(message) {
+            const time = new Date().toLocaleTimeString('es-ES', { hour12: false });
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+            logsDiv.prepend(div);
+            // Mantener solo los últimos 50 logs
+            if (logsDiv.children.length > 50) {
+                logsDiv.removeChild(logsDiv.lastChild);
             }
         }
 
-        function iniciarAnalisisConGesto() {
-            prepararAudio();
-            analizarMesa();
-        }
-
-        async function toggleCamara() {
-            if (stream) detenerCamara();
-            else await iniciarCamara();
-        }
-
-        async function iniciarCamara() {
-            log("Conectando cámara...");
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: false
-                });
-            } catch (err) {
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: "environment" },
-                        audio: false
-                    });
-                } catch (e) {
-                    log("Error de cámara: " + e.message);
-                    return false;
-                }
-            }
-
-            video.srcObject = stream;
-            camStatus.classList.add('active');
-            camStatusText.innerText = "Cámara Activa";
-            btnCam.innerText = "Detener Cámara";
-            log("Cámara conectada.");
-            return true;
-        }
-
-        function detenerCamara() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-                video.srcObject = null;
-                camStatus.classList.remove('active');
-                camStatusText.innerText = "Cámara apagada";
-                btnCam.innerText = "Iniciar Cámara Trasera";
-                log("Cámara detenida.");
-            }
-        }
-
-        async function analizarMesa() {
-            if (isProcessing) return;
-
-            const apiKey = apiKeyInput.value.trim();
-            if (!apiKey) {
-                const msg = "Ingresá una API Key válida";
-                log(msg);
-                hablar(msg);
-                return;
-            }
-
-            if (!stream) {
-                const ok = await iniciarCamara();
-                if (!ok) return;
-            }
-
-            isProcessing = true;
-            vibrar(60);
-            log("Analizando imagen...");
-
-            // Escalar imagen a un máximo de 800px para carga ultra-rápida
-            const maxW = 800;
-            let srcW = video.videoWidth || 640;
-            let srcH = video.videoHeight || 480;
-            
-            if (srcW > maxW) {
-                srcH = Math.round((srcH * maxW) / srcW);
-                srcW = maxW;
-            }
-
-            canvas.width = srcW;
-            canvas.height = srcH;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, srcW, srcH);
-
-            // Calidad 0.6 para comprimir datos en Base64
-            const base64Data = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
-
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-            const promptTexto = "Identifica las cartas de Truco visibles en la mesa y dame la mejor jugada corta en 5 palabras.";
-
-            const requestBody = {
-                contents: [{
-                    parts: [
-                        { text: promptTexto },
-                        { inline_data: { mime_type: "image/jpeg", data: base64Data } }
-                    ]
-                }]
-            };
-
-            // Timeout de 10 segundos
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-            try {
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    const msgError = data.error?.message || `Error HTTP ${res.status}`;
-                    log("Error API: " + msgError);
-                    hablar("Error en la solicitud");
-                    return;
-                }
-
-                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                    const respuesta = data.candidates[0].content.parts[0].text.trim();
-                    log("IA: " + respuesta);
-                    vibrar([40, 60, 40]);
-                    hablar(respuesta);
-                } else {
-                    log("No se pudo interpretar la imagen.");
-                    hablar("No vi cartas claras");
-                }
-            } catch (err) {
-                clearTimeout(timeoutId);
-                if (err.name === 'AbortError') {
-                    log("Tiempo agotado (Red lenta)");
-                    hablar("Tiempo de espera agotado");
-                } else {
-                    log("Error de conexión: " + err.message);
-                    hablar("Error de conexión");
-                }
-            } finally {
-                isProcessing = false;
-            }
-        }
-
-        function hablar(texto) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(texto);
-            utterance.lang = 'es-ES';
-            utterance.rate = 1.1;
+        // --- TEXT TO SPEECH (VOZ EN ALTO) ---
+        function initVoice() {
+            // Desbloqueo de audio silencioso requerido por iOS/Android en la primera interacción
+            const utterance = new SpeechSynthesisUtterance('');
+            utterance.volume = 0;
             window.speechSynthesis.speak(utterance);
         }
 
-        function vibrar(patron) {
-            if ('vibrate' in navigator) navigator.vibrate(patron);
+        function speak(text) {
+            if (text === lastSpokenMessage) return; // Evitar repetir si la mesa no cambia
+            
+            window.speechSynthesis.cancel(); // Detener locución anterior si hay cola
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES'; // Forzamos español
+            utterance.rate = 1.1; // Un poco más rápido para agilidad táctica
+            
+            window.speechSynthesis.speak(utterance);
+            lastSpokenMessage = text;
+            log(`🗣️ Diciendo: "${text}"`);
         }
 
-        async function activarModoBolsillo() {
-            prepararAudio();
-            if (!stream) {
-                const ok = await iniciarCamara();
-                if (!ok) return;
+        // --- WAKE LOCK (MANTENER PANTALLA ENCENDIDA) ---
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeStatus.textContent = "Activo";
+                    wakeStatus.style.color = "var(--primary-color)";
+                    wakeLock.addEventListener('release', () => {
+                        wakeStatus.textContent = "Inactivo";
+                        wakeStatus.style.color = "#888";
+                    });
+                } catch (err) {
+                    log(`⚠️ Error WakeLock: ${err.name}, ${err.message}`);
+                }
+            } else {
+                log("⚠️ WakeLock no soportado en este navegador.");
             }
-            pocketOverlay.classList.add('active');
-            solicitarWakeLock();
-            log("Modo Bolsillo Activo");
-            vibrar(100);
         }
 
-        function desactivarModoBolsillo() {
-            pocketOverlay.classList.remove('active');
-            liberarWakeLock();
-            log("Modo Bolsillo Desactivado");
-            vibrar(50);
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release();
+                wakeLock = null;
+            }
         }
 
-        function handlePocketTap(event) {
-            prepararAudio();
-            analizarMesa();
-        }
-
-        async function solicitarWakeLock() {
+        // --- CÁMARA ---
+        async function startCamera() {
             try {
-                if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
-            } catch (err) {}
-        }
-
-        function liberarWakeLock() {
-            if (wakeLock) {
-                wakeLock.release().then(() => { wakeLock = null; });
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } },
+                    audio: false
+                });
+                video.srcObject = stream;
+                
+                // Esperar a que el video tenga metadata para setear el canvas
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        resolve();
+                    };
+                });
+                
+                camStatus.textContent = "Activa";
+                camStatus.style.color = "var(--primary-color)";
+                log("📷 Cámara trasera iniciada con éxito.");
+            } catch (err) {
+                log(`❌ Error al acceder a la cámara: ${err.message}`);
+                throw err;
             }
         }
+
+        function stopCamera() {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                camStatus.textContent = "Inactiva";
+                camStatus.style.color = "#888";
+            }
+        }
+
+        // --- LÓGICA DE TRUCO (Cálculo de Envido y Jerarquía) ---
+        // Cartas: { numero: int, palo: string ('espada', 'basto', 'oro', 'copa') }
+        function analyzeTrucoState(cards) {
+            if (!cards || cards.length === 0) return null;
+
+            // 1. Calcular Envido
+            let envidoMsg = "";
+            let palos = { espada: [], basto: [], oro: [], copa: [] };
+            
+            cards.forEach(c => {
+                let valEnvido = (c.numero < 10) ? c.numero : 0;
+                palos[c.palo].push(valEnvido);
+            });
+
+            let maxEnvido = 0;
+            for (let palo in palos) {
+                let valores = palos[palo].sort((a, b) => b - a);
+                if (valores.length >= 2) {
+                    let envidoActual = 20 + valores[0] + valores[1];
+                    if (envidoActual > maxEnvido) maxEnvido = envidoActual;
+                } else if (valores.length === 1) {
+                    if (valores[0] > maxEnvido) maxEnvido = valores[0];
+                }
+            }
+            if (maxEnvido >= 20) {
+                envidoMsg = `Envido, tenés ${maxEnvido}. `;
+            } else {
+                envidoMsg = `Tenés ${maxEnvido} de envido. `;
+            }
+
+            // 2. Calcular mejor carta para el Truco
+            const jerarquia = (numero, palo) => {
+                if (numero === 1 && palo === 'espada') return 14;
+                if (numero === 1 && palo === 'basto') return 13;
+                if (numero === 7 && palo === 'espada') return 12;
+                if (numero === 7 && palo === 'oro') return 11;
+                if (numero === 3) return 10;
+                if (numero === 2) return 9;
+                if (numero === 1 && (palo === 'copa' || palo === 'oro')) return 8;
+                if (numero === 12) return 7;
+                if (numero === 11) return 6;
+                if (numero === 10) return 5;
+                if (numero === 7 && (palo === 'copa' || palo === 'basto')) return 4;
+                if (numero === 6) return 3;
+                if (numero === 5) return 2;
+                if (numero === 4) return 1;
+                return 0;
+            };
+
+            let mejorCarta = cards[0];
+            let maxJerarquia = jerarquia(cards[0].numero, cards[0].palo);
+
+            for (let i = 1; i < cards.length; i++) {
+                let j = jerarquia(cards[i].numero, cards[i].palo);
+                if (j > maxJerarquia) {
+                    maxJerarquia = j;
+                    mejorCarta = cards[i];
+                }
+            }
+
+            let trucoMsg = `Jugá tu mejor carta, el ${mejorCarta.numero} de ${mejorCarta.palo}.`;
+            if (maxJerarquia >= 11) trucoMsg = `Tenés carta fuerte, el ${mejorCarta.numero} de ${mejorCarta.palo}.`;
+            if (maxJerarquia >= 13) trucoMsg = `Tenés un ancho, el ${mejorCarta.numero} de ${mejorCarta.palo}. Inganable.`;
+
+            return envidoMsg + trucoMsg;
+        }
+
+        // --- COMPUTER VISION: PROCESAMIENTO DE IMAGEN ---
+        function processFrame() {
+            // Capturar fotograma al Canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // AQUI VA LA LÓGICA DE DETECCIÓN REAL USANDO OPENCV.JS
+            // const src = cv.imread(canvas);
+            // cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
+            // ... (Algoritmo de detección de bordes, contornos y Template Matching)
+            // src.delete();
+            
+            /* --- SIMULADOR DE DETECCIÓN PARA PRUEBAS (Al no haber modelo externo) --- */
+            // En un entorno de producción local real, requerirías descargar un archivo pre-entrenado (.xml o weights)
+            // Aquí simulamos que la cámara está leyendo diferentes manos de cartas para demostrar el funcionamiento del motor.
+            const dummyHands = [
+                [{ numero: 7, palo: 'espada' }, { numero: 6, palo: 'espada' }, { numero: 1, palo: 'basto' }], // Envido 33, 1 basto
+                [{ numero: 3, palo: 'copa' }, { numero: 2, palo: 'copa' }, { numero: 4, palo: 'oro' }],       // Envido 25, 3 copa
+                [{ numero: 1, palo: 'espada' }, { numero: 7, palo: 'oro' }, { numero: 12, palo: 'espada' }],  // Envido 21, 1 espada
+                [{ numero: 10, palo: 'basto' }, { numero: 11, palo: 'basto' }, { numero: 5, palo: 'basto' }]  // Envido 25, 5 basto
+            ];
+            
+            const cartasDetectadas = dummyHands[mockIndex];
+            mockIndex = (mockIndex + 1) % dummyHands.length; 
+            /* ----------------------------------------------------------------------- */
+
+            log("🔍 Fotograma analizado. Cartas detectadas en mano.");
+            
+            const recomendacion = analyzeTrucoState(cartasDetectadas);
+            if (recomendacion) {
+                speak(recomendacion);
+            }
+        }
+
+        // --- CONTROL PRINCIPAL ---
+        async function toggleAssistant() {
+            if (isRunning) {
+                // DETENER
+                clearInterval(loopInterval);
+                stopCamera();
+                releaseWakeLock();
+                window.speechSynthesis.cancel();
+                
+                isRunning = false;
+                btn.textContent = "INICIAR ASISTENTE";
+                btn.classList.remove('running');
+                lastSpokenMessage = ""; // Resetear memoria de voz
+                log("🛑 Asistente detenido.");
+            } else {
+                // INICIAR
+                try {
+                    initVoice(); // Desbloquear audio
+                    await requestWakeLock(); // Bloquear apagado de pantalla
+                    await startCamera(); // Iniciar lente
+                    
+                    isRunning = true;
+                    btn.textContent = "DETENER ASISTENTE";
+                    btn.classList.add('running');
+                    log("✅ Asistente en marcha. Guardar en el bolsillo.");
+                    speak("Asistente táctico iniciado.");
+
+                    // Bucle ininterrumpido cada 4 segundos
+                    loopInterval = setInterval(processFrame, 4000);
+                } catch (error) {
+                    log("❌ No se pudo iniciar el asistente. Revisa los permisos.");
+                }
+            }
+        }
+
+        // Event Listeners
+        btn.addEventListener('click', toggleAssistant);
+        
+        // Reconectar WakeLock si la pestaña cambia de visibilidad
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible' && isRunning) {
+                await requestWakeLock();
+            }
+        });
     </script>
+    <FollowUp>
 </body>
 </html>
