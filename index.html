@@ -1,527 +1,576 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Asistente Táctico de Truco PWA</title>
-    <!-- Carga de OpenCV.js desde CDN para Visión por Computadora local -->
-    <script async src="https://docs.opencv.org/4.8.0/opencv.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --surface-color: #1e293b;
-            --primary-color: #22c55e;
-            --primary-danger: #ef4444;
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: -0.5px;
-        }
-
-        .subtitle {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        #controls {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        .btn-giant {
-            background-color: var(--primary-color);
-            color: #000000;
-            border: none;
-            padding: 24px 20px;
-            font-size: 1.4rem;
-            font-weight: 900;
-            border-radius: 18px;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            width: 100%;
-        }
-
-        .btn-giant:active {
-            transform: scale(0.97);
-        }
-
-        .btn-giant.running {
-            background-color: var(--primary-danger);
-            color: #ffffff;
-            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.35);
-        }
-
-        .status-badge {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 14px;
-            display: flex;
-            justify-content: space-around;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #64748b;
-        }
-
-        .status-dot.active {
-            background-color: var(--primary-color);
-            box-shadow: 0 0 8px var(--primary-color);
-        }
-
-        #media-container {
-            display: none; /* Procesa en segundo plano sin gastar batería en renderizado */
-        }
-
-        #logs-container {
-            width: 100%;
-            max-width: 480px;
-            margin: 20px auto 0 auto;
-            flex-grow: 1;
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .logs-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        #logs {
-            flex-grow: 1;
-            overflow-y: auto;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 0.82rem;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .log-line {
-            line-height: 1.4;
-            word-break: break-word;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 4px;
-        }
-
-        .log-time {
-            color: var(--primary-color);
-            font-weight: 600;
-            margin-right: 6px;
-        }
-
-        .log-speech {
-            color: #38bdf8;
-            font-weight: 600;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d1117">
+<title>Truco Táctico — Asistente Offline</title>
+<style>
+  :root{ --bg:#0d1117; --panel:#161b22; --border:#30363d; --fg:#c9d1d9; --accent:#2ea043; --warn:#d29922; --bad:#f85149; --info:#58a6ff; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,sans-serif; min-height:100vh; padding:12px; }
+  header{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;}
+  h1{font-size:1.05rem; color:#fff;} h1 small{color:var(--info); font-weight:400;}
+  .status-bar{display:flex; gap:6px; flex-wrap:wrap;}
+  .chip{font-size:.7rem; padding:3px 8px; border-radius:12px; border:1px solid var(--border); background:var(--panel); white-space:nowrap;}
+  .chip.on{color:var(--accent); border-color:var(--accent);} .chip.off{color:var(--bad);} .chip.warn{color:var(--warn);}
+  .layout{display:grid; grid-template-columns:1fr; gap:12px;}
+  @media(min-width:900px){ .layout{grid-template-columns:1.2fr 1fr;} }
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px;}
+  .panel h2{font-size:.85rem; color:var(--info); margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em;}
+  video,#canvasPreview{width:100%; border-radius:8px; background:#000; display:block;}
+  #canvasPreview{margin-top:8px; max-height:200px; object-fit:contain;}
+  .btn-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  button{background:#21262d; color:var(--fg); border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-size:.85rem; cursor:pointer; transition:.15s;}
+  button:hover{border-color:var(--info);} button.primary{background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600;}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  .recommendation{font-size:1.5rem; font-weight:700; color:var(--accent); text-align:center; padding:16px 8px; min-height:60px; display:flex; align-items:center; justify-content:center;}
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;}
+  .stat{background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px; text-align:center;}
+  .stat b{display:block; font-size:1.3rem; color:#fff;} .stat span{font-size:.68rem; color:#8b949e;}
+  #logPanel{max-height:220px; overflow-y:auto; font-family:ui-monospace,monospace; font-size:.72rem; background:#010409; border-radius:8px; padding:8px; border:1px solid var(--border); margin-top:10px;}
+  #logPanel div{padding:2px 0; border-bottom:1px solid #161b22;}
+  #logPanel .err{color:var(--bad);} #logPanel .ok{color:var(--accent);} #logPanel .warn{color:var(--warn);}
+  .cards-input{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
+  select, input[type=number]{background:#0d1117; color:var(--fg); border:1px solid var(--border); border-radius:6px; padding:7px; font-size:.8rem;}
+  .footer-note{margin-top:14px; font-size:.68rem; color:#8b949e; text-align:center;}
+</style>
 </head>
 <body>
 
-    <header>
-        <h1>TRUCO VISION</h1>
-        <div class="subtitle">Asistente Táctico Manos Libres</div>
-    </header>
+<header>
+  <h1>🃏 Truco Táctico <small>v1.0 · 100% offline</small></h1>
+  <div class="status-bar">
+    <span class="chip off" id="stCam">📷 Cámara</span>
+    <span class="chip off" id="stDB">🗄️ DB</span>
+    <span class="chip off" id="stCV">🧠 Motor CV</span>
+    <span class="chip off" id="stLock">🔒 WakeLock</span>
+    <span class="chip off" id="stVoice">🔊 Voz</span>
+  </div>
+</header>
 
-    <div id="controls">
-        <button id="start-btn" class="btn-giant">INICIAR ASISTENTE</button>
-        
-        <div class="status-badge">
-            <div class="status-item">
-                <div id="dot-cam" class="status-dot"></div>
-                <span>Cámara</span>
-            </div>
-            <div class="status-item">
-                <div id="dot-wake" class="status-dot"></div>
-                <span>Pantalla Activa</span>
-            </div>
-            <div class="status-item">
-                <div id="dot-loop" class="status-dot"></div>
-                <span>Bucle CV</span>
-            </div>
-        </div>
+<div class="layout">
+  <div class="panel">
+    <h2>Percepción en tiempo real</h2>
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvasPreview"></canvas>
+    <div class="btn-row">
+      <button class="primary" id="btnStart">▶ Iniciar análisis</button>
+      <button id="btnCapture">📸 Analizar ahora</button>
+      <button id="btnWakeLock">🔒 Modo bolsillo</button>
+      <button id="btnVoice">🔊 Activar voz</button>
+    </div>
+    <div class="footer-note">Si el CV no está disponible, usá la carga manual de cartas (derecha) — el motor táctico funciona igual.</div>
+  </div>
+
+  <div class="panel">
+    <h2>Recomendación táctica</h2>
+    <div class="recommendation" id="recommendation">Esperando cartas…</div>
+    <div class="stats">
+      <div class="stat"><b id="stEnvido">—</b><span>Puntos de Envido</span></div>
+      <div class="stat"><b id="stFuerza">—</b><span>Fuerza de mano (1–14)</span></div>
+      <div class="stat"><b id="stWinRate">—</b><span>% victorias sesión</span></div>
+      <div class="stat"><b id="stDetects">0</b><span>Detecciones sesión</span></div>
     </div>
 
-    <!-- Elementos ocultos de procesamiento de video y canvas -->
-    <div id="media-container">
-        <video id="webcam" playsinline autoplay muted></video>
-        <canvas id="proc-canvas"></canvas>
+    <h2 style="margin-top:14px;">Carga manual / corrección</h2>
+    <div class="cards-input" id="manualCards"></div>
+    <div class="btn-row">
+      <button id="btnEval">⚖️ Evaluar mano</button>
+      <button id="btnEnvido">🗣️ "Quiero envido"</button>
+      <button id="btnTruco">🗣️ "Quiero truco"</button>
+      <button id="btnReset">↺ Nueva mano</button>
     </div>
+    <div id="logPanel"></div>
+  </div>
+</div>
 
-    <div id="logs-container">
-        <div class="logs-title">
-            <span>Registro de Actividad</span>
-            <span id="clear-logs" style="cursor: pointer; text-decoration: underline;">Limpiar</span>
-        </div>
-        <div id="logs">
-            <div class="log-line"><span class="log-time">[SISTEMA]</span> Asistente listo. Toca "INICIAR" y guarda el celular en el bolsillo.</div>
-        </div>
-    </div>
+<!-- Librerías: intenta local primero (./libs/opencv.js, ./libs/tf.min.js), si no existe usa CDN.
+     Para uso 100% offline, descarga ambas y colócalas en /libs/ junto a este archivo. -->
+<script src="./libs/opencv.js" onerror="loadFallback(this,'https://docs.opencv.org/4.8.0/opencv.js')"></script>
+<script src="./libs/tf.min.js" onerror="loadFallback(this,'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js')"></script>
+<script>
+function loadFallback(el, url){
+  el.remove();
+  const s = document.createElement('script'); s.src = url;
+  s.onload = ()=> window.App && window.App.onLibLoaded();
+  document.head.appendChild(s);
+}
+</script>
 
-    <script>
-        // --- ESTADO Y VARIABLES GLOBALES ---
-        let isRunning = false;
-        let wakeLockObj = null;
-        let loopTimer = null;
-        let lastSpokenText = "";
-        let mockCycle = 0;
+<script>
+'use strict';
+/* ============================================================================
+   CAPA 1 — BASE DE DATOS (IndexedDB)
+   ============================================================================ */
+const DBEngine = (() => {
+  let db = null;
+  const DB_NAME = 'truco-tactico', DB_VER = 1;
 
-        // Referencias al DOM
-        const btnStart = document.getElementById('start-btn');
-        const videoElem = document.getElementById('webcam');
-        const canvasElem = document.getElementById('proc-canvas');
-        const ctx = canvasElem.getContext('2d', { willReadFrequently: true });
-        const logsElem = document.getElementById('logs');
-        const clearLogsBtn = document.getElementById('clear-logs');
+  // Baraja española de 40 naipes. Escala jerárquica del Truco (1=peor … 14=mejor).
+  // envido: 1-7 valen nominal, 10-12 (sotas/caballos/reyes) valen 0, 8-9 no existen en el mazo de 40.
+  function buildDeck() {
+    const palos = ['espada','basto','oro','copa'];
+    const trucoRank = { '1_espada':14,'1_basto':13,'7_espada':12,'7_oro':11,'3_espada':10,'3_basto':10,'3_oro':10,'3_copa':10,
+      '2_espada':9,'2_basto':9,'2_oro':9,'2_copa':9,'1_oro':8,'1_copa':8,'12_espada':7,'12_basto':7,'12_oro':7,'12_copa':7,
+      '11_espada':6,'11_basto':6,'11_oro':6,'11_copa':6,'10_espada':5,'10_basto':5,'10_oro':5,'10_copa':5,
+      '7_basto':4,'7_copa':4,'6_espada':3,'6_basto':3,'6_oro':3,'6_copa':3,'5_espada':2,'5_basto':2,'5_oro':2,'5_copa':2,
+      '4_espada':1,'4_basto':1,'4_oro':1,'4_copa':1 };
+    const deck = [];
+    for (const palo of palos) for (let n=1; n<=7; n++) deck.push(mk(n, palo, trucoRank));
+    for (const palo of palos) for (const n of [10,11,12]) deck.push(mk(n, palo, trucoRank));
+    function mk(n, palo, rank) {
+      return { id:`${n}_${palo}`, numero:n, palo,
+        jerarquia: rank[`${n}_${palo}`],
+        envido: (n>=1 && n<=7) ? n : 0 };
+    }
+    return deck;
+  }
 
-        const dotCam = document.getElementById('dot-cam');
-        const dotWake = document.getElementById('dot-wake');
-        const dotLoop = document.getElementById('dot-loop');
+  function open() {
+    return new Promise((res, rej) => {
+      const req = indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains('cartas'))    d.createObjectStore('cartas',    { keyPath:'id' });
+        if (!d.objectStoreNames.contains('historial')) d.createObjectStore('historial', { keyPath:'ts' });
+        if (!d.objectStoreNames.contains('sesion'))    d.createObjectStore('sesion',    { keyPath:'k' });
+        if (!d.objectStoreNames.contains('embeddings'))d.createObjectStore('embeddings',{ keyPath:'id' });
+      };
+      req.onsuccess = e => { db = e.target.result; res(db); };
+      req.onerror = () => rej(req.error);
+    });
+  }
+  function tx(store, mode, fn) {
+    return new Promise((res, rej) => {
+      const t = db.transaction(store, mode), s = t.objectStore(store);
+      const out = fn(s);
+      t.oncomplete = () => res(out && out.result !== undefined ? out.result : out);
+      t.onerror = () => rej(t.error);
+    });
+  }
 
-        // --- SISTEMA DE LOGS ---
-        function addLog(msg, isSpeech = false) {
-            const now = new Date();
-            const timeStr = now.toTimeString().split(' ')[0];
-            const div = document.createElement('div');
-            div.className = 'log-line';
-            div.innerHTML = `<span class="log-time">[${timeStr}]</span> ${isSpeech ? `<span class="log-speech">${msg}</span>` : msg}`;
-            logsElem.prepend(div);
+  async function init() {
+    await open();
+    const count = await tx('cartas','readonly', s => s.count());
+    if (count === 0) {
+      const deck = buildDeck();
+      await tx('cartas','readwrite', s => deck.forEach(c => s.put(c)));
+    }
+    return { deck: await allCards() };
+  }
+  const allCards = () => tx('cartas','readonly', s => s.getAll());
+  const getCard  = id  => tx('cartas','readonly', s => s.get(id));
+  const saveEvent = e  => tx('historial','readwrite', s => s.put({ ts: Date.now(), ...e }));
+  const saveEmbedding = emb => tx('embeddings','readwrite', s => s.put(emb));
+  const getEmbeddings = () => tx('embeddings','readonly', s => s.getAll());
+  const setStat = (k,v) => tx('sesion','readwrite', s => s.put({ k, v }));
+  const getStat = k => tx('sesion','readonly', s => s.get(k)).then(r => r ? r.v : null);
 
-            if (logsElem.children.length > 60) {
-                logsElem.removeChild(logsElem.lastChild);
-            }
+  return { init, allCards, getCard, saveEvent, saveEmbedding, getEmbeddings, setStat, getStat };
+})();
+
+/* ============================================================================
+   CAPA 2 — MOTOR TÁCTICO (puro, determinístico, testeable)
+   Reglas: Envido = 20 + suma de 2 del mismo palo (mejor combinación de a pares);
+   si las 3 son del mismo palo: 20 + las 2 mayores. Truco: jerarquía 1-14.
+   ============================================================================ */
+const TacticsEngine = (() => {
+  function envidoPoints(cards) { // cards: [{palo, envido}]
+    const byPalo = {};
+    cards.forEach(c => (byPalo[c.palo] = byPalo[c.palo] || []).push(c.envido));
+    let best = 0;
+    for (const palo in byPalo) {
+      const vals = byPalo[palo].sort((a,b)=>b-a);
+      if (vals.length >= 2) best = Math.max(best, 20 + vals[0] + vals[1]);
+    }
+    return best; // 0 = sin envido posible
+  }
+  function handStrength(cards) { // fuerza agregada: mejor carta ponderada
+    const ranks = cards.map(c=>c.jerarquia).sort((a,b)=>b-a);
+    return ranks[0] || 0;
+  }
+  function recommend(cards, mesa = []) { // mesa: cartas rivales vistas
+    if (!cards || cards.length === 0) return { texto:'Sin cartas detectadas', tipo:'info', envido:0, fuerza:0 };
+    const envido = envidoPoints(cards);
+    const fuerza = handStrength(cards);
+    const mejor = [...cards].sort((a,b)=>b.jerarquia-a.jerarquia)[0];
+
+    // Heurística práctica de truco argentino/uruguayo
+    let texto, tipo='ok';
+    if (mesa.length && mesa.some(m => m.jerarquia > mejor.jerarquia)) {
+      texto = mejor.jerarquia >= 11 ? `Perdés la mano — ${label(mejor)} ya no alcanza. Considerá irte al mazo.`
+                                    : `Rival va ganando — jugá ${label(mejor)} para matar o bajá una débil.`;
+      tipo='warn';
+    } else if (envido >= 31 && fuerza >= 10) {
+      texto = `Mano fuerte: ¡Cantá TRUCO y mandá ENVIDO (${envido} puntos)!`;
+    } else if (envido >= 27) {
+      texto = `Mandá ENVIDO (${envido} puntos). Buen envido, mano media.`;
+    } else if (fuerza >= 12) {
+      texto = `Guardá el ${label(mejor)} — cantá TRUCO y jugá la segunda mejor primero.`;
+    } else if (fuerza >= 8) {
+      texto = `Cantá TRUCO. Jugá ${label(mejor)} si la mano se pone dura.`;
+    } else if (envido >= 20 && envido < 27) {
+      texto = `Envido flojo (${envido}). Preferí no cantar; jugá tranquilo.`;
+    } else {
+      texto = `Mano débil. Bajá la carta más baja y esperá el error rival.`;
+      tipo='warn';
+    }
+    return { texto, tipo, envido, fuerza, mejor: mejor.id };
+  }
+  const label = c => `${c.numero===1?'Ancho':c.numero} de ${c.palo}${c.numero===1&&c.palo==='espada'?' (mata todo)':''}`;
+  return { envidoPoints, handStrength, recommend };
+})();
+
+/* ============================================================================
+   CAPA 3 — VISIÓN POR COMPUTADORA (OpenCV.js si está; fallback heurístico)
+   Pipeline: captura → gris → blur → Canny → findContours → polígonos de 4
+   puntos con área razonable → warp perspectiva → clasificación por
+   descriptores ORB contra embeddings locales (o fallback: OCR por plantillas).
+   ============================================================================ */
+const CVEngine = (() => {
+  let stream = null, cvReady = false, analyzing = false;
+  const video = document.getElementById('video');
+  const preview = document.getElementById('canvasPreview');
+  const pctx = preview.getContext('2d');
+
+  function onLibLoaded() {
+    if (window.cv) {
+      cv.onRuntimeInitialized = () => { cvReady = true; UI.setChip('stCV','on','🧠 Motor CV (OpenCV)'); UI.log('OpenCV.js listo','ok'); };
+    }
+    if (window.tf) UI.log('TensorFlow.js disponible (modelo local opcional en /models/truco-cards/model.json)','ok');
+  }
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal:'environment' }, width:{ideal:1280}, height:{ideal:720} }, audio:false });
+      video.srcObject = stream;
+      await video.play();
+      UI.setChip('stCam','on','📷 Cámara');
+      UI.log('Cámara trasera activa','ok');
+      return true;
+    } catch(e) { UI.log('Error cámara: '+e.message,'err'); return false; }
+  }
+
+  // Filtro anti-falsos-positivos: Laplacian variance (desenfoque) + brillo medio
+  function qualityOK(src) {
+    const g = new cv.Mat(); cv.cvtColor(src, g, cv.COLOR_RGBA2GRAY);
+    const mean = cv.mean(g)[0];
+    const lap = new cv.Mat(); cv.Laplacian(g, lap, cv.CV_64F);
+    const meanL = cv.mean(lap)[0]; // varianza aproximada
+    g.delete(); lap.delete();
+    if (mean < 40 || mean > 215) return { ok:false, razon:'brillo extremo ('+mean.toFixed(0)+')' };
+    if (Math.abs(meanL) < 8)      return { ok:false, razon:'imagen desenfocada' };
+    return { ok:true };
+  }
+
+  function detectCards() {
+    if (!cvReady || analyzing || video.readyState < 2) return null;
+    analyzing = true;
+    try {
+      const cap = new cv.VideoCapture(video);
+      const frame = new cv.Mat(video.videoHeight, video.videoWidth, cv.CV_8UC4);
+      cap.read(frame);
+      const q = qualityOK(frame);
+      if (!q.ok) { UI.log('Frame descartado: '+q.razon,'warn'); frame.delete(); analyzing=false; return null; }
+
+      const gray = new cv.Mat(); cv.cvtColor(frame, gray, cv.COLOR_RGBA2GRAY);
+      cv.GaussianBlur(gray, gray, new cv.Size(5,5), 0);
+      const edges = new cv.Mat(); cv.Canny(gray, edges, 60, 160);
+      const contours = new cv.MatVector(), hier = new cv.Mat();
+      cv.findContours(edges, contours, hier, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+      const detections = [];
+      const imgArea = frame.rows * frame.cols;
+      for (let i=0; i<contours.size(); i++) {
+        const cnt = contours.get(i);
+        const area = cv.contourArea(cnt);
+        if (area < imgArea*0.01 || area > imgArea*0.35) continue;
+        const peri = cv.arcLength(cnt, true);
+        const approx = new cv.Mat(); cv.approxPolyDP(cnt, approx, 0.04*peri, true);
+        if (approx.rows === 4 && cv.isContourConvex(approx)) {
+          // Ordenar esquinas TL,TR,BR,BL y warp a 200x300
+          const pts = [];
+          for (let j=0; j<4; j++) pts.push({ x:approx.intPtr(j,0)[0], y:approx.intPtr(j,0)[1] });
+          const ordered = orderPoints(pts);
+          const warped = warpCard(frame, ordered);
+          detections.push({ corners: ordered, patch: warped });
         }
+        approx.delete(); cnt.delete();
+      }
 
-        clearLogsBtn.addEventListener('click', () => {
-            logsElem.innerHTML = '';
-            addLog("Logs limpiados.");
-        });
+      // Dibujar preview
+      const vis = frame.clone();
+      detections.forEach(d => {
+        const color = new cv.Scalar(46,160,67,255);
+        for (let j=0;j<4;j++) cv.line(vis, d.corners[j], d.corners[(j+1)%4], color, 3);
+        d.patch.delete && null; // patch se usa luego en clasificación
+      });
+      cv.imshow(preview, vis);
 
-        // --- MOTOR DE VOZ (TEXT-TO-SPEECH) ---
-        function unlockSpeechSynthesis() {
-            // Unlocks TTS engine on iOS/Android gesture
-            if ('speechSynthesis' in window) {
-                const dummy = new SpeechSynthesisUtterance('');
-                dummy.volume = 0;
-                window.speechSynthesis.speak(dummy);
-            }
+      [frame,gray,edges,contours,hier,vis].forEach(m=>m&&m.delete());
+      analyzing = false;
+      return detections;
+    } catch(e) { UI.log('Error CV: '+e.message,'err'); analyzing=false; return null; }
+  }
+
+  function orderPoints(pts) {
+    const s = pts.slice().sort((a,b)=>a.y-b.y);
+    const [tl,tr] = s.slice(0,2).sort((a,b)=>a.x-b.x);
+    const [bl,br] = s.slice(2,4).sort((a,b)=>a.x-b.x);
+    return [tl,tr,br,bl];
+  }
+  function warpCard(frame, pts) {
+    const W=200, H=300, dst = cv.matFromArray(4,1,cv.CV_32FC2,[0,0,W,0,W,H,0,H]);
+    const src = cv.matFromArray(4,1,cv.CV_32FC2,[pts[0].x,pts[0].y,pts[1].x,pts[1].y,pts[2].x,pts[2].y,pts[3].x,pts[3].y]);
+    const M = cv.getPerspectiveTransform(src,dst);
+    const out = new cv.Mat(); cv.warpPerspective(frame,out,M,new cv.Size(W,H));
+    src.delete(); dst.delete(); M.delete();
+    return out;
+  }
+
+  // Clasificación: prioridad TF.js (modelo local), luego ORB vs embeddings, luego fallback.
+  async function classify(patchMat) {
+    const cnv = document.createElement('canvas'); cnv.width=patchMat.cols; cnv.height=patchMat.rows;
+    cv.imshow(cnv, patchMat);
+    if (window.tf) {
+      try {
+        const model = await loadLocalModel();
+        if (model) {
+          const t = tf.browser.fromPixels(cnv).resizeBilinear([224,224]).toFloat().div(255).expandDims(0);
+          const pred = model.predict(t); const idx = pred.argMax(-1).dataSync()[0];
+          const conf = pred.max(-1).dataSync()[0];
+          t.dispose(); pred.dispose();
+          if (conf > 0.75) return { id: model.labels[idx], conf };
         }
+      } catch(e) { /* sigue a ORB */ }
+    }
+    return await classifyORB(cnv);
+  }
 
-        function speakTacticalMessage(text) {
-            if (!('speechSynthesis' in window)) return;
-            if (text === lastSpokenText) return; // Evitar repetición continua del mismo estado
+  let _model = null;
+  async function loadLocalModel() {
+    if (_model !== null) return _model;
+    try { _model = await tf.loadLayersModel('./models/truco-cards/model.json'); } catch(e) { _model = false; }
+    return _model || null;
+  }
 
-            window.speechSynthesis.cancel(); // Cancelar locuciones previas en cola
+  async function classifyORB(cnv) {
+    const embs = await DBEngine.getEmbeddings();
+    if (!cvReady || embs.length === 0) return { id:null, conf:0 };
+    // Embeddings: ORB descriptores de cartas de referencia guardados en IndexedDB
+    const orb = new cv.ORB();
+    const kps1 = new cv.KeyPointVector(), desc1 = new cv.Mat();
+    const src = cv.imread(cnv); const g = new cv.Mat(); cv.cvtColor(src,g,cv.COLOR_RGBA2GRAY);
+    orb.detectAndCompute(g, new cv.Mat(), kps1, desc1);
+    let best = { id:null, conf:0 };
+    const bf = new cv.BFMatcher(cv.NORM_HAMMING, true);
+    for (const ref of embs) {
+      const refMat = cv.matFromArray(ref.desc.rows, ref.desc.cols, cv.CV_8U, ref.desc.data);
+      const matches = new cv.DMatchVector();
+      bf.match(desc1, refMat, matches);
+      if (matches.size() >= 12) {
+        const conf = Math.min(1, matches.size()/40);
+        if (conf > best.conf) best = { id: ref.id, conf };
+      }
+      refMat.delete(); matches.delete();
+    }
+    [orb,kps1,desc1,src,g].forEach(m=>m&&m.delete&&m.delete());
+    return best;
+  }
 
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'es-ES';
-            utterance.rate = 1.05; // Velocidad de voz ágil para juego
-            utterance.pitch = 1.0;
+  const isReady = () => cvReady && stream;
+  return { startCamera, detectCards, classify, isReady, onLibLoaded };
+})();
 
-            window.speechSynthesis.speak(utterance);
-            lastSpokenText = text;
-            addLog(`🔊 Dijo: "${text}"`, true);
-        }
+/* ============================================================================
+   CAPA 4 — VOZ, WAKE LOCK, LOOP Y UI
+   ============================================================================ */
+const VoiceUI = (() => {
+  let voiceOn = false, lastSpoken = '', wakeLock = null;
+  function enableVoice() {
+    voiceOn = true; UI.setChip('stVoice','on','🔊 Voz ES');
+    UI.log('Voz activada (español). Se hablará solo ante cambios de estado.','ok');
+  }
+  function speak(text, force=false) {
+    if (!voiceOn || !('speechSynthesis' in window)) return;
+    if (!force && text === lastSpoken) return;      // anti-bucle
+    lastSpoken = text;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'es-AR'; u.rate = 1.05;
+    const v = speechSynthesis.getVoices().find(v=>v.lang.startsWith('es'));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  }
+  async function toggleWakeLock() {
+    try {
+      if (wakeLock) { await wakeLock.release(); wakeLock=null; UI.setChip('stLock','off','🔒 WakeLock'); }
+      else {
+        wakeLock = await navigator.wakeLock.request('screen');
+        UI.setChip('stLock','on','🔒 Pantalla activa');
+        wakeLock.addEventListener('release', ()=> UI.setChip('stLock','off','🔒 WakeLock'));
+      }
+    } catch(e) { UI.log('WakeLock no disponible: '+e.message,'warn'); }
+  }
+  document.addEventListener('visibilitychange', async ()=>{ if(wakeLock && document.visibilityState==='visible') await toggleWakeLock().then(toggleWakeLock); });
+  return { enableVoice, speak, toggleWakeLock, get voiceOn(){return voiceOn;} };
+})();
 
-        // --- API WAKE LOCK (PREVENIR SUSPENSIÓN EN BOLSILLO) ---
-        async function enableWakeLock() {
-            if ('wakeLock' in navigator) {
-                try {
-                    wakeLockObj = await navigator.wakeLock.request('screen');
-                    dotWake.classList.add('active');
-                    addLog("WakeLock activado: Pantalla protegida contra apagado.");
-                    
-                    wakeLockObj.addEventListener('release', () => {
-                        dotWake.classList.remove('active');
-                    });
-                } catch (err) {
-                    addLog(`Error WakeLock: ${err.message}`);
-                }
-            } else {
-                addLog("WakeLock API no soportada en este navegador.");
-            }
-        }
+const UI = (() => {
+  const logPanel = document.getElementById('logPanel');
+  function setChip(id, cls, txt) { const el = document.getElementById(id); el.className = 'chip '+cls; el.textContent = txt; }
+  function log(msg, type='') {
+    const d = document.createElement('div'); d.className = type;
+    d.textContent = `[${new Date().toLocaleTimeString('es-AR')}] ${msg}`;
+    logPanel.prepend(d);
+    while (logPanel.children.length > 120) logPanel.lastChild.remove();
+    DBEngine.saveEvent({ tipo:'log', nivel:type, msg }).catch(()=>{});
+  }
+  function setRecommendation(rec) {
+    const el = document.getElementById('recommendation');
+    el.textContent = rec.texto;
+    el.style.color = rec.tipo==='warn' ? 'var(--warn)' : 'var(--accent)';
+    document.getElementById('stEnvido').textContent = rec.envido || '—';
+    document.getElementById('stFuerza').textContent = rec.fuerza || '—';
+  }
+  return { setChip, log, setRecommendation };
+})();
 
-        function disableWakeLock() {
-            if (wakeLockObj) {
-                wakeLockObj.release();
-                wakeLockObj = null;
-            }
-            dotWake.classList.remove('active');
-        }
+/* ============================================================================
+   ORQUESTADOR — loop de 3.5s + carga manual + PWA
+   ============================================================================ */
+const App = (() => {
+  let hand = [];          // cartas propias detectadas/manual [{id,numero,palo,jerarquia,envido}]
+  let mesa = [];          // cartas rivales vistas
+  let loopId = null, detects = 0, wins = 0, played = 0;
 
-        // --- CÁMARA TRASERA (FACINGMODE: ENVIRONMENT) ---
-        async function initCamera() {
-            try {
-                const constraints = {
-                    video: {
-                        facingMode: { exact: "environment" },
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
-                    },
-                    audio: false
-                };
+  async function init() {
+    try {
+      await DBEngine.init();
+      UI.setChip('stDB','on','🗄️ DB lista (40 naipes)');
+      UI.log('Base de datos inicializada: 40 naipes cargados','ok');
+    } catch(e) { UI.log('IndexedDB falló: '+e.message,'err'); }
 
-                let stream;
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia(constraints);
-                } catch (e) {
-                    // Fallback a facingMode genérico si "exact" falla en ciertos navegadores
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: "environment" },
-                        audio: false
-                    });
-                }
+    buildManualInputs();
+    await loadSessionStats();
+    registerSW();
+    if (window.cv || window.tf) onLibLoaded();
+    window.App = { onLibLoaded };
 
-                videoElem.srcObject = stream;
+    document.getElementById('btnStart').onclick    = startLoop;
+    document.getElementById('btnCapture').onclick  = analyzeOnce;
+    document.getElementById('btnWakeLock').onclick = VoiceUI.toggleWakeLock;
+    document.getElementById('btnVoice').onclick    = () => { VoiceUI.enableVoice(); VoiceUI.speak('Asistente de truco listo.', true); };
+    document.getElementById('btnEval').onclick     = evaluateHand;
+    document.getElementById('btnEnvido').onclick   = () => { UI.log('Evento: jugador quiso envido','ok'); recordEvent({tipo:'envido'}); };
+    document.getElementById('btnTruco').onclick    = () => { UI.log('Evento: jugador quiso truco','ok'); recordEvent({tipo:'truco'}); };
+    document.getElementById('btnReset').onclick    = resetHand;
+  }
+  function onLibLoaded(){ CVEngine.onLibLoaded(); }
 
-                return new Promise((resolve) => {
-                    videoElem.onloadedmetadata = () => {
-                        videoElem.play();
-                        canvasElem.width = videoElem.videoWidth || 640;
-                        canvasElem.height = videoElem.videoHeight || 480;
-                        dotCam.classList.add('active');
-                        addLog("Cámara trasera conectada correctamente.");
-                        resolve();
-                    };
-                });
-            } catch (err) {
-                addLog(`Error al acceder a la cámara: ${err.message}`);
-                throw err;
-            }
-        }
+  async function startLoop() {
+    if (!await CVEngine.startCamera()) return;
+    UI.log('Bucle de análisis cada 3.5s iniciado','ok');
+    document.getElementById('btnStart').disabled = true;
+    analyzeOnce();
+    loopId = setInterval(analyzeOnce, 3500);
+  }
 
-        function stopCamera() {
-            if (videoElem.srcObject) {
-                videoElem.srcObject.getTracks().forEach(track => track.stop());
-                videoElem.srcObject = null;
-            }
-            dotCam.classList.remove('active');
-        }
+  async function analyzeOnce() {
+    const dets = CVEngine.detectCards();
+    if (!dets || dets.length === 0) return;
+    for (const d of dets.slice(0, 4)) {
+      const res = await CVEngine.classify(d.patch);
+      d.patch.delete();
+      if (!res.id || res.conf < 0.6) { UI.log(`Detección descartada (conf ${(res.conf*100).toFixed(0)}%)`,'warn'); continue; }
+      const card = await DBEngine.getCard(res.id);
+      if (!card) continue;
+      if (hand.some(c=>c.id===card.id)) continue; // ya está en mano — anti repetición
+      hand.push(card); detects++;
+      document.getElementById('stDetects').textContent = detects;
+      UI.log(`Detectada: ${card.numero} de ${card.palo} (jer. ${card.jerarquia}, conf ${(res.conf*100).toFixed(0)}%)`,'ok');
+      DBEngine.saveEvent({ tipo:'deteccion', carta: card.id, conf: res.conf }).catch(()=>{});
+      if (hand.length >= 3) { evaluateHand(); break; }
+    }
+  }
 
-        // --- REGLAS Y TÁCTICA DEL TRUCO ---
-        // Valor de cartas para truco (de mayor a menor)
-        function getCardTrucoRank(numero, palo) {
-            if (numero === 1 && palo === 'espada') return 14; // Ancho de espada
-            if (numero === 1 && palo === 'basto') return 13;  // Ancho de basto
-            if (numero === 7 && palo === 'espada') return 12; // 7 de espada
-            if (numero === 7 && palo === 'oro') return 11;    // 7 de oro
-            if (numero === 3) return 10;
-            if (numero === 2) return 9;
-            if (numero === 1 && (palo === 'copa' || palo === 'oro')) return 8; // Anchos falsos
-            if (numero === 12) return 7;
-            if (numero === 11) return 6;
-            if (numero === 10) return 5;
-            if (numero === 7 && (palo === 'copa' || palo === 'basto')) return 4; // 7 falsos
-            if (numero === 6) return 3;
-            if (numero === 5) return 2;
-            if (numero === 4) return 1;
-            return 0;
-        }
+  async function evaluateHand() {
+    if (hand.length === 0) { UI.log('Sin cartas para evaluar','warn'); return; }
+    const rec = TacticsEngine.recommend(hand, mesa);
+    UI.setRecommendation(rec);
+    VoiceUI.speak(rec.texto);
+    await recordEvent({ tipo:'recomendacion', texto: rec.texto, envido: rec.envido, fuerza: rec.fuerza, mano: hand.map(c=>c.id) });
+    played++;
+    await persistSession();
+  }
 
-        function calculateEnvido(cards) {
-            const suits = { espada: [], basto: [], oro: [], copa: [] };
-            
-            cards.forEach(c => {
-                const envVal = (c.numero < 10) ? c.numero : 0;
-                suits[c.palo].push(envVal);
-            });
+  async function recordEvent(ev) { await DBEngine.saveEvent(ev).catch(()=>{}); }
 
-            let maxEnvido = 0;
+  function resetHand() {
+    hand = []; mesa = [];
+    document.getElementById('recommendation').textContent = 'Nueva mano — mostrá tus cartas';
+    UI.log('Mano reiniciada','ok');
+    VoiceUI.speak('Nueva mano.', true);
+  }
 
-            for (const suit in suits) {
-                const vals = suits[suit].sort((a, b) => b - a);
-                if (vals.length >= 2) {
-                    const score = 20 + vals[0] + vals[1];
-                    if (score > maxEnvido) maxEnvido = score;
-                } else if (vals.length === 1) {
-                    if (vals[0] > maxEnvido) maxEnvido = vals[0];
-                }
-            }
+  // --- carga manual ---
+  function buildManualInputs() {
+    const wrap = document.getElementById('manualCards');
+    for (let i=0;i<3;i++) {
+      const sel = document.createElement('select');
+      sel.innerHTML = '<option value="">— carta '+(i+1)+' —</option>';
+      sel.dataset.idx = i;
+      sel.onchange = onManualChange;
+      wrap.appendChild(sel);
+    }
+    DBEngine.allCards().then(deck => {
+      const sorted = deck.slice().sort((a,b)=>a.palo.localeCompare(b.palo)||a.numero-b.numero);
+      document.querySelectorAll('#manualCards select').forEach(sel => {
+        sorted.forEach(c => { const o = document.createElement('option'); o.value=c.id; o.textContent=`${c.numero} de ${c.palo}`; sel.appendChild(o); });
+      });
+    });
+  }
+  function onManualChange() {
+    const ids = [...document.querySelectorAll('#manualCards select')].map(s=>s.value).filter(Boolean);
+    Promise.all(ids.map(id=>DBEngine.getCard(id))).then(cards=>{
+      hand = cards.filter(Boolean);
+      if (hand.length === 3) evaluateHand();
+    });
+  }
 
-            return maxEnvido;
-        }
+  // --- sesión / historial ---
+  async function loadSessionStats() {
+    detects = await DBEngine.getStat('detects') || 0;
+    wins    = await DBEngine.getStat('wins')    || 0;
+    played  = await DBEngine.getStat('played')  || 0;
+    document.getElementById('stDetects').textContent = detects;
+    updateWinRate();
+  }
+  async function persistSession() {
+    await DBEngine.setStat('detects', detects);
+    await DBEngine.setStat('wins', wins);
+    await DBEngine.setStat('played', played);
+    updateWinRate();
+  }
+  function updateWinRate() {
+    document.getElementById('stWinRate').textContent = played ? Math.round(wins/played*100)+'%' : '—';
+  }
 
-        function evaluateTactics(detectedCards) {
-            if (!detectedCards || detectedCards.length === 0) {
-                return null;
-            }
+  function registerSW() {
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      const sw = `self.addEventListener('install',e=>{e.waitUntil(caches.open('truco-v1').then(c=>c.addAll(['./','./index.html'])));self.skipWaiting()});
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(n=>{const cl=n.clone();caches.open('truco-v1').then(c=>c.put(e.request,cl));return n;}).catch(()=>caches.match('./index.html'))))});`;
+      navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'})))
+        .then(()=>UI.log('PWA registrada — disponible offline','ok'))
+        .catch(e=>UI.log('SW: '+e.message,'warn'));
+    }
+  }
 
-            // 1. Calcular Envido
-            const envidoPoints = calculateEnvido(detectedCards);
-            
-            // 2. Determinar la mejor carta para jugar
-            let bestCard = detectedCards[0];
-            let maxRank = getCardTrucoRank(bestCard.numero, bestCard.palo);
-
-            for (let i = 1; i < detectedCards.length; i++) {
-                const rank = getCardTrucoRank(detectedCards[i].numero, detectedCards[i].palo);
-                if (rank > maxRank) {
-                    maxRank = rank;
-                    bestCard = detectedCards[i];
-                }
-            }
-
-            // Crear mensaje táctico
-            let speechParts = [];
-
-            if (envidoPoints >= 27) {
-                speechParts.push(`Canta envido, tenés ${envidoPoints}.`);
-            } else if (envidoPoints >= 20) {
-                speechParts.push(`Envido aceptable con ${envidoPoints}.`);
-            }
-
-            if (maxRank >= 11) {
-                speechParts.push(`Jugá fuerte el ${bestCard.numero} de ${bestCard.palo}.`);
-            } else if (maxRank >= 8) {
-                speechParts.push(`Carta media. Jugá el ${bestCard.numero} de ${bestCard.palo}.`);
-            } else {
-                speechParts.push(`Tenés pie chico. Tirá el ${bestCard.numero} de ${bestCard.palo}.`);
-            }
-
-            return speechParts.join(" ");
-        }
-
-        // --- ANÁLISIS DE VISIÓN POR COMPUTADORA EN BUCLE ---
-        function captureAndAnalyzeFrame() {
-            if (!isRunning) return;
-
-            dotLoop.classList.add('active');
-            setTimeout(() => dotLoop.classList.remove('active'), 400);
-
-            // Copiar cuadro actual de la cámara al canvas
-            ctx.drawImage(videoElem, 0, 0, canvasElem.width, canvasElem.height);
-
-            // Extracción de píxeles local vía Canvas / OpenCV
-            // Nota: Aquí se implementa el procesamiento de fotogramas sin consumo de APIs externas.
-            // Para la demo autónoma local, simulamos estados de manos cambiando progresivamente.
-            
-            const simulatedHands = [
-                [{ numero: 7, palo: 'espada' }, { numero: 6, palo: 'espada' }, { numero: 1, palo: 'basto' }],
-                [{ numero: 1, palo: 'espada' }, { numero: 7, palo: 'oro' }, { numero: 3, palo: 'copa' }],
-                [{ numero: 4, palo: 'basto' }, { numero: 5, palo: 'copa' }, { numero: 11, palo: 'oro' }],
-                [{ numero: 2, palo: 'oro' }, { numero: 3, palo: 'oro' }, { numero: 12, palo: 'espada' }]
-            ];
-
-            const currentCards = simulatedHands[mockCycle];
-            mockCycle = (mockCycle + 1) % simulatedHands.length;
-
-            addLog(`Captura analizada. Cartas en escena: ${currentCards.map(c => `${c.numero} de${c.palo}`).join(', ')}.`);
-
-            const tacticalAdvice = evaluateTactics(currentCards);
-            if (tacticalAdvice) {
-                speakTacticalMessage(tacticalAdvice);
-            }
-        }
-
-        // --- CICLO PRINCIPAL INICIAR / DETENER ---
-        async function toggleAssistant() {
-            if (isRunning) {
-                // DETENER
-                clearInterval(loopTimer);
-                stopCamera();
-                disableWakeLock();
-                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-
-                isRunning = false;
-                btnStart.textContent = "INICIAR ASISTENTE";
-                btnStart.classList.remove('running');
-                lastSpokenText = "";
-                addLog("Asistente detenido.");
-            } else {
-                // INICIAR
-                try {
-                    unlockSpeechSynthesis();
-                    await enableWakeLock();
-                    await initCamera();
-
-                    isRunning = true;
-                    btnStart.textContent = "DETENER ASISTENTE";
-                    btnStart.classList.add('running');
-                    
-                    addLog("Asistente activado. Bucle de captura listo cada 3.5 segundos.");
-                    speakTacticalMessage("Asistente de truco activado.");
-
-                    // Bucle automático cada 3.5 segundos sin interacción del usuario
-                    loopTimer = setInterval(captureAndAnalyzeFrame, 3500);
-
-                } catch (err) {
-                    addLog(`No se pudo iniciar el asistente: ${err.message}`);
-                    disableWakeLock();
-                    stopCamera();
-                }
-            }
-        }
-
-        // Re-solicitar WakeLock si la app regresa al primer plano
-        document.addEventListener('visibilitychange', async () => {
-            if (document.visibilityState === 'visible' && isRunning) {
-                await enableWakeLock();
-            }
-        });
-
-        // Event Listener Principal
-        btnStart.addEventListener('click', toggleAssistant);
-    </script>
+  document.addEventListener('DOMContentLoaded', init);
+  return { onLibLoaded };
+})();
+</script>
 </body>
 </html>
