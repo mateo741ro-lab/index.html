@@ -304,8 +304,8 @@
 
             const base64Data = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
 
-            // Endpoint usando Gemini 2.0 Flash
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            // Endpoint actualizado a Gemini 3.6 Flash
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
             const promptTexto = "Identifica las cartas de Truco visibles en la mesa y dame la mejor jugada corta en 5 palabras.";
 
             const requestBody = {
