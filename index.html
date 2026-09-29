@@ -1,289 +1,603 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracker de Circuito GPS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* Slate 900 */
-            color: #f8fafc; /* Slate 50 */
-            margin: 0;
-            overflow-x: hidden;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deportivo Durazno — La Roja del Yí | Fútbol de Durazno, Uruguay</title>
+<meta name="description" content="Toda la pasión del fútbol duraznense: noticias, posiciones, La Roja del Yí, CANÓN® y multimedia. Estadio Silvestre Octavio Landoni.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow+Condensed:wght@500;700;900&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rojo:#d92027; --rojo-osc:#8f0f14; --rojo-deep:#5a0a0d;
+  --dorado:#d4af37; --dorado-claro:#f3d678;
+  --negro:#0b0b0e; --carbon:#141418; --gris:#1d1d23;
+  --blanco:#f5f3ee; --gris-txt:#a9a6a0;
+  --grad-rojo: linear-gradient(135deg,#d92027 0%,#8f0f14 60%,#5a0a0d 100%);
+  --grad-dorado: linear-gradient(135deg,#f3d678 0%,#d4af37 50%,#9c7a1c 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--negro);color:var(--blanco);font-family:'Inter',sans-serif;overflow-x:hidden}
+h1,h2,h3,.condensed{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase}
+::selection{background:var(--rojo);color:#fff}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:var(--carbon)}
+::-webkit-scrollbar-thumb{background:var(--rojo);border-radius:5px}
 
-        .track-widget {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            width: 120px;
-            height: 120px;
-            z-index: 50;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(8px);
-            border-radius: 1rem;
-            padding: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            border: 1px solid #334155;
-            transition: transform 0.3s ease;
-        }
+/* ===== LOADER ===== */
+#loader{position:fixed;inset:0;background:var(--negro);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .6s,visibility .6s}
+#loader.done{opacity:0;visibility:hidden}
+.loader-ball{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#ff6b6b,var(--rojo) 55%,var(--rojo-deep));animation:bounce .7s cubic-bezier(.5,0,.5,1) infinite alternate;box-shadow:0 20px 40px rgba(217,32,39,.35)}
+@keyframes bounce{from{transform:translateY(0) scale(1,1)}to{transform:translateY(-42px) scale(.95,1.05)}}
+.loader-txt{font-family:'Barlow Condensed';letter-spacing:6px;font-weight:900;color:var(--dorado);animation:pulseTxt 1.2s ease infinite}
+@keyframes pulseTxt{0%,100%{opacity:.35}50%{opacity:1}}
 
-        @media (min-width: 768px) {
-            .track-widget {
-                width: 180px;
-                height: 180px;
-                top: 2rem;
-                right: 2rem;
-            }
-        }
+/* ===== HEADER ===== */
+header{position:fixed;top:0;left:0;right:0;z-index:1000;padding:14px 4vw;display:flex;align-items:center;justify-content:space-between;transition:.35s}
+header.scrolled{background:rgba(11,11,14,.92);backdrop-filter:blur(14px);padding:8px 4vw;border-bottom:2px solid var(--rojo);box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-badge{width:52px;height:52px;background:var(--grad-rojo);border:2px solid var(--dorado);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black';font-size:20px;color:#fff;position:relative;box-shadow:0 0 22px rgba(217,32,39,.5);transition:transform .4s}
+.logo:hover .logo-badge{transform:rotate(360deg)}
+.logo-txt{line-height:1}
+.logo-txt b{font-family:'Barlow Condensed';font-size:24px;font-weight:900;letter-spacing:1px;display:block;color:#fff}
+.logo-txt span{font-size:10px;letter-spacing:4px;color:var(--dorado);text-transform:uppercase}
+nav ul{display:flex;list-style:none;gap:6px}
+nav a{color:var(--blanco);text-decoration:none;font-family:'Barlow Condensed';font-weight:700;font-size:17px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 16px;border-radius:8px;position:relative;transition:.3s}
+nav a::after{content:'';position:absolute;left:16px;right:16px;bottom:4px;height:2px;background:var(--grad-dorado);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+nav a:hover{color:var(--dorado-claro)}
+nav a:hover::after{transform:scaleX(1)}
+#burger{display:none;background:none;border:2px solid var(--dorado);border-radius:8px;width:46px;height:42px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;z-index:1002}
+#burger span{width:22px;height:2.5px;background:var(--dorado);border-radius:2px;transition:.3s}
+#burger.open span:nth-child(1){transform:translateY(7.5px) rotate(45deg)}
+#burger.open span:nth-child(2){opacity:0}
+#burger.open span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg)}
 
-        #track-progress {
-            transition: stroke-dashoffset 1s linear;
-        }
+/* ===== HERO ===== */
+#hero{min-height:100vh;position:relative;display:flex;align-items:center;padding:120px 5vw 80px;background:
+  linear-gradient(180deg,rgba(11,11,14,.55) 0%,rgba(11,11,14,.78) 55%,var(--negro) 100%),
+  url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat fixed}
+.hero-inner{max-width:1300px;margin:0 auto;width:100%}
+.hero-tag{display:inline-flex;align-items:center;gap:10px;background:rgba(217,32,39,.16);border:1px solid rgba(217,32,39,.55);color:#ffb3b5;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:9px 18px;border-radius:40px;backdrop-filter:blur(6px);animation:fadeUp .8s .2s both}
+.hero-tag .dot{width:8px;height:8px;border-radius:50%;background:var(--rojo);box-shadow:0 0 12px var(--rojo);animation:pulseDot 1.4s infinite}
+@keyframes pulseDot{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
+.hero-h1{font-size:clamp(52px,9.5vw,132px);font-weight:900;line-height:.92;margin:22px 0 8px;animation:fadeUp .8s .35s both}
+.hero-h1 .rojo{color:var(--rojo);text-shadow:0 0 44px rgba(217,32,39,.55)}
+.hero-h1 .outline{-webkit-text-stroke:2px var(--dorado);color:transparent;display:block}
+.hero-sub{font-size:clamp(16px,2vw,21px);color:#ddd6c8;max-width:640px;line-height:1.65;animation:fadeUp .8s .5s both}
+.hero-sub b{color:var(--dorado-claro)}
+.hero-btns{display:flex;gap:16px;margin-top:34px;flex-wrap:wrap;animation:fadeUp .8s .65s both}
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:'Barlow Condensed';font-weight:700;font-size:19px;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;padding:15px 32px;border-radius:12px;transition:.3s;cursor:pointer;border:none}
+.btn-rojo{background:var(--grad-rojo);color:#fff;box-shadow:0 12px 30px rgba(217,32,39,.4)}
+.btn-rojo:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(217,32,39,.6)}
+.btn-dorado{background:transparent;color:var(--dorado);border:2px solid var(--dorado)}
+.btn-dorado:hover{background:var(--grad-dorado);color:var(--negro);transform:translateY(-4px)}
+.hero-stats{display:flex;gap:0;margin-top:56px;border-top:1px solid rgba(212,175,55,.25);flex-wrap:wrap;animation:fadeUp .8s .8s both}
+.hstat{padding:22px 34px 4px;border-left:1px solid rgba(212,175,55,.25)}
+.hstat:first-child{border-left:none;padding-left:0}
+.hstat b{font-family:'Barlow Condensed';font-size:46px;font-weight:900;color:var(--dorado);display:block;line-height:1}
+.hstat span{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gris-txt)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:translateY(0)}}
+.marquee{position:absolute;bottom:0;left:0;right:0;background:var(--rojo);overflow:hidden;padding:10px 0;border-top:2px solid var(--dorado)}
+.marquee-track{display:flex;gap:48px;white-space:nowrap;animation:scrollX 26s linear infinite;font-family:'Barlow Condensed';font-weight:700;letter-spacing:2px;font-size:16px;text-transform:uppercase;color:#fff}
+@keyframes scrollX{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid #334155;
-        }
-    </style>
+/* ===== SECCIONES ===== */
+section{padding:100px 5vw;position:relative}
+.wrap{max-width:1300px;margin:0 auto}
+.sec-head{margin-bottom:52px}
+.sec-kicker{display:inline-flex;align-items:center;gap:12px;color:var(--dorado);font-size:12px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px}
+.sec-kicker::before{content:'';width:38px;height:2px;background:var(--grad-dorado)}
+.sec-title{font-size:clamp(38px,5.5vw,64px);font-weight:900;line-height:1}
+.sec-title em{font-style:normal;color:var(--rojo)}
+.reveal{opacity:0;transform:translateY(44px);transition:opacity .8s ease,transform .8s ease}
+.reveal.vis{opacity:1;transform:none}
+
+/* ===== CANÓN ===== */
+#canon{background:radial-gradient(1000px 500px at 80% 10%,rgba(217,32,39,.14),transparent 65%),var(--carbon);overflow:hidden}
+.canon-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center}
+.canon-mono{font-family:'Barlow Condensed';font-size:clamp(60px,10vw,150px);font-weight:900;line-height:.88;text-transform:uppercase}
+.canon-mono .line1{color:transparent;-webkit-text-stroke:2px rgba(212,175,55,.8)}
+.canon-mono .line2{background:var(--grad-dorado);-webkit-background-clip:text;background-clip:text;color:transparent;position:relative}
+.reg{font-size:.32em;vertical-align:super;-webkit-text-fill-color:var(--dorado);color:var(--dorado);text-shadow:0 0 18px rgba(212,175,55,.6);animation:regGlow 2s ease infinite}
+@keyframes regGlow{0%,100%{opacity:.75}50%{opacity:1;text-shadow:0 0 26px rgba(212,175,55,.95)}}
+.canon-desc{margin-top:26px;color:#cfc9bd;font-size:17px;line-height:1.8;max-width:540px}
+.canon-desc b{color:var(--dorado-claro)}
+.canon-chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.chip{border:1px solid rgba(212,175,55,.45);color:var(--dorado-claro);padding:8px 18px;border-radius:30px;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:.3s}
+.chip:hover{background:var(--grad-dorado);color:var(--negro);transform:translateY(-3px)}
+.canon-card{background:linear-gradient(160deg,#1b1b21,#101014);border:1px solid rgba(212,175,55,.3);border-radius:22px;padding:34px;position:relative;box-shadow:0 30px 70px rgba(0,0,0,.55)}
+.canon-card::before{content:'\00AE';position:absolute;top:-30px;right:26px;font-size:110px;color:rgba(217,32,39,.16);font-weight:900}
+.canon-card h3{font-size:26px;color:var(--dorado);margin-bottom:6px;letter-spacing:1px}
+.canon-card .sub{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--gris-txt);margin-bottom:24px}
+.canon-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px dashed rgba(245,243,238,.12);font-size:15px}
+.canon-row:last-child{border-bottom:none}
+.canon-row span{color:var(--gris-txt)}
+.canon-row b{font-family:'Barlow Condensed';font-size:22px;color:#fff;letter-spacing:1px}
+.stars{color:var(--dorado);letter-spacing:3px}
+
+/* ===== NOTICIAS / DATOS ===== */
+.news-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-bottom:70px}
+.news-card{background:var(--carbon);border:1px solid rgba(245,243,238,.08);border-radius:18px;overflow:hidden;transition:.4s;cursor:pointer;position:relative}
+.news-card:hover{transform:translateY(-8px);border-color:var(--rojo);box-shadow:0 24px 50px rgba(217,32,39,.22)}
+.news-img{height:190px;background-size:cover;background-position:center;position:relative;filter:saturate(1.05)}
+.news-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(20,20,24,.95))}
+.news-cat{position:absolute;top:14px;left:14px;z-index:2;background:var(--rojo);color:#fff;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:6px 12px;border-radius:20px}
+.news-body{padding:22px}
+.news-date{font-size:11px;color:var(--dorado);letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.news-body h3{font-size:23px;line-height:1.15;margin:8px 0 10px;transition:.3s}
+.news-card:hover h3{color:var(--dorado-claro)}
+.news-body p{font-size:14px;color:var(--gris-txt);line-height:1.65}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
+.tab{font-family:'Barlow Condensed';font-weight:700;font-size:17px;letter-spacing:1.5px;text-transform:uppercase;background:var(--gris);border:1px solid rgba(245,243,238,.12);color:var(--gris-txt);padding:11px 26px;border-radius:10px;cursor:pointer;transition:.3s}
+.tab.active,.tab:hover{background:var(--grad-rojo);color:#fff;border-color:var(--rojo)}
+.pane{display:none;animation:fadeUp .5s both}
+.pane.active{display:block}
+.table-box{background:var(--carbon);border:1px solid rgba(212,175,55,.22);border-radius:18px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:rgba(217,32,39,.14);color:var(--dorado-claro);font-family:'Barlow Condensed';font-size:15px;letter-spacing:2px;text-transform:uppercase;padding:15px 14px;text-align:left}
+td{padding:13px 14px;border-bottom:1px solid rgba(245,243,238,.06)}
+tr:hover td{background:rgba(217,32,39,.06)}
+.pos{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:900;background:var(--gris);color:var(--gris-txt)}
+tr:nth-child(1) .pos{background:var(--grad-dorado);color:var(--negro)}
+tr:nth-child(2) .pos,tr:nth-child(3) .pos,tr:nth-child(4) .pos{background:rgba(217,32,39,.25);color:#ffb3b5}
+.pts{font-weight:900;color:var(--dorado)}
+.badge-roja{display:inline-block;background:var(--rojo);color:#fff;font-size:9px;font-weight:800;padding:3px 8px;border-radius:12px;letter-spacing:1.5px;margin-left:8px;vertical-align:middle}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.res-card{background:var(--carbon);border:1px solid rgba(245,243,238,.08);border-radius:16px;padding:22px 26px;transition:.3s}
+.res-card:hover{border-color:var(--dorado)}
+.res-liga{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dorado);font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between}
+.res-liga span:last-child{color:var(--gris-txt)}
+.res-match{display:flex;align-items:center;justify-content:space-between;font-family:'Barlow Condensed';font-size:22px;font-weight:700}
+.res-score{background:var(--grad-rojo);padding:6px 18px;border-radius:10px;font-size:24px;font-weight:900;box-shadow:0 6px 18px rgba(217,32,39,.35)}
+.res-mini{font-size:11px;color:var(--gris-txt);margin-top:10px;text-align:center;letter-spacing:1px}
+
+/* ===== MULTIMEDIA ===== */
+#multimedia{background:linear-gradient(180deg,var(--negro),#101014 40%,var(--negro))}
+.multi-sub{font-size:13px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dorado);font-weight:700;display:flex;align-items:center;gap:12px;margin:44px 0 22px}
+.multi-sub::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(212,175,55,.5),transparent)}
+.vid-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.vid-frame{position:relative;padding-top:56.25%;border-radius:16px;overflow:hidden;border:1px solid rgba(245,243,238,.1);background:#000;transition:.35s}
+.vid-frame:hover{border-color:var(--rojo);transform:translateY(-6px);box-shadow:0 22px 46px rgba(217,32,39,.25)}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-cap{margin-top:12px;font-size:13px;color:var(--gris-txt)}
+.vid-cap b{color:var(--blanco);display:block;font-size:15px;font-family:'Barlow Condensed';letter-spacing:1px;text-transform:uppercase}
+.ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.ig-card{background:var(--carbon);border:1px solid rgba(245,243,238,.1);border-radius:16px;overflow:hidden;transition:.35s}
+.ig-card:hover{border-color:var(--dorado);transform:translateY(-6px)}
+.ig-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(245,243,238,.07)}
+.ig-av{width:38px;height:38px;border-radius:50%;background:var(--grad-rojo);border:2px solid var(--dorado);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff}
+.ig-head b{font-size:14px}
+.ig-head span{display:block;font-size:11px;color:var(--gris-txt)}
+.ig-img{height:230px;background-size:cover;background-position:center;position:relative}
+.ig-img::after{content:'\2665  \27A4  \1F4AC';position:absolute;bottom:12px;left:14px;font-size:15px;letter-spacing:10px;filter:grayscale(1) brightness(2)}
+.ig-foot{padding:14px 16px;font-size:13px;color:var(--gris-txt);line-height:1.5}
+.ig-foot b{color:var(--dorado-claro)}
+.tt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.tt-card{background:#000;border:1px solid rgba(245,243,238,.12);border-radius:16px;overflow:hidden;transition:.35s}
+.tt-card:hover{border-color:var(--rojo);transform:translateY(-6px)}
+.tt-card iframe{width:100%;height:560px;border:0}
+
+/* ===== FOOTER ===== */
+footer{background:var(--carbon);border-top:3px solid var(--rojo);padding:70px 5vw 30px}
+.foot-grid{max-width:1300px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:50px}
+.foot-grid h4{font-size:19px;letter-spacing:2px;color:var(--dorado);margin-bottom:18px}
+.foot-grid p,.foot-grid a{color:var(--gris-txt);font-size:14px;line-height:1.9;text-decoration:none;display:block;transition:.3s}
+.foot-grid a:hover{color:var(--dorado-claro);transform:translateX(6px)}
+.socials{display:flex;gap:12px;margin-top:18px}
+.soc{width:42px;height:42px;border-radius:12px;background:var(--gris);display:flex;align-items:center;justify-content:center;font-size:19px;transition:.3s;border:1px solid rgba(245,243,238,.1);cursor:pointer}
+.soc:hover{background:var(--grad-rojo);transform:translateY(-4px) rotate(6deg)}
+.foot-bottom{max-width:1300px;margin:50px auto 0;padding-top:24px;border-top:1px solid rgba(245,243,238,.08);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--gris-txt);letter-spacing:1px}
+
+/* ===== BACK TO TOP ===== */
+#topBtn{position:fixed;bottom:26px;right:26px;width:52px;height:52px;border-radius:50%;background:var(--grad-rojo);border:2px solid var(--dorado);color:#fff;font-size:22px;cursor:pointer;z-index:900;opacity:0;visibility:hidden;transition:.35s;box-shadow:0 10px 26px rgba(217,32,39,.45)}
+#topBtn.show{opacity:1;visibility:visible}
+#topBtn:hover{transform:translateY(-5px)}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:1024px){
+  .news-grid,.vid-grid,.ig-grid,.tt-grid{grid-template-columns:repeat(2,1fr)}
+  .canon-grid{grid-template-columns:1fr;gap:44px}
+  .res-grid{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  nav{position:fixed;inset:0;background:rgba(11,11,14,.98);backdrop-filter:blur(16px);transform:translateX(100%);transition:transform .45s cubic-bezier(.7,0,.3,1);display:flex;align-items:center;justify-content:center}
+  nav.open{transform:translateX(0)}
+  nav ul{flex-direction:column;text-align:center;gap:22px}
+  nav a{font-size:30px}
+  #burger{display:flex}
+  .news-grid,.vid-grid,.ig-grid,.tt-grid{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr}
+  .hstat{padding:18px 20px 4px}
+  .hstat b{font-size:34px}
+  section{padding:74px 6vw}
+}
+</style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
+<body>
 
-    <div class="track-widget flex flex-col items-center justify-center">
-        <span class="text-xs font-semibold text-slate-400 mb-1" id="widget-status">Progreso: 0%</span>
-        <svg viewBox="0 0 200 150" class="w-full h-full drop-shadow-lg">
-            <!-- Circuito de fondo (Gris) -->
-            <!-- Usamos un path que simula un circuito estilo Fórmula 1 con curvas y rectas -->
-            <path id="track-bg" 
-                  d="M 50 120 C 10 120, 10 30, 50 30 L 100 30 C 130 30, 130 60, 150 60 C 170 60, 190 80, 180 110 C 170 140, 130 120, 100 120 Z" 
-                  stroke="#334155" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            
-            <!-- Circuito de progreso (Rojo) -->
-            <path id="track-progress" 
-                  d="M 50 120 C 10 120, 10 30, 50 30 L 100 30 C 130 30, 130 60, 150 60 C 170 60, 190 80, 180 110 C 170 140, 130 120, 100 120 Z" 
-                  stroke="#ef4444" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-ball"></div>
+  <div class="loader-txt">DEPORTIVO DURAZNO</div>
+</div>
+
+<!-- HEADER -->
+<header id="header">
+  <a class="logo" href="#hero">
+    <div class="logo-badge">DD</div>
+    <div class="logo-txt"><b>Deportivo Durazno</b><span>La Roja del Yí</span></div>
+  </a>
+  <button id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
+  <nav id="nav">
+    <ul>
+      <li><a href="#hero">Inicio</a></li>
+      <li><a href="#canon">Canón®</a></li>
+      <li><a href="#noticias">Noticias y Datos</a></li>
+      <li><a href="#multimedia">Multimedia</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <span class="hero-tag"><span class="dot"></span> Estadio Silvestre Octavio Landoni · Durazno, Uruguay</span>
+    <h1 class="hero-h1"><span class="rojo">Deportivo</span> <span class="outline">Durazno</span></h1>
+    <p class="hero-sub">Toda la pasión del fútbol del <b>Yí</b> en un solo lugar: la Liga de Fútbol Ciudad de Durazno, los clubes del departamento, <b>La Roja del Yí</b> y el legado eterno de <b>CANÓN®</b>. Información, datos y multimedia del fútbol duraznense.</p>
+    <div class="hero-btns">
+      <a href="#noticias" class="btn btn-rojo">⚽ Ver posiciones</a>
+      <a href="#multimedia" class="btn btn-dorado">▶ Ver jugadas</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><b data-count="13">0</b><span>Clubes en la Liga</span></div>
+      <div class="hstat"><b data-count="98">0</b><span>Años de historia</span></div>
+      <div class="hstat"><b data-count="1200">0</b><span>Partidos cubiertos</span></div>
+      <div class="hstat"><b data-count="27000">0</b><span>Hinchas del Yí</span></div>
+    </div>
+  </div>
+  <div class="marquee">
+    <div class="marquee-track" id="marqueeTrack">
+      <span>🔴 Wanderers campeón invicto del Apertura</span><span>⚽ Central 1 - 0 Juvenil · Gol de Juan Bautista González</span><span>🏆 La Roja del Yí rumbo al Torneo del Interior</span><span>🥇 CANÓN® Marca Registrada del fútbol duraznense</span><span>🏟️ Estadio Silvestre Octavio Landoni</span>
+    </div>
+  </div>
+</section>
+
+<!-- CANÓN MARCA REGISTRADA -->
+<section id="canon">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-kicker">Leyenda viva</span>
+      <h2 class="sec-title">Canón <em>Marca</em> Registrada</h2>
+    </div>
+    <div class="canon-grid">
+      <div class="reveal">
+        <div class="canon-mono">
+          <span class="line1">El pie</span>
+          <span class="line2">Canón<span class="reg">®</span></span>
+        </div>
+        <p class="canon-desc">En Durazno nadie pregunta quién es <b>Canón®</b>: es sinónimo de gol. Figura emblemática del fútbol departamental, su nombre quedó grabado —<b>registrado</b>— en la memoria colectiva del Yí. Cada remate potente en el Landoni, cada jugada que rompe redes, lleva su firma invisible. Hinchas, jugadores y rivales coinciden: cuando el balón vuela hacia el ángulo, eso no es un gol… <b>es un Canón®</b>.</p>
+        <div class="canon-chips">
+          <span class="chip">⚽ Garantía de gol</span>
+          <span class="chip">🎯 Precisión quirúrgica</span>
+          <span class="chip">🔥 Potencia legendaria</span>
+          <span class="chip">🏟️ Ídolo del Landoni</span>
+        </div>
+      </div>
+      <div class="canon-card reveal">
+        <h3>Ficha CANÓN®</h3>
+        <div class="sub">Certificado de marca registrada del fútbol del Yí</div>
+        <div class="canon-row"><span>Producto oficial</span><b>Gol asegurado</b></div>
+        <div class="canon-row"><span>Origen</span><b>Durazno, UY 🇺🇾</b></div>
+        <div class="canon-row"><span>Distancia de fabricación</span><b>30+ metros</b></div>
+        <div class="canon-row"><span>Viento del Yí</span><b>A favor, siempre</b></div>
+        <div class="canon-row"><span>Nivel de potencia</span><b class="stars">★★★★★</b></div>
+        <div class="canon-row"><span>Estado</span><b>Activo · Vigente</b></div>
+        <div class="canon-row"><span>Lema</span><b>"Acá se remata enserio"</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOTICIAS Y DATOS -->
+<section id="noticias">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-kicker">Actualidad</span>
+      <h2 class="sec-title">Noticias y <em>Datos</em></h2>
     </div>
 
-    <main class="w-full max-w-md mt-20 md:mt-0 z-10 relative">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400 mb-2">
-                SpeedTrack
-            </h1>
-            <p class="text-slate-400 text-sm">Tu circuito personal GPS</p>
+    <div class="news-grid">
+      <article class="news-card reveal" onclick="location.hash='multimedia'">
+        <div class="news-img" style="background-image:url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=900&auto=format&fit=crop')">
+          <span class="news-cat">Primera División</span>
         </div>
-
-        <div class="glass-panel rounded-2xl p-6 shadow-2xl">
-            
-            <!-- Input de distancia -->
-            <div class="mb-6">
-                <label for="target-distance" class="block text-sm font-medium text-slate-300 mb-2">
-                    Distancia Objetivo (Kilómetros)
-                </label>
-                <input type="number" id="target-distance" min="0.1" step="0.1" value="1.0" 
-                       class="w-full bg-slate-800 border border-slate-600 rounded-lg py-3 px-4 text-white font-bold text-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors"
-                       placeholder="Ej: 1.5">
-            </div>
-
-            <!-- Estadísticas -->
-            <div class="grid grid-cols-2 gap-4 mb-8">
-                <div class="bg-slate-800/50 rounded-xl p-4 text-center border border-slate-700">
-                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Recorrido</p>
-                    <p class="text-2xl font-bold text-white"><span id="current-distance">0.00</span> <span class="text-sm font-normal text-slate-400">km</span></p>
-                </div>
-                <div class="bg-slate-800/50 rounded-xl p-4 text-center border border-slate-700">
-                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Restante</p>
-                    <p class="text-2xl font-bold text-white"><span id="remaining-distance">0.00</span> <span class="text-sm font-normal text-slate-400">km</span></p>
-                </div>
-            </div>
-
-            <!-- Estado de GPS -->
-            <div id="status-message" class="text-center text-sm font-medium text-slate-400 mb-4 h-5">
-                Listo para comenzar
-            </div>
-
-            <!-- Botones de Acción -->
-            <div class="flex gap-4">
-                <button id="btn-start" class="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-red-500/30 transform transition hover:-translate-y-1 active:translate-y-0">
-                    Iniciar
-                </button>
-                <button id="btn-stop" disabled class="flex-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-white font-bold py-4 px-6 rounded-xl transition transform hover:-translate-y-1 active:translate-y-0">
-                    Detener
-                </button>
-            </div>
+        <div class="news-body">
+          <span class="news-date">28 Sep 2026 · Liga Ciudad de Durazno</span>
+          <h3>Wanderers corona una campaña perfecta: campeón invicto del Apertura con puntaje ideal</h3>
+          <p>El bohemio duraznense completó el torneo sin conocer la derrota y levantó el título en el Landoni ante un estadio colmado. Campaña para la historia del fútbol departamental.</p>
         </div>
-    </main>
+      </article>
+      <article class="news-card reveal" onclick="location.hash='multimedia'">
+        <div class="news-img" style="background-image:url('https://images.unsplash.com/photo-1553778263-73a83bab9b0c?q=80&w=900&auto=format&fit=crop')">
+          <span class="news-cat">Primera División</span>
+        </div>
+        <div class="news-body">
+          <span class="news-date">24 Sep 2026 · Fecha 9</span>
+          <h3>Champagnat doblega a Central 2-0 y suma su cuarta victoria en el Apertura</h3>
+          <p>Con goles de Diego Gerez, figura del torneo, el equipo de la capital duraznense se mete en la pelea por los primeros lugares de cara al Clausura.</p>
+        </div>
+      </article>
+      <article class="news-card reveal" onclick="location.hash='multimedia'">
+        <div class="news-img" style="background-image:url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=900&auto=format&fit=crop')">
+          <span class="news-cat">Torneo Apertura</span>
+        </div>
+        <div class="news-body">
+          <span class="news-date">21 Sep 2026 · Sub-16 incluida</span>
+          <h3>Central venció a Juvenil 1-0 con gol de Juan Bautista González</h3>
+          <p>Clásico intenso en el Landoni. El tanto del juvenil delantero valió los tres puntos y encendió las formativas, con grandes actuaciones de la categoría Sub-16.</p>
+        </div>
+      </article>
+    </div>
 
-    <script>
-        const trackProgress = document.getElementById('track-progress');
-        const widgetStatus = document.getElementById('widget-status');
-        const inputTargetDistance = document.getElementById('target-distance');
-        const displayCurrentDistance = document.getElementById('current-distance');
-        const displayRemainingDistance = document.getElementById('remaining-distance');
-        const statusMessage = document.getElementById('status-message');
-        const btnStart = document.getElementById('btn-start');
-        const btnStop = document.getElementById('btn-stop');
+    <div class="tabs reveal">
+      <button class="tab active" data-pane="tabla">📊 Tabla de posiciones</button>
+      <button class="tab" data-pane="resultados">🗓️ Resultados</button>
+      <button class="tab" data-pane="goleadores">🎯 Goleadores</button>
+      <button class="tab" data-pane="roja">🇺🇾 La Roja del Yí</button>
+    </div>
 
-        let watchId = null;
-        let lastPosition = null;
-        let accumulatedDistanceKm = 0;
-        let targetDistanceKm = 1.0;
-        let isTracking = false;
+    <div class="pane active" id="tabla">
+      <div class="table-box">
+        <table>
+          <thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>DG</th><th>Pts</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pos">1</span></td><td><b>Wanderers</b><span class="badge-roja">Campeón</span></td><td>14</td><td>14</td><td>0</td><td>0</td><td>+31</td><td class="pts">42</td></tr>
+            <tr><td><span class="pos">2</span></td><td><b>Champagnat</b></td><td>14</td><td>10</td><td>1</td><td>3</td><td>+18</td><td class="pts">31</td></tr>
+            <tr><td><span class="pos">3</span></td><td><b>Central</b></td><td>14</td><td>9</td><td>2</td><td>3</td><td>+14</td><td class="pts">29</td></tr>
+            <tr><td><span class="pos">4</span></td><td><b>Racing</b></td><td>14</td><td>8</td><td>2</td><td>4</td><td>+9</td><td class="pts">26</td></tr>
+            <tr><td><span class="pos">5</span></td><td><b>Juvenil</b></td><td>14</td><td>6</td><td>3</td><td>5</td><td>+2</td><td class="pts">21</td></tr>
+            <tr><td><span class="pos">6</span></td><td><b>Durazno FC</b></td><td>14</td><td>5</td><td>4</td><td>5</td><td>0</td><td class="pts">19</td></tr>
+            <tr><td><span class="pos">7</span></td><td><b>Libertad</b></td><td>14</td><td>4</td><td>3</td><td>7</td><td>-6</td><td class="pts">15</td></tr>
+            <tr><td><span class="pos">8</span></td><td><b>Deportivo LSM</b></td><td>14</td><td>2</td><td>6</td><td>6</td><td>-8</td><td class="pts">12</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-        // Configurar longitud del path SVG para la animación de dashoffset
-        const pathLength = trackProgress.getTotalLength();
-        trackProgress.style.strokeDasharray = pathLength;
-        trackProgress.style.strokeDashoffset = pathLength; // Oculto al inicio (0%)
+    <div class="pane" id="resultados">
+      <div class="res-grid">
+        <div class="res-card">
+          <div class="res-liga"><span>Torneo Apertura · Fecha 9</span><span>Landoni</span></div>
+          <div class="res-match"><span>Champagnat</span><span class="res-score">2 - 0</span><span>Central</span></div>
+          <div class="res-mini">⚽ Gerez x2 · Fecha clave en la punta</div>
+        </div>
+        <div class="res-card">
+          <div class="res-liga"><span>Torneo Apertura · Fecha 8</span><span>Landoni</span></div>
+          <div class="res-match"><span>Central</span><span class="res-score">1 - 0</span><span>Juvenil</span></div>
+          <div class="res-mini">⚽ Juan Bautista González · Clásico vibrante</div>
+        </div>
+        <div class="res-card">
+          <div class="res-liga"><span>Div. "C" AUF · Fecha 1</span><span>Estadio Municipal</span></div>
+          <div class="res-match"><span>Durazno FC</span><span class="res-score">0 - 0</span><span>Deportivo LSM</span></div>
+          <div class="res-mini">🧤 Figuras: los arqueros · Igualdad en el arranque</div>
+        </div>
+        <div class="res-card">
+          <div class="res-liga"><span>Selección Durazno · Amistoso</span><span>Landoni</span></div>
+          <div class="res-match"><span>Durazno (Roja del Yí)</span><span class="res-score">3 - 1</span><span>Treinta y Tres</span></div>
+          <div class="res-mini">🔴 La Roja del Yí mostró categoría de visita</div>
+        </div>
+      </div>
+    </div>
 
-        // Convertir grados a radianes
-        function deg2rad(deg) {
-            return deg * (Math.PI / 180);
-        }
+    <div class="pane" id="goleadores">
+      <div class="table-box">
+        <table>
+          <thead><tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Goles</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pos">1</span></td><td><b>Diego Gerez</b></td><td>Champagnat</td><td class="pts">9</td></tr>
+            <tr><td><span class="pos">2</span></td><td><b>Gerardo Gasañol</b></td><td>Racing</td><td class="pts">8</td></tr>
+            <tr><td><span class="pos">3</span></td><td><b>Steven Sosa</b></td><td>Juvenil</td><td class="pts">7</td></tr>
+            <tr><td><span class="pos">4</span></td><td><b>Facundo Samaniego</b></td><td>Wanderers</td><td class="pts">6</td></tr>
+            <tr><td><span class="pos">5</span></td><td><b>Juan Bautista González</b></td><td>Central</td><td class="pts">5</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-        // Fórmula de Haversine para calcular distancia en kilómetros entre dos coordenadas GPS
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radio de la Tierra en km
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c; // Distancia en km
-        }
+    <div class="pane" id="roja">
+      <div class="res-grid">
+        <div class="res-card">
+          <div class="res-liga"><span>Próximo compromiso</span><span>Torneo del Interior</span></div>
+          <div class="res-match"><span>La Roja del Yí</span><span class="res-score">VS</span><span>Florida</span></div>
+          <div class="res-mini">🏟️ Estadio Silvestre Octavio Landoni · 15:30 hs</div>
+        </div>
+        <div class="res-card">
+          <div class="res-liga"><span>Últimos resultados</span><span>Selección departamental</span></div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--gris-txt)">
+            <div>✅ Durazno 3-1 Treinta y Tres <span style="color:var(--dorado)">· goleada en casa</span></div>
+            <div>✅ Durazno 2-0 Flores <span style="color:var(--dorado)">· valla invicta</span></div>
+            <div>🤝 Durazno 1-1 Cerro Largo <span style="color:var(--dorado)">· empate aguerrido</span></div>
+            <div>🔴 La Roja marcha invicta con 7 puntos en 3 fechas.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-        function updateUI() {
-            // Limitar a máximo 100% de progreso
-            const progressRatio = Math.min(accumulatedDistanceKm / targetDistanceKm, 1);
-            const percentage = (progressRatio * 100).toFixed(1);
-            
-            // Actualizar textos
-            displayCurrentDistance.innerText = accumulatedDistanceKm.toFixed(3);
-            const remaining = Math.max(targetDistanceKm - accumulatedDistanceKm, 0);
-            displayRemainingDistance.innerText = remaining.toFixed(3);
-            widgetStatus.innerText = `Progreso: ${percentage}%`;
+<!-- MULTIMEDIA -->
+<section id="multimedia">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-kicker">Redes y jugadas</span>
+      <h2 class="sec-title">Multimedia <em>Del Yí</em></h2>
+    </div>
 
-            // Actualizar SVG stroke (animación de circuito)
-            // Cuando progressRatio es 0, offset = pathLength. Cuando es 1, offset = 0.
-            const dashoffset = pathLength - (progressRatio * pathLength);
-            trackProgress.style.strokeDashoffset = dashoffset;
+    <h3 class="multi-sub reveal">▶ YouTube · Partidos y resúmenes</h3>
+    <div class="vid-grid">
+      <div class="reveal">
+        <div class="vid-frame">
+          <iframe src="https://www.youtube.com/embed/N9KEPmVqjrw" title="Durazno FC 0-0 Deportivo LSM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <p class="vid-cap"><b>Durazno FC 0-0 Deportivo LSM</b>Extended Highlights · Fecha 1 · Div. "C" AUF</p>
+      </div>
+      <div class="reveal">
+        <div class="vid-frame">
+          <iframe src="https://www.youtube.com/embed?listType=search&list=futbol+Durazno+Uruguay+resumen" title="Fútbol Durazno resúmenes" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <p class="vid-cap"><b>Resúmenes del fútbol duraznense</b>Búsqueda en vivo de videos de Durazno en YouTube</p>
+      </div>
+      <div class="reveal">
+        <div class="vid-frame">
+          <iframe src="https://www.youtube.com/embed?listType=search&list=La+Roja+del+Yi+Durazno+seleccion" title="La Roja del Yí" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <p class="vid-cap"><b>La Roja del Yí</b>Cobertura audiovisual de la Selección de Durazno</p>
+      </div>
+    </div>
 
-            if (progressRatio >= 1 && isTracking) {
-                statusMessage.innerText = "¡Meta Alcanzada! 🎉";
-                statusMessage.classList.add("text-green-400");
-                statusMessage.classList.remove("text-yellow-400");
-                stopTracking();
-            }
-        }
+    <h3 class="multi-sub reveal">📸 Instagram · Hinchada y vestuarios</h3>
+    <div class="ig-grid">
+      <div class="ig-card reveal">
+        <div class="ig-head"><div class="ig-av">SD</div><div><b>sportdurazno</b><span>Durazno, Uruguay</span></div></div>
+        <div class="ig-img" style="background-image:url('https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?q=80&w=900&auto=format&fit=crop')"></div>
+        <div class="ig-foot"><b>Wanderers campeón invicto del Apertura 🏆</b><br>La hinchada bohemia explotó el Landoni en la noche del título. Campaña perfecta.</div>
+      </div>
+      <div class="ig-card reveal">
+        <div class="ig-head"><div class="ig-av">SD</div><div><b>sportdurazno</b><span>Durazno, Uruguay</span></div></div>
+        <div class="ig-img" style="background-image:url('https://images.unsplash.com/photo-1560012057-4372e14c5085?q=80&w=900&auto=format&fit=crop')"></div>
+        <div class="ig-foot"><b>Formativas en acción ⚽🔴</b><br>La Sub-16 dejó todo en el clásico. El futuro del fútbol duraznense se entrena todos los días.</div>
+      </div>
+      <div class="ig-card reveal">
+        <div class="ig-head"><div class="ig-av">SD</div><div><b>sportdurazno</b><span>Durazno, Uruguay</span></div></div>
+        <div class="ig-img" style="background-image:url('https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=900&auto=format&fit=crop')"></div>
+        <div class="ig-foot"><b>La Roja del Yí 🇺🇾❤️</b><br>Postales de la Selección de Durazno: orgullo departamental cada vez que saltan al Landoni.</div>
+      </div>
+    </div>
 
-        function handlePositionUpdate(position) {
-            const { latitude, longitude, accuracy } = position.coords;
+    <h3 class="multi-sub reveal">🎵 TikTok · Skills y goles virales</h3>
+    <div class="tt-grid">
+      <div class="tt-card reveal">
+        <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@sportdurazno/video/7300000000000000000" data-video-id="7300000000000000000" style="max-width:325px;min-width:325px;">
+          <section><a target="_blank" href="https://www.tiktok.com/@sportdurazno">@sportdurazno</a> ⚽ Puro fútbol del Yí 🔴</section>
+        </blockquote>
+      </div>
+      <div class="tt-card reveal">
+        <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@futboldurazno/video/7300000000000000001" data-video-id="7300000000000000001" style="max-width:325px;min-width:325px;">
+          <section><a target="_blank" href="https://www.tiktok.com/@futboldurazno">@futboldurazno</a> 🎯 Skills de La Roja del Yí</section>
+        </blockquote>
+      </div>
+      <div class="tt-card reveal">
+        <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@duraznofc/video/7300000000000000002" data-video-id="7300000000000000002" style="max-width:325px;min-width:325px;">
+          <section><a target="_blank" href="https://www.tiktok.com/@duraznofc">@duraznofc</a> 🏟️ Ambiente en el Landoni</section>
+        </blockquote>
+      </div>
+    </div>
+  </div>
+</section>
 
-            // Ignorar lecturas extremadamente imprecisas (más de 50 metros de margen)
-            // En un entorno de simulación o navegador a veces la precisión es baja, 
-            // pero para una app real esto evita saltos falsos.
-            if (accuracy > 50 && lastPosition !== null) {
-                console.warn("Se ignoró un punto de GPS por baja precisión: " + accuracy + "m");
-                return;
-            }
+<!-- FOOTER -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <a class="logo" href="#hero" style="margin-bottom:18px">
+        <div class="logo-badge">DD</div>
+        <div class="logo-txt"><b>Deportivo Durazno</b><span>La Roja del Yí</span></div>
+      </a>
+      <p>Portal de pasión por el fútbol duraznense. Inspirado en el estilo de cobertura de Sport Durazno: noticias, resultados, posiciones y el alma del Yí desde el Estadio Silvestre Octavio Landoni.</p>
+      <div class="socials">
+        <div class="soc" title="Instagram" onclick="window.open('https://www.instagram.com/sportdurazno/','_blank')">📸</div>
+        <div class="soc" title="YouTube" onclick="window.open('https://www.youtube.com/results?search_query=futbol+durazno+uruguay','_blank')">▶</div>
+        <div class="soc" title="TikTok" onclick="window.open('https://www.tiktok.com/search?q=futbol%20durazno','_blank')">🎵</div>
+        <div class="soc" title="X" onclick="window.open('https://x.com/sportdurazno','_blank')">𝕏</div>
+      </div>
+    </div>
+    <div>
+      <h4>Secciones</h4>
+      <a href="#hero">Portada</a>
+      <a href="#canon">Canón® Marca Registrada</a>
+      <a href="#noticias">Noticias y Datos</a>
+      <a href="#multimedia">Multimedia y Redes</a>
+    </div>
+    <div>
+      <h4>El fútbol del Yí</h4>
+      <p>🏟️ Estadio Silvestre Octavio Landoni</p>
+      <p>🏆 Liga de Fútbol Ciudad de Durazno</p>
+      <p>🇺🇾 Selección de Durazno · La Roja del Yí</p>
+      <p>⚽ CANÓN® — gol garantizado desde siempre</p>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 Deportivo Durazno · Hecho con pasión y potencia Canón®</span>
+    <span>Durazno — Uruguay — La Roja del Yí ❤️</span>
+  </div>
+</footer>
 
-            if (lastPosition !== null) {
-                const distanceDelta = calculateDistance(
-                    lastPosition.latitude, lastPosition.longitude,
-                    latitude, longitude
-                );
-                accumulatedDistanceKm += distanceDelta;
-            }
+<button id="topBtn" title="Volver arriba">↑</button>
 
-            lastPosition = { latitude, longitude };
-            statusMessage.innerText = "📍 Rastreando en vivo...";
-            statusMessage.classList.add("text-green-400");
-            statusMessage.classList.remove("text-yellow-400");
-            
-            updateUI();
-        }
+<script async src="https://www.tiktok.com/embed.js"></script>
+<script async src="//www.instagram.com/embed.js"></script>
+<script>
+// ===== LOADER =====
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('loader').classList.add('done'), 700);
+});
 
-        function handlePositionError(error) {
-            console.error("Error GPS:", error);
-            statusMessage.innerText = "⚠️ Error obteniendo señal GPS.";
-            statusMessage.className = "text-center text-sm font-medium text-red-500 mb-4 h-5";
-        }
+// ===== HEADER SCROLL + TOP BTN =====
+const header = document.getElementById('header');
+const topBtn = document.getElementById('topBtn');
+window.addEventListener('scroll', () => {
+  header.classList.toggle('scrolled', window.scrollY > 40);
+  topBtn.classList.toggle('show', window.scrollY > 600);
+});
+topBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
 
-        function startTracking() {
-            if (!navigator.geolocation) {
-                alert("Tu navegador no soporta geolocalización GPS.");
-                return;
-            }
+// ===== MENÚ MÓVIL =====
+const burger = document.getElementById('burger');
+const nav = document.getElementById('nav');
+burger.addEventListener('click', () => {
+  burger.classList.toggle('open');
+  nav.classList.toggle('open');
+});
+nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  burger.classList.remove('open'); nav.classList.remove('open');
+}));
 
-            // Validar input
-            const inputVal = parseFloat(inputTargetDistance.value);
-            if (isNaN(inputVal) || inputVal <= 0) {
-                alert("Por favor ingresa una distancia válida mayor a 0.");
-                return;
-            }
-            
-            targetDistanceKm = inputVal;
-            accumulatedDistanceKm = 0;
-            lastPosition = null;
-            isTracking = true;
+// ===== REVEAL ON SCROLL =====
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); } });
+}, {threshold: .12});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-            // Bloquear input
-            inputTargetDistance.disabled = true;
-            inputTargetDistance.classList.add("opacity-50");
-            
-            // UI Estados de botones
-            btnStart.disabled = true;
-            btnStop.disabled = false;
-            
-            statusMessage.innerText = "Buscando señal GPS...";
-            statusMessage.className = "text-center text-sm font-medium text-yellow-400 mb-4 h-5";
-            
-            updateUI(); // Reset UI to 0
+// ===== CONTADORES ANIMADOS =====
+const countObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target, target = +el.dataset.count, dur = 1600, t0 = performance.now();
+    const tick = t => {
+      const p = Math.min((t - t0) / dur, 1);
+      el.textContent = Math.floor(target * (1 - Math.pow(1 - p, 3))).toLocaleString('es-UY');
+      if (p < 1) requestAnimationFrame(tick); else el.textContent = target.toLocaleString('es-UY');
+    };
+    requestAnimationFrame(tick);
+    countObs.unobserve(el);
+  });
+}, {threshold: .6});
+document.querySelectorAll('[data-count]').forEach(el => countObs.observe(el));
 
-            // Iniciar Watch
-            const options = {
-                enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 10000
-            };
-            
-            watchId = navigator.geolocation.watchPosition(
-                handlePositionUpdate, 
-                handlePositionError, 
-                options
-            );
-        }
+// ===== TABS =====
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.pane).classList.add('active');
+  });
+});
 
-        function stopTracking() {
-            if (watchId !== null) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            isTracking = false;
-            
-            inputTargetDistance.disabled = false;
-            inputTargetDistance.classList.remove("opacity-50");
-            
-            btnStart.disabled = false;
-            btnStop.disabled = true;
-
-            if(accumulatedDistanceKm < targetDistanceKm) {
-                statusMessage.innerText = "⏸️ Recorrido pausado/detenido.";
-                statusMessage.className = "text-center text-sm font-medium text-slate-400 mb-4 h-5";
-            }
-        }
-
-        btnStart.addEventListener('click', startTracking);
-        btnStop.addEventListener('click', stopTracking);
-        
-        // Actualizar UI inicial con valores base
-        updateUI();
-
-    </script>
+// ===== MARQUEE (loop infinito) =====
+const track = document.getElementById('marqueeTrack');
+track.innerHTML += track.innerHTML;
+</script>
 </body>
 </html>
