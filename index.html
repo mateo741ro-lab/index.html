@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Cámara Fútbol Pro - Monitor</title>
 
-  <!-- Librería PeerJS -->
+  <!-- Librería PeerJS para conexión P2P (Video y Datos) -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
   <style>
@@ -21,7 +21,7 @@
       --border-color: #30363d;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 12px; }
     
     header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -35,11 +35,13 @@
     video { width: 100%; height: 100%; object-fit: cover; }
 
     /* INDICADORES */
-    .rec-indicator { position: absolute; top: 12px; left: 12px; background-color: rgba(0, 0, 0, 0.7); padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: bold; }
+    .rec-indicator { position: absolute; top: 12px; left: 12px; background-color: rgba(0, 0, 0, 0.7); padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: bold; visibility: hidden; }
+    .rec-indicator.visible { visibility: visible; }
     .dot { width: 10px; height: 10px; border-radius: 50%; background-color: #8b949e; }
     .recording .dot { background-color: var(--accent-red); animation: blink 1s infinite; }
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-    .cam-switch-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(0, 0, 0, 0.7); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+    
+    .cam-switch-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(0, 0, 0, 0.7); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; z-index: 10; }
 
     /* CONTROLES Y TARJETAS */
     .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -48,11 +50,12 @@
     input[type="text"] { background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; }
     
     .action-buttons { display: flex; gap: 10px; }
-    button.btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; text-transform: uppercase; }
+    button.btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; text-transform: uppercase; transition: opacity 0.2s; }
+    button.btn:active { opacity: 0.7; }
     .btn-record { background-color: var(--accent-green); color: #fff; }
     .btn-stop { background-color: var(--accent-red); color: #fff; display: none; }
     
-    /* SECCIÓN MONITOR EN VIVO (Nueva) */
+    /* SECCIÓN MONITOR EN VIVO */
     .monitor-panel { border: 1px dashed var(--accent-blue); background-color: rgba(31, 107, 235, 0.05); }
     .monitor-panel label { color: var(--accent-blue); }
     .qr-row { display: flex; gap: 12px; align-items: center; }
@@ -62,9 +65,10 @@
     .link-buttons { display: flex; gap: 6px; }
     .btn-sm { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; color: #fff; text-align: center; text-decoration: none; }
     
-    /* MODO ESPECTADOR (MONITOR) */
+    /* MODO ESPECTADOR */
     .viewer-warning { background-color: rgba(210, 153, 34, 0.15); border: 1px solid var(--accent-yellow); color: #f0f6fc; padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin-bottom: 12px; display: flex; gap: 10px; align-items: center;}
     .viewer-warning span { font-size: 1.5rem; }
+    .remote-controls { margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -79,11 +83,11 @@
 
     <div class="camera-box">
       <video id="preview" autoplay playsinline muted></video>
-      <div class="rec-indicator" id="recIndicator">
+      <div class="rec-indicator visible" id="recIndicator">
         <div class="dot"></div>
         <span id="timerDisplay" style="font-family: monospace;">00:00:00</span>
       </div>
-      <button class="cam-switch-btn" id="switchCamBtn">🔄 Cámara</button>
+      <button class="cam-switch-btn" id="switchCamBtn">🔄 Girar</button>
     </div>
 
     <div class="card">
@@ -97,32 +101,29 @@
       </div>
     </div>
 
-    <!-- PANEL DEL MONITOR EN VIVO (Siempre visible al inicio) -->
     <div class="card monitor-panel">
-      <label>📡 COMPARTIR CÁMARA EN VIVO</label>
+      <label>📡 COMPARTIR Y CONTROLAR EN VIVO</label>
+      <p style="font-size: 0.8rem; color: var(--subtext-color);">Escanea este QR con otro celular para ver el encuadre y controlar la grabación a distancia.</p>
       <div class="qr-row">
         <img id="qrImage" class="qr-img" src="" alt="Cargando QR...">
         <div class="link-controls">
           <input type="text" id="monitorLinkInput" readonly>
           <div class="link-buttons">
-            <button class="btn-sm" id="copyMonitorBtn" style="background: var(--accent-blue);">Copiar</button>
-            <a class="btn-sm" id="wspMonitorBtn" href="#" target="_blank" style="background: #25D366;">WhatsApp</a>
+            <button class="btn-sm" id="copyMonitorBtn" style="background: var(--accent-blue);">Copiar Link</button>
           </div>
         </div>
       </div>
       <div id="peerStatus" style="font-size: 0.8rem; color: var(--subtext-color); text-align: center; margin-top: 5px;">
-        Generando conexión segura...
+        Iniciando servidor local...
       </div>
     </div>
 
-    <!-- Resultados (Descarga/Nube) -->
+    <!-- Resultados -->
     <div class="card" id="outputCard" style="display: none;">
       <label>VIDEO GENERADO</label>
       <div class="action-buttons">
         <button class="btn" id="downloadBtn" style="background: #30363d; color: white;">⬇️ Guardar en mi celular</button>
       </div>
-      <button class="btn" id="uploadBtn" style="margin-top: 5px; background: var(--accent-blue); color: white;">☁️ Subir a Gofile y Compartir</button>
-      <div id="statusMsg" style="font-size: 0.85rem; margin-top: 10px; color: var(--accent-green);"></div>
     </div>
   </div>
 
@@ -139,20 +140,32 @@
     <div class="viewer-warning">
       <span>⚠️</span>
       <div>
-        <strong>ESTA NO ES LA CALIDAD ORIGINAL</strong><br>
-        Estás viendo una vista previa comprimida por internet para comprobar el encuadre. El teléfono del poste está grabando en Full HD.
+        <strong>MODO CONTROL REMOTO</strong><br>
+        Usa esto para acomodar el teléfono del poste y presiona Grabar cuando inicie el partido.
       </div>
     </div>
 
     <div class="camera-box">
-      <video id="viewerVideo" autoplay playsinline></video>
+      <video id="viewerVideo" autoplay playsinline muted></video>
+      <div class="rec-indicator" id="vRecIndicator">
+        <div class="dot"></div>
+        <span style="font-family: monospace;">GRABANDO</span>
+      </div>
+    </div>
+
+    <div class="card remote-controls">
+      <label>CONTROL REMOTO DE CÁMARA</label>
+      <div class="action-buttons">
+        <button class="btn btn-record" id="vRecordBtn" disabled>🔴 GRABAR</button>
+        <button class="btn btn-stop" id="vStopBtn">⏹ DETENER</button>
+      </div>
     </div>
   </div>
 
 
   <script>
     // ========================================================
-    // DETECCIÓN DE MODO: ¿Grabador o Monitor?
+    // RUTEO: Detectar si somos Grabador o Espectador
     // ========================================================
     const urlParams = new URLSearchParams(window.location.search);
     const hostPeerId = urlParams.get('view');
@@ -166,41 +179,56 @@
     }
 
     // ========================================================
-    // LÓGICA DEL MODO GRABADOR (Dispositivo Principal)
+    // MODO 1: GRABADOR PRINCIPAL
     // ========================================================
-    let currentStream;
-    let peer;
-
     async function initRecorderMode() {
-      // 1. GENERACIÓN INSTANTÁNEA DE QR Y ENLACE (Antes de conectar a la red)
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+        alert("⚠️ ATENCIÓN: La cámara requiere que la página esté en un sitio seguro (HTTPS) o localhost para funcionar.");
+      }
+
+      let currentStream;
+      let peer;
+      let activeConnections = [];
+      let isRecording = false;
+
+      // 1. GENERAR QR
       const myUniqueId = 'camfut-' + Math.random().toString(36).substring(2, 9);
       const generatedViewerUrl = window.location.href.split('?')[0] + '?view=' + myUniqueId;
       
-      // Mostrar QR e Inputs en milésimas de segundo
       document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(generatedViewerUrl)}&bgcolor=FFFFFF`;
       document.getElementById('monitorLinkInput').value = generatedViewerUrl;
-      const wspMsg = encodeURIComponent(`⚽ ¡Entra a este link para ver la cámara en vivo y ayudarme a apuntar la cancha!\n\n${generatedViewerUrl}`);
-      document.getElementById('wspMonitorBtn').href = `whatsapp://send?text=${wspMsg}`;
-
-      // Lógica de Copiar
+      
       document.getElementById('copyMonitorBtn').addEventListener('click', () => {
-        const input = document.getElementById('monitorLinkInput');
-        input.select();
-        document.execCommand("copy");
-        document.getElementById('copyMonitorBtn').innerText = "¡Copiado!";
-        setTimeout(() => { document.getElementById('copyMonitorBtn').innerText = "Copiar"; }, 2000);
+        navigator.clipboard.writeText(generatedViewerUrl).then(() => {
+          const btn = document.getElementById('copyMonitorBtn');
+          btn.innerText = "¡Copiado!";
+          setTimeout(() => { btn.innerText = "Copiar Link"; }, 2000);
+        });
       });
 
-      // 2. INICIAR CÁMARA
-      let facingMode = 'environment';
+      // 2. INICIAR CÁMARA (Permisos y Frontal/Trasera)
+      let facingMode = 'environment'; // Atrás por defecto
       const preview = document.getElementById('preview');
       
       async function startCamera() {
-        if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+        if (currentStream) {
+          currentStream.getTracks().forEach(t => t.stop());
+        }
         try {
-          currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920 } }, audio: true });
+          const constraints = {
+            video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+            audio: true
+          };
+          currentStream = await navigator.mediaDevices.getUserMedia(constraints);
           preview.srcObject = currentStream;
-        } catch (err) { alert("Error al acceder a la cámara."); }
+          
+          // Si ya hay espectadores conectados, hay que actualizarles el stream
+          activeConnections.forEach(conn => {
+            if(peer) peer.call(conn.peer, currentStream);
+          });
+        } catch (err) { 
+          alert("Error al acceder a la cámara. Revisa los permisos: " + err.message); 
+        }
       }
       await startCamera();
 
@@ -209,58 +237,97 @@
         startCamera();
       });
 
-      // 3. CONEXIÓN A LA RED EN SEGUNDO PLANO
+      // 3. CONEXIÓN P2P (PeerJS)
       const peerStatus = document.getElementById('peerStatus');
-      
-      // Forzamos la creación del servidor usando el ID que ya le mostramos al usuario
-      // y agregamos servidores STUN gratuitos de Google para evitar bloqueos móviles.
-      peer = new Peer(myUniqueId, {
-        config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
-      }); 
+      peer = new Peer(myUniqueId, { config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] } }); 
 
       peer.on('open', () => {
         peerStatus.innerText = "✅ Red conectada. Esperando espectador...";
         peerStatus.style.color = "var(--accent-green)";
       });
 
-      peer.on('error', (err) => {
-        console.error(err);
-        peerStatus.innerText = "⚠️ Error de red. El Wi-Fi/4G está bloqueando la conexión.";
-        peerStatus.style.color = "var(--accent-red)";
-      });
+      function broadcastState(state) {
+        activeConnections.forEach(conn => {
+          if(conn.open) conn.send(state);
+        });
+      }
 
       peer.on('connection', (conn) => {
+        activeConnections.push(conn);
+        
         conn.on('data', (data) => {
           if (data === 'VIEWER_READY' && currentStream) {
             peer.call(conn.peer, currentStream);
-            peerStatus.innerText = "👁️ Un amigo está viendo la cámara en vivo";
+            peerStatus.innerText = "👁️ Espectador/Control conectado";
             peerStatus.style.color = "var(--accent-blue)";
+            // Enviamos el estado actual
+            conn.send(isRecording ? 'REC_STARTED' : 'REC_STOPPED');
+          } 
+          // RECIBIR COMANDOS REMOTOS
+          else if (data === 'CMD_START_REC') {
+            document.getElementById('recordBtn').click();
+          } 
+          else if (data === 'CMD_STOP_REC') {
+            document.getElementById('stopBtn').click();
           }
         });
       });
 
-      // ==========================================
       // 4. LÓGICA DE GRABACIÓN
-      // ==========================================
-      let mediaRecorder; let recordedChunks = []; let startTime; let timerInterval; let recordedBlob;
-      const recordBtn = document.getElementById('recordBtn'); const stopBtn = document.getElementById('stopBtn');
+      let mediaRecorder; 
+      let recordedChunks = []; 
+      let startTime; 
+      let timerInterval; 
+      let recordedBlob;
+      
+      const recordBtn = document.getElementById('recordBtn'); 
+      const stopBtn = document.getElementById('stopBtn');
+      const recIndicator = document.getElementById('recIndicator');
       
       recordBtn.addEventListener('click', () => {
+        if(!currentStream) return alert("La cámara no está lista");
+        
         recordedChunks = [];
-        try { mediaRecorder = new MediaRecorder(currentStream, { mimeType: 'video/mp4' }); } 
-        catch (e) { mediaRecorder = new MediaRecorder(currentStream); }
+        
+        // Buscar el mejor formato soportado
+        let mimeType = '';
+        if (MediaRecorder.isTypeSupported('video/mp4')) { mimeType = 'video/mp4'; } 
+        else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) { mimeType = 'video/webm;codecs=vp9,opus'; }
+        else if (MediaRecorder.isTypeSupported('video/webm')) { mimeType = 'video/webm'; }
+
+        try { 
+          mediaRecorder = new MediaRecorder(currentStream, mimeType ? { mimeType } : undefined); 
+        } catch (e) { 
+          mediaRecorder = new MediaRecorder(currentStream); 
+        }
 
         mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
         mediaRecorder.onstop = () => {
-          recordedBlob = new Blob(recordedChunks, { type: 'video/mp4' });
+          // Generar archivo
+          const finalMime = mimeType || 'video/mp4';
+          const ext = finalMime.includes('webm') ? 'webm' : 'mp4';
+          recordedBlob = new Blob(recordedChunks, { type: finalMime });
+          
           document.getElementById('outputCard').style.display = 'flex';
           document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth' });
+          
+          // Preparar descarga
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(recordedBlob);
+          a.download = `${document.getElementById('matchTitle').value}.${ext}`;
+          document.getElementById('downloadBtn').onclick = () => a.click();
         };
 
-        mediaRecorder.start(1000);
-        recordBtn.style.display = 'none'; stopBtn.style.display = 'flex';
-        document.getElementById('recIndicator').classList.add('recording');
+        mediaRecorder.start(1000); // Guardar chunks cada segundo
         
+        // Interfaz Grabador
+        isRecording = true;
+        recordBtn.style.display = 'none'; 
+        stopBtn.style.display = 'flex';
+        recIndicator.classList.add('recording');
+        document.getElementById('outputCard').style.display = 'none';
+        
+        // Cronómetro
         startTime = Date.now();
         timerInterval = setInterval(() => {
           const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -268,68 +335,70 @@
           const mins = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
           document.getElementById('timerDisplay').innerText = `00:${mins}:${secs}`;
         }, 1000);
+
+        // Avisar a los visores
+        broadcastState('REC_STARTED');
       });
 
       stopBtn.addEventListener('click', () => {
-        mediaRecorder.stop();
-        recordBtn.style.display = 'flex'; stopBtn.style.display = 'none';
-        document.getElementById('recIndicator').classList.remove('recording');
+        if(mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+        isRecording = false;
+        recordBtn.style.display = 'flex'; 
+        stopBtn.style.display = 'none';
+        recIndicator.classList.remove('recording');
         clearInterval(timerInterval);
-      });
-
-      // 5. DESCARGA Y NUBE (Gofile)
-      document.getElementById('downloadBtn').addEventListener('click', () => {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(recordedBlob);
-        a.download = `${document.getElementById('matchTitle').value}.mp4`;
-        a.click();
-      });
-
-      document.getElementById('uploadBtn').addEventListener('click', async () => {
-        if(!recordedBlob) return;
-        const btn = document.getElementById('uploadBtn');
-        const msg = document.getElementById('statusMsg');
-        btn.innerText = "⏳ Subiendo..."; btn.disabled = true;
-        try {
-          const sRes = await fetch('https://api.gofile.io/servers');
-          const sData = await sRes.json();
-          const server = sData.data.servers[0].name;
-          
-          const fd = new FormData(); fd.append('file', recordedBlob, "partido.mp4");
-          const uRes = await fetch(`https://${server}.gofile.io/contents/uploadfile`, { method: 'POST', body: fd });
-          const uData = await uRes.json();
-          
-          msg.innerHTML = `✅ Link generado: <a href="${uData.data.downloadPage}" target="_blank" style="color:var(--accent-blue)">ABRIR VIDEO</a>`;
-          btn.innerText = "☁️ Subido con éxito";
-        } catch (e) { msg.innerText = "❌ Error al subir."; btn.disabled = false; btn.innerText = "☁️ Reintentar"; }
+        
+        broadcastState('REC_STOPPED');
       });
     }
 
     // ========================================================
-    // LÓGICA DEL MODO VISOR (Celular del Espectador)
+    // MODO 2: VISOR DEL MONITOR Y CONTROL REMOTO
     // ========================================================
     function initViewerMode(targetId) {
       const viewerVideo = document.getElementById('viewerVideo');
       const viewerStatus = document.getElementById('viewerStatus');
+      const vRecordBtn = document.getElementById('vRecordBtn');
+      const vStopBtn = document.getElementById('vStopBtn');
+      const vRecIndicator = document.getElementById('vRecIndicator');
       
+      let viewerConn; // Conexión de datos al grabador principal
+
       const viewerPeer = new Peer({ config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] } }); 
 
       viewerPeer.on('open', () => {
         viewerStatus.innerText = "Conectando al poste... 🟡";
-        const conn = viewerPeer.connect(targetId);
+        viewerConn = viewerPeer.connect(targetId);
         
-        conn.on('open', () => {
-          conn.send('VIEWER_READY'); 
+        viewerConn.on('open', () => {
+          viewerConn.send('VIEWER_READY'); 
+          vRecordBtn.disabled = false;
+        });
+
+        // ESCUCHAR ESTADOS DEL GRABADOR
+        viewerConn.on('data', (data) => {
+          if (data === 'REC_STARTED') {
+            vRecordBtn.style.display = 'none';
+            vStopBtn.style.display = 'flex';
+            vRecIndicator.classList.add('visible', 'recording');
+          } else if (data === 'REC_STOPPED') {
+            vRecordBtn.style.display = 'flex';
+            vStopBtn.style.display = 'none';
+            vRecIndicator.classList.remove('visible', 'recording');
+          }
         });
       });
 
+      // RECIBIR VIDEO
       viewerPeer.on('call', (call) => {
         call.answer(); 
         viewerStatus.innerText = "Recibiendo señal... 🟡";
         
         call.on('stream', (remoteStream) => {
           viewerVideo.srcObject = remoteStream;
-          viewerStatus.innerText = "EN VIVO 🟢";
+          viewerStatus.innerText = "CONECTADO 🟢";
           viewerStatus.style.color = "var(--accent-green)";
         });
       });
@@ -337,6 +406,16 @@
       viewerPeer.on('error', (err) => {
         viewerStatus.innerText = "Error de red 🔴";
         viewerStatus.style.color = "var(--accent-red)";
+        alert("Error de conexión. Asegúrate de que el celular del poste sigue con la pantalla prendida y buena señal.");
+      });
+
+      // ACCIONES DE BOTONES REMOTOS
+      vRecordBtn.addEventListener('click', () => {
+        if(viewerConn && viewerConn.open) viewerConn.send('CMD_START_REC');
+      });
+
+      vStopBtn.addEventListener('click', () => {
+        if(viewerConn && viewerConn.open) viewerConn.send('CMD_STOP_REC');
       });
     }
   </script>
