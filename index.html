@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Cámara Fútbol Pro - Monitor</title>
 
-  <!-- Librería PeerJS para videollamada P2P directa entre celulares -->
+  <!-- Librería PeerJS -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
   <style>
@@ -23,29 +23,16 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
     body { background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 12px; }
-    header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    
+    header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     h1 { font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
     h1 span { color: var(--accent-green); }
 
     .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 12px; }
 
-    /* CAJA DE CÁMARA */
+    /* CÁMARA */
     .camera-box { position: relative; width: 100%; aspect-ratio: 16 / 9; background-color: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
     video { width: 100%; height: 100%; object-fit: cover; }
-
-    /* CONTROLES */
-    .controls-card, .output-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-    .input-group { display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 0.8rem; color: var(--subtext-color); font-weight: 700; text-transform: uppercase; }
-    input[type="text"] { background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; }
-    
-    .action-buttons { display: flex; gap: 10px; }
-    button.btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; text-transform: uppercase; }
-    .btn-record { background-color: var(--accent-green); color: #fff; }
-    .btn-stop { background-color: var(--accent-red); color: #fff; display: none; }
-    .btn-qr { background-color: #30363d; color: #fff; padding: 10px; font-size: 0.9rem; margin-top: 5px; border: 1px solid var(--border-color);}
-    .btn-download { background-color: #30363d; color: #fff; }
-    .btn-upload { background-color: var(--accent-blue); color: #fff; }
 
     /* INDICADORES */
     .rec-indicator { position: absolute; top: 12px; left: 12px; background-color: rgba(0, 0, 0, 0.7); padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: bold; }
@@ -54,24 +41,30 @@
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     .cam-switch-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(0, 0, 0, 0.7); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
 
-    /* MODAL DEL QR Y COMPARTIR */
-    .qr-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); z-index: 100; justify-content: center; align-items: center; flex-direction: column; padding: 20px; text-align: center;}
-    .qr-modal h2 { margin-bottom: 5px; color: #fff; }
-    .qr-modal p { color: var(--subtext-color); font-size: 0.9rem; margin-bottom: 20px; }
-    .qr-modal img { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 220px; height: 220px; display: none; }
+    /* CONTROLES Y TARJETAS */
+    .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.75rem; color: var(--subtext-color); font-weight: 700; text-transform: uppercase; }
+    input[type="text"] { background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; }
     
-    .share-box { display: none; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); }
-    .share-box input { padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); text-align: center; color: #000; font-size: 0.9rem; width: 100%; background: #fff;}
-    .share-row { display: flex; gap: 10px; }
-    .btn-copy-monitor { background: var(--accent-blue); color: white; border: none; padding: 12px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer;}
-    .btn-wsp-monitor { background: #25D366; color: white; text-decoration: none; padding: 12px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; display: flex; justify-content: center; align-items: center;}
+    .action-buttons { display: flex; gap: 10px; }
+    button.btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; text-transform: uppercase; }
+    .btn-record { background-color: var(--accent-green); color: #fff; }
+    .btn-stop { background-color: var(--accent-red); color: #fff; display: none; }
     
-    .close-qr { background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 12px 24px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 20px;}
-
+    /* SECCIÓN MONITOR EN VIVO (Nueva) */
+    .monitor-panel { border: 1px dashed var(--accent-blue); background-color: rgba(31, 107, 235, 0.05); }
+    .monitor-panel label { color: var(--accent-blue); }
+    .qr-row { display: flex; gap: 12px; align-items: center; }
+    .qr-img { width: 100px; height: 100px; background: #fff; padding: 4px; border-radius: 8px; flex-shrink: 0; }
+    .link-controls { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow: hidden; }
+    .link-controls input { padding: 8px; font-size: 0.85rem; }
+    .link-buttons { display: flex; gap: 6px; }
+    .btn-sm { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; color: #fff; text-align: center; text-decoration: none; }
+    
     /* MODO ESPECTADOR (MONITOR) */
     .viewer-warning { background-color: rgba(210, 153, 34, 0.15); border: 1px solid var(--accent-yellow); color: #f0f6fc; padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin-bottom: 12px; display: flex; gap: 10px; align-items: center;}
     .viewer-warning span { font-size: 1.5rem; }
-    .connection-status { font-size: 0.85rem; color: var(--subtext-color); text-align: center; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -82,7 +75,6 @@
   <div id="recorder-app" class="container">
     <header>
       <h1>CÁMARA<span>FÚTBOL</span></h1>
-      <div id="peerStatus" style="font-size: 0.75rem; color: var(--subtext-color);">Conectando servidor de red...</div>
     </header>
 
     <div class="camera-box">
@@ -94,7 +86,7 @@
       <button class="cam-switch-btn" id="switchCamBtn">🔄 Cámara</button>
     </div>
 
-    <div class="controls-card">
+    <div class="card">
       <div class="input-group">
         <label for="matchTitle">Nombre del Partido</label>
         <input type="text" id="matchTitle" value="Partido_Fecha_1">
@@ -103,16 +95,33 @@
         <button class="btn btn-record" id="recordBtn">🔴 GRABAR</button>
         <button class="btn btn-stop" id="stopBtn">⏹ DETENER</button>
       </div>
-      <button class="btn btn-qr" id="showQrBtn">📱 Compartir Monitor en Vivo</button>
+    </div>
+
+    <!-- PANEL DEL MONITOR EN VIVO (Siempre visible al inicio) -->
+    <div class="card monitor-panel">
+      <label>📡 COMPARTIR CÁMARA EN VIVO</label>
+      <div class="qr-row">
+        <img id="qrImage" class="qr-img" src="" alt="Cargando QR...">
+        <div class="link-controls">
+          <input type="text" id="monitorLinkInput" readonly>
+          <div class="link-buttons">
+            <button class="btn-sm" id="copyMonitorBtn" style="background: var(--accent-blue);">Copiar</button>
+            <a class="btn-sm" id="wspMonitorBtn" href="#" target="_blank" style="background: #25D366;">WhatsApp</a>
+          </div>
+        </div>
+      </div>
+      <div id="peerStatus" style="font-size: 0.8rem; color: var(--subtext-color); text-align: center; margin-top: 5px;">
+        Generando conexión segura...
+      </div>
     </div>
 
     <!-- Resultados (Descarga/Nube) -->
-    <div class="output-card" id="outputCard" style="display: none;">
+    <div class="card" id="outputCard" style="display: none;">
       <label>VIDEO GENERADO</label>
       <div class="action-buttons">
-        <button class="btn btn-download" id="downloadBtn">⬇️ Guardar en mi celular</button>
+        <button class="btn" id="downloadBtn" style="background: #30363d; color: white;">⬇️ Guardar en mi celular</button>
       </div>
-      <button class="btn btn-upload" id="uploadBtn" style="margin-top: 5px;">☁️ Subir a Gofile y Compartir</button>
+      <button class="btn" id="uploadBtn" style="margin-top: 5px; background: var(--accent-blue); color: white;">☁️ Subir a Gofile y Compartir</button>
       <div id="statusMsg" style="font-size: 0.85rem; margin-top: 10px; color: var(--accent-green);"></div>
     </div>
   </div>
@@ -124,45 +133,20 @@
   <div id="viewer-app" class="container" style="display: none;">
     <header>
       <h1>MONITOR<span>EN VIVO</span></h1>
-      <div style="font-size: 0.75rem; color: var(--accent-green);">Conectado 🟢</div>
+      <div id="viewerStatus" style="font-size: 0.75rem; color: var(--accent-yellow);">Conectando... 🟡</div>
     </header>
 
     <div class="viewer-warning">
       <span>⚠️</span>
       <div>
         <strong>ESTA NO ES LA CALIDAD ORIGINAL</strong><br>
-        Estás viendo una vista previa comprimida por internet para comprobar el encuadre. El dispositivo principal está grabando en calidad Full HD.
+        Estás viendo una vista previa comprimida por internet para comprobar el encuadre. El teléfono del poste está grabando en Full HD.
       </div>
     </div>
 
     <div class="camera-box">
       <video id="viewerVideo" autoplay playsinline></video>
     </div>
-    
-    <div class="connection-status" id="viewerStatus">Conectando con la cámara principal...</div>
-  </div>
-
-
-  <!-- ========================================== -->
-  <!-- MODAL DE COMPARTIR MONITOR -->
-  <!-- ========================================== -->
-  <div id="qrModal" class="qr-modal">
-    <h2>Monitor en Vivo</h2>
-    <p>Escanea el código o envía el link a un amigo</p>
-    
-    <div id="qrLoading" style="color: var(--accent-yellow); margin-bottom: 20px;">Generando enlace seguro...</div>
-    <img id="qrImage" src="" alt="Código QR">
-    
-    <div class="share-box" id="shareBox">
-      <label style="color: var(--subtext-color); font-size: 0.75rem; text-align: left;">ENLACE DIRECTO</label>
-      <input type="text" id="monitorLinkInput" readonly>
-      <div class="share-row">
-        <button class="btn-copy-monitor" id="copyMonitorBtn">📋 Copiar Link</button>
-        <a class="btn-wsp-monitor" id="wspMonitorBtn" href="#" target="_blank">💬 WhatsApp</a>
-      </div>
-    </div>
-    
-    <button class="close-qr" id="closeQrBtn">Cerrar</button>
   </div>
 
 
@@ -186,10 +170,28 @@
     // ========================================================
     let currentStream;
     let peer;
-    let generatedViewerUrl = "";
 
     async function initRecorderMode() {
-      // 1. Iniciar cámara local
+      // 1. GENERACIÓN INSTANTÁNEA DE QR Y ENLACE (Antes de conectar a la red)
+      const myUniqueId = 'camfut-' + Math.random().toString(36).substring(2, 9);
+      const generatedViewerUrl = window.location.href.split('?')[0] + '?view=' + myUniqueId;
+      
+      // Mostrar QR e Inputs en milésimas de segundo
+      document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(generatedViewerUrl)}&bgcolor=FFFFFF`;
+      document.getElementById('monitorLinkInput').value = generatedViewerUrl;
+      const wspMsg = encodeURIComponent(`⚽ ¡Entra a este link para ver la cámara en vivo y ayudarme a apuntar la cancha!\n\n${generatedViewerUrl}`);
+      document.getElementById('wspMonitorBtn').href = `whatsapp://send?text=${wspMsg}`;
+
+      // Lógica de Copiar
+      document.getElementById('copyMonitorBtn').addEventListener('click', () => {
+        const input = document.getElementById('monitorLinkInput');
+        input.select();
+        document.execCommand("copy");
+        document.getElementById('copyMonitorBtn').innerText = "¡Copiado!";
+        setTimeout(() => { document.getElementById('copyMonitorBtn').innerText = "Copiar"; }, 2000);
+      });
+
+      // 2. INICIAR CÁMARA
       let facingMode = 'environment';
       const preview = document.getElementById('preview');
       
@@ -207,70 +209,38 @@
         startCamera();
       });
 
-      // 2. Iniciar PeerJS para el Streaming en Vivo
+      // 3. CONEXIÓN A LA RED EN SEGUNDO PLANO
       const peerStatus = document.getElementById('peerStatus');
       
-      // Inicializamos PeerJS. A veces el servidor por defecto tarda.
-      peer = new Peer({ debug: 1 }); 
+      // Forzamos la creación del servidor usando el ID que ya le mostramos al usuario
+      // y agregamos servidores STUN gratuitos de Google para evitar bloqueos móviles.
+      peer = new Peer(myUniqueId, {
+        config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
+      }); 
 
-      peer.on('open', (id) => {
-        peerStatus.innerText = "Monitor: Link listo 🟢";
+      peer.on('open', () => {
+        peerStatus.innerText = "✅ Red conectada. Esperando espectador...";
         peerStatus.style.color = "var(--accent-green)";
-        
-        // Creamos la URL para el espectador
-        generatedViewerUrl = window.location.href.split('?')[0] + '?view=' + id;
-        
-        // Preparamos los datos del Modal
-        document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(generatedViewerUrl)}&bgcolor=FFFFFF`;
-        document.getElementById('monitorLinkInput').value = generatedViewerUrl;
-        
-        const wspMsg = encodeURIComponent(`⚽ ¡Entra a este link para ver la cámara de fútbol en vivo y ayudarme a apuntar!\n\n${generatedViewerUrl}`);
-        document.getElementById('wspMonitorBtn').href = `whatsapp://send?text=${wspMsg}`;
       });
 
       peer.on('error', (err) => {
         console.error(err);
-        peerStatus.innerText = "⚠️ Error de red. Recarga la página.";
+        peerStatus.innerText = "⚠️ Error de red. El Wi-Fi/4G está bloqueando la conexión.";
         peerStatus.style.color = "var(--accent-red)";
-        document.getElementById('qrLoading').innerText = "Hubo un error al conectar con el servidor. Revisa tu internet o recarga la página.";
-        document.getElementById('qrLoading').style.color = "var(--accent-red)";
       });
 
       peer.on('connection', (conn) => {
         conn.on('data', (data) => {
           if (data === 'VIEWER_READY' && currentStream) {
             peer.call(conn.peer, currentStream);
-            peerStatus.innerText = "Monitor: Ojo conectado 👁️";
+            peerStatus.innerText = "👁️ Un amigo está viendo la cámara en vivo";
+            peerStatus.style.color = "var(--accent-blue)";
           }
         });
       });
 
-      // 3. Control del Modal de Compartir
-      document.getElementById('showQrBtn').addEventListener('click', () => {
-        document.getElementById('qrModal').style.display = 'flex';
-        
-        // Si el link ya se generó correctamente, lo mostramos
-        if(generatedViewerUrl !== "") {
-          document.getElementById('qrLoading').style.display = 'none';
-          document.getElementById('qrImage').style.display = 'block';
-          document.getElementById('shareBox').style.display = 'flex';
-        }
-      });
-
-      document.getElementById('closeQrBtn').addEventListener('click', () => { 
-        document.getElementById('qrModal').style.display = 'none'; 
-      });
-
-      document.getElementById('copyMonitorBtn').addEventListener('click', () => {
-        const input = document.getElementById('monitorLinkInput');
-        input.select();
-        document.execCommand("copy");
-        document.getElementById('copyMonitorBtn').innerText = "✅ Copiado";
-        setTimeout(() => { document.getElementById('copyMonitorBtn').innerText = "📋 Copiar Link"; }, 2000);
-      });
-
       // ==========================================
-      // 4. Lógica de Grabación Local
+      // 4. LÓGICA DE GRABACIÓN
       // ==========================================
       let mediaRecorder; let recordedChunks = []; let startTime; let timerInterval; let recordedBlob;
       const recordBtn = document.getElementById('recordBtn'); const stopBtn = document.getElementById('stopBtn');
@@ -307,7 +277,7 @@
         clearInterval(timerInterval);
       });
 
-      // 5. Descarga y Nube (Gofile)
+      // 5. DESCARGA Y NUBE (Gofile)
       document.getElementById('downloadBtn').addEventListener('click', () => {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(recordedBlob);
@@ -342,31 +312,30 @@
       const viewerVideo = document.getElementById('viewerVideo');
       const viewerStatus = document.getElementById('viewerStatus');
       
-      const viewerPeer = new Peer({ debug: 1 }); 
+      const viewerPeer = new Peer({ config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] } }); 
 
       viewerPeer.on('open', () => {
-        viewerStatus.innerText = "Vinculando con la cámara principal...";
+        viewerStatus.innerText = "Conectando al poste... 🟡";
         const conn = viewerPeer.connect(targetId);
         
         conn.on('open', () => {
-          viewerStatus.innerText = "Solicitando transmisión en vivo...";
           conn.send('VIEWER_READY'); 
         });
       });
 
       viewerPeer.on('call', (call) => {
         call.answer(); 
-        viewerStatus.innerText = "Recibiendo señal de video...";
+        viewerStatus.innerText = "Recibiendo señal... 🟡";
         
         call.on('stream', (remoteStream) => {
           viewerVideo.srcObject = remoteStream;
-          viewerStatus.innerText = "Transmisión en vivo estabilizada. ¡Listo para encuadrar!";
+          viewerStatus.innerText = "EN VIVO 🟢";
           viewerStatus.style.color = "var(--accent-green)";
         });
       });
 
       viewerPeer.on('error', (err) => {
-        viewerStatus.innerText = "❌ Error de conexión. Revisa el internet de ambos dispositivos.";
+        viewerStatus.innerText = "Error de red 🔴";
         viewerStatus.style.color = "var(--accent-red)";
       });
     }
