@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Cámara Fútbol Pro - Prototipo</title>
+  <title>Cámara Fútbol Pro - Monitor</title>
+
+  <!-- Librería PeerJS para videollamada P2P directa entre celulares -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
   <style>
     :root {
@@ -12,229 +15,69 @@
       --accent-green: #238636;
       --accent-red: #da3633;
       --accent-blue: #1f6beb;
+      --accent-yellow: #d29922;
       --text-color: #f0f6fc;
       --subtext-color: #8b949e;
       --border-color: #30363d;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
 
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 12px;
-    }
+    body { background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 12px; }
 
-    header {
-      width: 100%;
-      max-width: 600px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
+    header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    h1 { font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+    h1 span { color: var(--accent-green); }
 
-    h1 {
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: #f0f6fc;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    h1 span {
-      color: var(--accent-green);
-    }
+    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 12px; }
 
-    .container {
-      width: 100%;
-      max-width: 600px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    /* CAJA DE CÁMARA (Para ambos modos) */
+    .camera-box { position: relative; width: 100%; aspect-ratio: 16 / 9; background-color: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
+    video { width: 100%; height: 100%; object-fit: cover; }
 
-    .camera-box {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background-color: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border-color);
-    }
-
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .rec-indicator {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 6px 12px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
-      font-weight: bold;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background-color: #8b949e;
-    }
-
-    .recording .dot {
-      background-color: var(--accent-red);
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      0% { opacity: 1; }
-      50% { opacity: 0.3; }
-      100% { opacity: 1; }
-    }
-
-    .cam-switch-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background-color: rgba(0, 0, 0, 0.7);
-      border: 1px solid var(--border-color);
-      color: var(--text-color);
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .controls-card, .output-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    label {
-      font-size: 0.8rem;
-      color: var(--subtext-color);
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    input[type="text"] {
-      background-color: var(--bg-color);
-      border: 1px solid var(--border-color);
-      color: var(--text-color);
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 1rem;
-      outline: none;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-    }
-
-    button.btn {
-      flex: 1;
-      padding: 16px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.05rem;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      text-transform: uppercase;
-    }
-
+    /* CONTROLES DE GRABACIÓN */
+    .controls-card, .output-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.8rem; color: var(--subtext-color); font-weight: 700; text-transform: uppercase; }
+    input[type="text"] { background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; }
+    
+    .action-buttons { display: flex; gap: 10px; }
+    button.btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; text-transform: uppercase; }
     .btn-record { background-color: var(--accent-green); color: #fff; }
     .btn-stop { background-color: var(--accent-red); color: #fff; display: none; }
+    .btn-qr { background-color: #30363d; color: #fff; padding: 10px; font-size: 0.9rem; margin-top: 5px;}
     .btn-download { background-color: #30363d; color: #fff; }
     .btn-upload { background-color: var(--accent-blue); color: #fff; }
 
-    .status-msg {
-      font-size: 0.9rem;
-      padding: 12px;
-      border-radius: 8px;
-      background-color: rgba(255, 255, 255, 0.05);
-      border-left: 4px solid var(--subtext-color);
-      font-weight: 500;
-      line-height: 1.4;
-    }
-
-    .link-box {
-      background-color: #0d1117;
-      padding: 16px;
-      border-radius: 8px;
-      border: 2px dashed var(--accent-green);
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      text-align: center;
-    }
-
-    .link-box a {
-      color: #58a6ff;
-      font-weight: bold;
-      text-decoration: none;
-      word-break: break-all;
-      font-size: 1.1rem;
-    }
-
-    .share-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 8px;
-    }
-
-    .btn-copy { background-color: #238636; color: #fff; padding: 10px; border: none; border-radius: 6px; flex: 1; font-weight: bold; cursor: pointer;}
-    .btn-wsp { background-color: #25D366; color: #fff; padding: 10px; border: none; border-radius: 6px; flex: 1; font-weight: bold; cursor: pointer; text-decoration: none;}
+    /* INDICADORES FLOTANTES */
+    .rec-indicator { position: absolute; top: 12px; left: 12px; background-color: rgba(0, 0, 0, 0.7); padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: bold; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background-color: #8b949e; }
+    .recording .dot { background-color: var(--accent-red); animation: blink 1s infinite; }
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    .cam-switch-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(0, 0, 0, 0.7); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+
+    /* MODAL DEL QR */
+    .qr-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; flex-direction: column; padding: 20px; text-align: center;}
+    .qr-modal img { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 250px; height: 250px;}
+    .close-qr { background: var(--accent-red); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 15px;}
+
+    /* MODO ESPECTADOR (MONITOR) */
+    .viewer-warning { background-color: rgba(210, 153, 34, 0.15); border: 1px solid var(--accent-yellow); color: #f0f6fc; padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin-bottom: 12px; display: flex; gap: 10px; align-items: center;}
+    .viewer-warning span { font-size: 1.5rem; }
+    .connection-status { font-size: 0.85rem; color: var(--subtext-color); text-align: center; margin-top: 10px; }
+
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>CÁMARA<span>FÚTBOL</span></h1>
-    <div style="font-size: 0.8rem; color: var(--subtext-color); font-weight: bold;">PROTOTIPO V2</div>
-  </header>
+  <!-- MODO 1: GRABADOR PRINCIPAL (El que está en el poste) -->
+  <div id="recorder-app" class="container">
+    <header>
+      <h1>CÁMARA<span>FÚTBOL</span></h1>
+      <div id="peerStatus" style="font-size: 0.75rem; color: var(--subtext-color);">Conectando monitor...</div>
+    </header>
 
-  <div class="container">
-    <!-- VISTA DE CÁMARA -->
     <div class="camera-box">
       <video id="preview" autoplay playsinline muted></video>
       <div class="rec-indicator" id="recIndicator">
@@ -244,243 +87,242 @@
       <button class="cam-switch-btn" id="switchCamBtn">🔄 Cambiar Cámara</button>
     </div>
 
-    <!-- CONTROLES DE GRABACIÓN -->
-    <div class="controls-card" id="recordingControls">
+    <div class="controls-card">
       <div class="input-group">
         <label for="matchTitle">Nombre del Partido</label>
-        <input type="text" id="matchTitle" value="Partido_Fecha_1" placeholder="Ej: Final Torneo">
+        <input type="text" id="matchTitle" value="Partido_Fecha_1">
       </div>
-
       <div class="action-buttons">
         <button class="btn btn-record" id="recordBtn">🔴 GRABAR</button>
         <button class="btn btn-stop" id="stopBtn">⏹ DETENER</button>
       </div>
+      <!-- Botón para ver QR -->
+      <button class="btn btn-qr" id="showQrBtn">📱 Escanear para Monitor en Vivo</button>
     </div>
 
-    <!-- PANEL DE VIDEO GENERADO (Oculto hasta que se detiene la grabación) -->
+    <!-- Resultados (Descarga/Nube) de la versión anterior -->
     <div class="output-card" id="outputCard" style="display: none;">
-      <label>VIDEO GENERADO (LISTO PARA COMPARTIR)</label>
-      
-      <!-- Video para previsualizar -->
-      <video id="recordedVideo" controls style="width: 100%; border-radius: 8px; background: #000;"></video>
-
-      <div class="status-msg" id="statusMsg" style="border-left-color: var(--accent-green);">
-        ✅ ¡Grabación finalizada! Puedes guardar el video en tu celular o subirlo a la nube para compartirlo con tu equipo.
-      </div>
-
+      <label>VIDEO GENERADO</label>
       <div class="action-buttons">
         <button class="btn btn-download" id="downloadBtn">⬇️ Guardar en mi celular</button>
       </div>
-      
-      <button class="btn btn-upload" id="uploadBtn" style="margin-top: 5px;">☁️ Subir y Generar Link</button>
-
-      <!-- CAJA DE ENLACE (Oculta hasta que se sube a la nube) -->
-      <div class="link-box" id="linkBox">
-        <label style="color: var(--accent-green);">¡ENLACE GENERADO CON ÉXITO!</label>
-        <a id="cloudLink" href="#" target="_blank">Cargando enlace...</a>
-        
-        <div class="share-buttons">
-          <button class="btn-copy" id="copyBtn">📋 Copiar Enlace</button>
-          <a class="btn-wsp" id="wspBtn" href="#" target="_blank">📱 Enviar por WhatsApp</a>
-        </div>
-      </div>
-
+      <button class="btn btn-upload" id="uploadBtn" style="margin-top: 5px;">☁️ Subir a Gofile y Compartir</button>
+      <div id="statusMsg" style="font-size: 0.85rem; margin-top: 10px; color: var(--accent-green);"></div>
     </div>
   </div>
 
+
+  <!-- MODO 2: VISOR DEL MONITOR (El que escanea el QR abajo en la cancha) -->
+  <div id="viewer-app" class="container" style="display: none;">
+    <header>
+      <h1>MONITOR<span>EN VIVO</span></h1>
+      <div style="font-size: 0.75rem; color: var(--accent-green);">Conectado 🟢</div>
+    </header>
+
+    <div class="viewer-warning">
+      <span>⚠️</span>
+      <div>
+        <strong>ESTA NO ES LA CALIDAD ORIGINAL</strong><br>
+        Estás viendo una vista previa comprimida y reducida para que puedas comprobar el encuadre sin cortes. El dispositivo principal está grabando en calidad Full HD.
+      </div>
+    </div>
+
+    <div class="camera-box">
+      <video id="viewerVideo" autoplay playsinline></video>
+    </div>
+    
+    <div class="connection-status" id="viewerStatus">Conectando con la cámara principal...</div>
+  </div>
+
+
+  <!-- MODAL DEL CÓDIGO QR -->
+  <div id="qrModal" class="qr-modal">
+    <h2 style="margin-bottom: 10px;">Monitor en Vivo</h2>
+    <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--subtext-color);">Pídele a alguien que escanee este código con su celular para ver la cámara.</p>
+    
+    <!-- La imagen del QR se genera dinámicamente -->
+    <img id="qrImage" src="" alt="Cargando QR...">
+    
+    <button class="close-qr" id="closeQrBtn">Cerrar</button>
+  </div>
+
+
   <script>
-    // Variables de estado
-    let mediaRecorder;
-    let recordedChunks = [];
-    let currentStream;
-    let facingMode = 'environment'; // Cámara trasera por defecto
-    let startTime;
-    let timerInterval;
-    let recordedBlob = null;
-    let finalCloudUrl = '';
+    // ========================================================
+    // DETECCIÓN DE MODO: ¿Grabador o Monitor?
+    // Si la URL tiene "?view=ALGO", somos el monitor de abajo.
+    // ========================================================
+    const urlParams = new URLSearchParams(window.location.search);
+    const hostPeerId = urlParams.get('view');
 
-    // Referencias al DOM
-    const preview = document.getElementById('preview');
-    const recordBtn = document.getElementById('recordBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const switchCamBtn = document.getElementById('switchCamBtn');
-    const timerDisplay = document.getElementById('timerDisplay');
-    const recIndicator = document.getElementById('recIndicator');
-    const outputCard = document.getElementById('outputCard');
-    const recordedVideo = document.getElementById('recordedVideo');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const statusMsg = document.getElementById('statusMsg');
-    const linkBox = document.getElementById('linkBox');
-    const cloudLink = document.getElementById('cloudLink');
-    const copyBtn = document.getElementById('copyBtn');
-    const wspBtn = document.getElementById('wspBtn');
-    const matchTitleInput = document.getElementById('matchTitle');
-
-    // 1. INICIALIZAR CÁMARA
-    async function initCamera() {
-      if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-      }
-      try {
-        const constraints = {
-          video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
-          audio: true
-        };
-        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-        preview.srcObject = currentStream;
-      } catch (err) {
-        alert("Permiso de cámara denegado o no disponible.");
-      }
+    if (hostPeerId) {
+      document.getElementById('recorder-app').style.display = 'none';
+      document.getElementById('viewer-app').style.display = 'flex';
+      initViewerMode(hostPeerId);
+    } else {
+      initRecorderMode();
     }
 
-    // Cambiar entre cámara frontal y trasera
-    switchCamBtn.addEventListener('click', () => {
-      facingMode = facingMode === 'environment' ? 'user' : 'environment';
-      initCamera();
-    });
+    // ========================================================
+    // LÓGICA DEL MODO GRABADOR (Dispositivo Principal)
+    // ========================================================
+    let currentStream;
+    let peer; // Instancia de PeerJS
 
-    // Arrancar la cámara al cargar la página
-    window.onload = initCamera;
-
-    // 2. LÓGICA DE GRABACIÓN
-    recordBtn.addEventListener('click', () => {
-      recordedChunks = [];
-      try {
-        mediaRecorder = new MediaRecorder(currentStream, { mimeType: 'video/mp4' });
-      } catch (e) {
-        mediaRecorder = new MediaRecorder(currentStream); // Fallback para Safari/iOS
+    async function initRecorderMode() {
+      // 1. Iniciar cámara local
+      let facingMode = 'environment';
+      const preview = document.getElementById('preview');
+      
+      async function startCamera() {
+        if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+        try {
+          currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920 } }, audio: true });
+          preview.srcObject = currentStream;
+        } catch (err) { alert("Error de cámara"); }
       }
+      await startCamera();
 
-      mediaRecorder.ondataavailable = event => {
-        if (event.data.size > 0) recordedChunks.push(event.data);
-      };
+      document.getElementById('switchCamBtn').addEventListener('click', () => {
+        facingMode = facingMode === 'environment' ? 'user' : 'environment';
+        startCamera();
+      });
 
-      mediaRecorder.onstop = () => {
-        // Crear el archivo de video final
-        recordedBlob = new Blob(recordedChunks, { type: 'video/mp4' });
+      // 2. Iniciar PeerJS para el Streaming en Vivo
+      const peerStatus = document.getElementById('peerStatus');
+      peer = new Peer(); // Se conecta al servidor público gratuito de PeerJS
+
+      peer.on('open', (id) => {
+        peerStatus.innerText = "Monitor: Listo para vincular";
+        // Generar URL para el código QR
+        const viewUrl = window.location.href.split('?')[0] + '?view=' + id;
         
-        // Mostrarlo en el reproductor de abajo
-        recordedVideo.src = URL.createObjectURL(recordedBlob);
-        outputCard.style.display = 'flex';
-        linkBox.style.display = 'none'; // Esconder link por si es una segunda grabación
-        
-        // Hacer scroll automático hacia abajo
-        outputCard.scrollIntoView({ behavior: 'smooth' });
-      };
+        // Usamos una API gratuita para crear el QR rápido
+        document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(viewUrl)}&bgcolor=FFFFFF`;
+      });
 
-      // Iniciar grabación guardando en memoria cada 1 segundo
-      mediaRecorder.start(1000);
-      
-      // Cambiar botones UI
-      recordBtn.style.display = 'none';
-      stopBtn.style.display = 'flex';
-      recIndicator.classList.add('recording');
-      
-      // Iniciar Temporizador
-      startTime = Date.now();
-      timerInterval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const hrs = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-        const mins = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-        const secs = String(elapsed % 60).padStart(2, '0');
-        timerDisplay.innerText = `${hrs}:${mins}:${secs}`;
-      }, 1000);
-    });
-
-    // 3. DETENER GRABACIÓN
-    stopBtn.addEventListener('click', () => {
-      mediaRecorder.stop();
-      recordBtn.style.display = 'flex';
-      stopBtn.style.display = 'none';
-      recIndicator.classList.remove('recording');
-      clearInterval(timerInterval);
-      timerDisplay.innerText = "00:00:00";
-    });
-
-    // 4. DESCARGAR AL CELULAR (Local)
-    downloadBtn.addEventListener('click', () => {
-      if (!recordedBlob) return;
-      const title = matchTitleInput.value.trim() || 'Partido';
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(recordedBlob);
-      a.download = `${title}.mp4`;
-      a.click();
-    });
-
-    // 5. SUBIR A LA NUBE (GoFile API Pública) Y GENERAR LINK
-    uploadBtn.addEventListener('click', async () => {
-      if (!recordedBlob) return;
-      
-      // UI de carga
-      uploadBtn.disabled = true;
-      uploadBtn.innerText = "⏳ Subiendo... (Por favor espera)";
-      statusMsg.style.borderLeftColor = "var(--accent-blue)";
-      statusMsg.innerText = "Preparando conexión segura con la nube...";
-      linkBox.style.display = 'none';
-
-      try {
-        // Paso 1: Pedir a GoFile qué servidor usar
-        statusMsg.innerText = "Conectando al servidor... Subiendo video...";
-        const serverRes = await fetch('https://api.gofile.io/servers');
-        const serverData = await serverRes.json();
-        
-        if (serverData.status !== 'ok') throw new Error("No hay servidores disponibles");
-        const server = serverData.data.servers[0].name;
-
-        // Paso 2: Preparar el archivo
-        const title = matchTitleInput.value.trim() || 'Partido';
-        const formData = new FormData();
-        formData.append('file', recordedBlob, `${title}.mp4`);
-
-        // Paso 3: Subir el archivo
-        const uploadRes = await fetch(`https://${server}.gofile.io/contents/uploadfile`, {
-          method: 'POST',
-          body: formData
+      // Cuando el celular "Monitor" intenta conectarse a nosotros...
+      peer.on('connection', (conn) => {
+        conn.on('data', (data) => {
+          if (data === 'VIEWER_READY' && currentStream) {
+            // El monitor nos avisa que está listo. ¡Le llamamos y le enviamos la cámara en vivo!
+            peer.call(conn.peer, currentStream);
+            peerStatus.innerText = "Monitor: Ojo conectado 👁️";
+            peerStatus.style.color = "var(--accent-green)";
+          }
         });
+      });
+
+      // Lógica de UI para el Modal del QR
+      document.getElementById('showQrBtn').addEventListener('click', () => { document.getElementById('qrModal').style.display = 'flex'; });
+      document.getElementById('closeQrBtn').addEventListener('click', () => { document.getElementById('qrModal').style.display = 'none'; });
+
+      // ==========================================
+      // Lógica de Grabación (La misma de antes)
+      // ==========================================
+      let mediaRecorder; let recordedChunks = []; let startTime; let timerInterval; let recordedBlob;
+      const recordBtn = document.getElementById('recordBtn'); const stopBtn = document.getElementById('stopBtn');
+      
+      recordBtn.addEventListener('click', () => {
+        recordedChunks = [];
+        try { mediaRecorder = new MediaRecorder(currentStream, { mimeType: 'video/mp4' }); } 
+        catch (e) { mediaRecorder = new MediaRecorder(currentStream); }
+
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+          recordedBlob = new Blob(recordedChunks, { type: 'video/mp4' });
+          document.getElementById('outputCard').style.display = 'flex';
+          document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        mediaRecorder.start(1000);
+        recordBtn.style.display = 'none'; stopBtn.style.display = 'flex';
+        document.getElementById('recIndicator').classList.add('recording');
         
-        const uploadData = await uploadRes.json();
-        if (uploadData.status !== 'ok') throw new Error("Fallo al subir el archivo");
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - startTime) / 1000);
+          const secs = String(elapsed % 60).padStart(2, '0');
+          const mins = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+          document.getElementById('timerDisplay').innerText = `00:${mins}:${secs}`;
+        }, 1000);
+      });
 
-        // ÉXITO: Obtener el Link
-        finalCloudUrl = uploadData.data.downloadPage;
+      stopBtn.addEventListener('click', () => {
+        mediaRecorder.stop();
+        recordBtn.style.display = 'flex'; stopBtn.style.display = 'none';
+        document.getElementById('recIndicator').classList.remove('recording');
+        clearInterval(timerInterval);
+      });
+
+      // Lógica de Descarga y Gofile (Resumida para mantener limpio)
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(recordedBlob);
+        a.download = `${document.getElementById('matchTitle').value}.mp4`;
+        a.click();
+      });
+
+      document.getElementById('uploadBtn').addEventListener('click', async () => {
+        if(!recordedBlob) return;
+        const btn = document.getElementById('uploadBtn');
+        const msg = document.getElementById('statusMsg');
+        btn.innerText = "⏳ Subiendo..."; btn.disabled = true;
+        try {
+          const sRes = await fetch('https://api.gofile.io/servers');
+          const sData = await sRes.json();
+          const server = sData.data.servers[0].name;
+          
+          const fd = new FormData(); fd.append('file', recordedBlob, "partido.mp4");
+          const uRes = await fetch(`https://${server}.gofile.io/contents/uploadfile`, { method: 'POST', body: fd });
+          const uData = await uRes.json();
+          
+          msg.innerHTML = `✅ Link generado: <a href="${uData.data.downloadPage}" target="_blank" style="color:var(--accent-blue)">ABRIR VIDEO</a>`;
+          btn.innerText = "☁️ Subido con éxito";
+        } catch (e) { msg.innerText = "❌ Error al subir."; btn.disabled = false; btn.innerText = "☁️ Reintentar"; }
+      });
+    }
+
+    // ========================================================
+    // LÓGICA DEL MODO VISOR (Celular en la mano)
+    // ========================================================
+    function initViewerMode(targetId) {
+      const viewerVideo = document.getElementById('viewerVideo');
+      const viewerStatus = document.getElementById('viewerStatus');
+      
+      const viewerPeer = new Peer(); // Instancia para el espectador
+
+      viewerPeer.on('open', () => {
+        viewerStatus.innerText = "Vinculando con la cámara principal...";
         
-        // Actualizar UI
-        statusMsg.innerText = "✅ ¡Video subido exitosamente a la nube!";
-        statusMsg.style.borderLeftColor = "var(--accent-green)";
-        uploadBtn.innerText = "☁️ Subir nuevamente";
-        uploadBtn.disabled = false;
+        // 1. Nos conectamos por datos a la cámara principal para avisar que llegamos
+        const conn = viewerPeer.connect(targetId);
         
-        // Mostrar Caja de Enlace
-        linkBox.style.display = 'flex';
-        cloudLink.href = finalCloudUrl;
-        cloudLink.innerText = finalCloudUrl;
+        conn.on('open', () => {
+          viewerStatus.innerText = "Solicitando transmisión en vivo...";
+          conn.send('VIEWER_READY'); // "Hola, estoy listo, pasame el video"
+        });
+      });
 
-        // Configurar botón de WhatsApp
-        const wspMensaje = encodeURIComponent(`⚽ ¡Mirá el partido que grabamos hoy!\nDescargá el video acá: ${finalCloudUrl}`);
-        wspBtn.href = `whatsapp://send?text=${wspMensaje}`;
+      // 2. La cámara principal nos llamará. Recibimos la llamada:
+      viewerPeer.on('call', (call) => {
+        // Contestamos la llamada (no necesitamos enviarle nuestra cámara, así que pasamos vacío)
+        call.answer(); 
+        viewerStatus.innerText = "Recibiendo señal de video...";
+        
+        // 3. Cuando llega el stream de video de la cámara principal, lo mostramos
+        call.on('stream', (remoteStream) => {
+          viewerVideo.srcObject = remoteStream;
+          viewerStatus.innerText = "Transmisión en vivo estabilizada. ¡Listo para encuadrar!";
+        });
+      });
 
-      } catch (error) {
-        // Manejo de Errores
-        console.error(error);
-        statusMsg.innerText = "❌ Error al subir a la nube. Intenta guardarlo en tu celular primero. Detalle: " + error.message;
-        statusMsg.style.borderLeftColor = "var(--accent-red)";
-        uploadBtn.innerText = "☁️ Reintentar Subida";
-        uploadBtn.disabled = false;
-      }
-    });
-
-    // 6. COPIAR ENLACE AL PORTAPAPELES
-    copyBtn.addEventListener('click', async () => {
-      if (!finalCloudUrl) return;
-      try {
-        await navigator.clipboard.writeText(finalCloudUrl);
-        copyBtn.innerText = "✅ ¡Copiado!";
-        setTimeout(() => { copyBtn.innerText = "📋 Copiar Enlace"; }, 2000);
-      } catch (err) {
-        alert("No se pudo copiar el enlace automáticamente.");
-      }
-    });
+      // Manejo de errores por si se corta el internet
+      viewerPeer.on('error', (err) => {
+        viewerStatus.innerText = "❌ Error de conexión. Revisa que ambos celulares tengan internet.";
+        viewerStatus.style.color = "var(--accent-red)";
+      });
+    }
   </script>
 </body>
 </html>
