@@ -1,3329 +1,486 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cámara Fútbol Pro - Prototipo</title>
 
-<title>Deportivo Durazno | Fútbol de Durazno</title>
-
-<meta name="description"
-content="Deportivo Durazno - Noticias, resultados, fútbol sala, multimedia y actualidad del fútbol duraznense.">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-<style>
-
-/* =========================================================
-   VARIABLES
-========================================================= */
-
-:root{
-    --rojo:#d71920;
-    --rojo2:#8c0d12;
-    --rojo3:#52070a;
-
-    --oro:#d4af37;
-    --oro2:#f5d878;
-
-    --negro:#07080b;
-    --carbon:#101116;
-    --carbon2:#17181f;
-    --gris:#22232a;
-
-    --blanco:#f7f5ef;
-    --grisTxt:#aaa9ad;
-
-    --verde:#13b86b;
-
-    --gradRojo:
-        linear-gradient(
-            135deg,
-            #e3272e,
-            #a50f15 60%,
-            #5a070a
-        );
-
-    --gradOro:
-        linear-gradient(
-            135deg,
-            #f5dc7c,
-            #d4af37,
-            #92701a
-        );
-}
-
-
-/* =========================================================
-   RESET
-========================================================= */
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-html{
-    scroll-behavior:smooth;
-}
-
-body{
-    background:var(--negro);
-    color:var(--blanco);
-    font-family:'Inter',sans-serif;
-    overflow:hidden;
-}
-
-button,
-a{
-    font-family:inherit;
-}
-
-button{
-    cursor:pointer;
-}
-
-::selection{
-    background:var(--rojo);
-    color:white;
-}
-
-
-/* =========================================================
-   LOADER
-========================================================= */
-
-#loader{
-    position:fixed;
-    inset:0;
-    background:#050507;
-    z-index:99999;
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
-    transition:
-        opacity .8s ease,
-        visibility .8s ease;
-}
-
-#loader.hide{
-    opacity:0;
-    visibility:hidden;
-}
-
-.loader-logo{
-    width:90px;
-    height:90px;
-
-    border-radius:50%;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    background:var(--gradRojo);
-
-    border:2px solid var(--oro);
-
-    font-family:'Archivo Black';
-    font-size:22px;
-
-    box-shadow:
-        0 0 30px rgba(215,25,32,.5),
-        0 0 80px rgba(215,25,32,.2);
-
-    animation:
-        loaderPulse 1.5s infinite,
-        loaderSpin 4s linear infinite;
-}
-
-@keyframes loaderPulse{
-    0%,100%{
-        transform:scale(.9);
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --accent-green: #238636;
+      --accent-red: #da3633;
+      --accent-blue: #1f6beb;
+      --text-color: #f0f6fc;
+      --subtext-color: #8b949e;
+      --border-color: #30363d;
     }
 
-    50%{
-        transform:scale(1);
-    }
-}
-
-@keyframes loaderSpin{
-    from{
-        box-shadow:
-            0 0 25px rgba(215,25,32,.3);
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    to{
-        box-shadow:
-            0 0 55px rgba(215,25,32,.7);
-    }
-}
-
-.loader-title{
-    margin-top:25px;
-
-    font-family:'Barlow Condensed';
-    font-weight:900;
-    letter-spacing:6px;
-
-    color:var(--oro2);
-
-    animation:loaderText 1s infinite alternate;
-}
-
-@keyframes loaderText{
-    from{
-        opacity:.35;
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px;
     }
 
-    to{
-        opacity:1;
-    }
-}
-
-
-/* =========================================================
-   APP
-========================================================= */
-
-#app{
-    width:100vw;
-    height:100vh;
-    position:relative;
-}
-
-
-/* =========================================================
-   HEADER
-========================================================= */
-
-header{
-    position:fixed;
-
-    top:0;
-    left:0;
-    right:0;
-
-    height:76px;
-
-    z-index:5000;
-
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-
-    padding:0 4vw;
-
-    background:
-        linear-gradient(
-            180deg,
-            rgba(7,8,11,.97),
-            rgba(7,8,11,.82)
-        );
-
-    border-bottom:1px solid rgba(212,175,55,.18);
-
-    backdrop-filter:blur(18px);
-}
-
-.logo{
-    display:flex;
-    align-items:center;
-    gap:12px;
-
-    color:white;
-    text-decoration:none;
-
-    min-width:220px;
-}
-
-.logo-icon{
-    width:46px;
-    height:46px;
-
-    border-radius:50%;
-
-    background:var(--gradRojo);
-
-    border:2px solid var(--oro);
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    font-family:'Archivo Black';
-
-    font-size:14px;
-
-    box-shadow:
-        0 0 18px rgba(215,25,32,.45);
-
-    transition:.4s;
-}
-
-.logo:hover .logo-icon{
-    transform:rotate(360deg);
-}
-
-.logo-text strong{
-    display:block;
-
-    font-family:'Barlow Condensed';
-    font-size:21px;
-    font-weight:900;
-
-    text-transform:uppercase;
-
-    line-height:.9;
-}
-
-.logo-text small{
-    display:block;
-
-    margin-top:4px;
-
-    color:var(--oro);
-
-    font-size:8px;
-
-    letter-spacing:2px;
-}
-
-
-/* =========================================================
-   DESKTOP NAV
-========================================================= */
-
-nav{
-    display:flex;
-    align-items:center;
-    gap:5px;
-}
-
-.nav-btn{
-    border:0;
-    background:transparent;
-
-    color:#bbb;
-
-    padding:10px 14px;
-
-    font-family:'Barlow Condensed';
-
-    font-size:16px;
-    font-weight:700;
-
-    letter-spacing:1.2px;
-
-    text-transform:uppercase;
-
-    border-radius:8px;
-
-    transition:.3s;
-}
-
-.nav-btn:hover{
-    color:white;
-    background:rgba(215,25,32,.12);
-}
-
-.nav-btn.active{
-    color:white;
-
-    background:var(--gradRojo);
-
-    box-shadow:
-        0 7px 22px rgba(215,25,32,.25);
-}
-
-
-/* =========================================================
-   MOBILE MENU
-========================================================= */
-
-#menuMobile{
-    display:none;
-
-    width:42px;
-    height:40px;
-
-    background:transparent;
-
-    border:1px solid var(--oro);
-
-    border-radius:8px;
-
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-
-    gap:5px;
-}
-
-#menuMobile span{
-    width:22px;
-    height:2px;
-
-    background:var(--oro);
-
-    transition:.3s;
-}
-
-.mobile-menu{
-    display:none;
-
-    position:fixed;
-
-    top:76px;
-    left:0;
-    right:0;
-    bottom:0;
-
-    background:
-        rgba(5,6,9,.98);
-
-    z-index:4999;
-
-    padding:35px 25px;
-}
-
-.mobile-menu.open{
-    display:block;
-}
-
-.mobile-menu button{
-    width:100%;
-
-    margin-bottom:10px;
-
-    padding:16px;
-
-    background:var(--carbon2);
-
-    border:1px solid rgba(212,175,55,.15);
-
-    color:white;
-
-    border-radius:10px;
-
-    font-family:'Barlow Condensed';
-
-    font-size:21px;
-
-    text-transform:uppercase;
-}
-
-
-/* =========================================================
-   VENTANAS
-========================================================= */
-
-main{
-    position:absolute;
-
-    top:76px;
-    left:0;
-    right:0;
-    bottom:0;
-
-    overflow:hidden;
-}
-
-.page{
-    position:absolute;
-
-    inset:0;
-
-    overflow-y:auto;
-    overflow-x:hidden;
-
-    padding:60px 5vw 100px;
-
-    opacity:0;
-    visibility:hidden;
-
-    transform:
-        translateX(45px)
-        scale(.985);
-
-    transition:
-        opacity .45s ease,
-        transform .45s ease,
-        visibility .45s;
-
-    scrollbar-width:thin;
-    scrollbar-color:var(--rojo) var(--carbon);
-}
-
-.page.active{
-    opacity:1;
-    visibility:visible;
-
-    transform:
-        translateX(0)
-        scale(1);
-
-    z-index:2;
-}
-
-
-/* =========================================================
-   HERO / INICIO
-========================================================= */
-
-#inicio{
-    padding:0;
-
-    display:flex;
-    align-items:center;
-
-    background:
-
-        radial-gradient(
-            circle at 75% 45%,
-            rgba(215,25,32,.25),
-            transparent 32%
-        ),
-
-        linear-gradient(
-            90deg,
-            rgba(7,8,11,.98) 0%,
-            rgba(7,8,11,.8) 45%,
-            rgba(7,8,11,.45) 100%
-        ),
-
-        url("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=85&w=2000&auto=format&fit=crop")
-        center/cover;
-}
-
-.hero{
-    width:100%;
-    max-width:1450px;
-
-    margin:auto;
-
-    padding:
-        70px 7vw
-        100px;
-
-    position:relative;
-}
-
-.hero::before{
-    content:"";
-
-    position:absolute;
-
-    width:480px;
-    height:480px;
-
-    right:4%;
-    top:50%;
-
-    transform:translateY(-50%);
-
-    border-radius:50%;
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(215,25,32,.2),
-            transparent 65%
-        );
-
-    animation:heroGlow 4s ease-in-out infinite alternate;
-}
-
-@keyframes heroGlow{
-    from{
-        transform:translateY(-50%) scale(.9);
-        opacity:.4;
+    header {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
     }
 
-    to{
-        transform:translateY(-50%) scale(1.1);
-        opacity:1;
+    h1 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #f0f6fc;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
-}
-
-.hero-content{
-    position:relative;
-    z-index:2;
-
-    max-width:900px;
-}
-
-.hero-kicker{
-    display:inline-flex;
-
-    align-items:center;
-    gap:10px;
-
-    padding:9px 16px;
-
-    border-radius:30px;
-
-    border:1px solid rgba(212,175,55,.35);
-
-    background:rgba(10,10,13,.55);
-
-    color:var(--oro2);
-
-    font-size:11px;
-
-    letter-spacing:3px;
-
-    text-transform:uppercase;
-
-    backdrop-filter:blur(8px);
-
-    animation:
-        heroIn .9s .2s both;
-}
-
-.hero-kicker i{
-    width:8px;
-    height:8px;
-
-    border-radius:50%;
-
-    background:#16d66d;
-
-    box-shadow:
-        0 0 12px #16d66d;
-
-    animation:pulseDot 1.5s infinite;
-}
-
-@keyframes pulseDot{
-    50%{
-        transform:scale(1.5);
-        opacity:.5;
-    }
-}
-
-.hero h1{
-    margin-top:24px;
-
-    font-family:'Barlow Condensed';
-
-    font-weight:900;
-
-    text-transform:uppercase;
-
-    font-size:clamp(
-        65px,
-        11vw,
-        155px
-    );
-
-    line-height:.78;
-
-    letter-spacing:-3px;
-
-    animation:
-        heroIn 1s .35s both;
-}
-
-.hero h1 .red{
-    display:block;
-
-    color:var(--rojo);
-
-    text-shadow:
-        0 0 35px rgba(215,25,32,.45);
-}
-
-.hero h1 .white{
-    display:block;
-
-    color:white;
-
-    -webkit-text-stroke:
-        2px rgba(255,255,255,.15);
-}
-
-.hero h1 .gold{
-    display:block;
-
-    color:transparent;
-
-    -webkit-text-stroke:
-        2px var(--oro);
-
-    text-shadow:
-        0 0 35px rgba(212,175,55,.2);
-}
-
-.hero-description{
-    max-width:700px;
-
-    margin-top:28px;
-
-    color:#d2d0cd;
-
-    font-size:16px;
-
-    line-height:1.7;
-
-    animation:
-        heroIn .9s .55s both;
-}
-
-.hero-buttons{
-    display:flex;
-
-    gap:12px;
-
-    flex-wrap:wrap;
-
-    margin-top:30px;
-
-    animation:
-        heroIn .9s .7s both;
-}
-
-.hero-btn{
-    border:0;
-
-    padding:15px 24px;
-
-    border-radius:10px;
-
-    font-family:'Barlow Condensed';
-
-    font-size:18px;
-
-    font-weight:800;
-
-    text-transform:uppercase;
-
-    letter-spacing:1px;
-
-    transition:.3s;
-}
-
-.hero-btn.red{
-    color:white;
-
-    background:var(--gradRojo);
-
-    box-shadow:
-        0 12px 30px rgba(215,25,32,.35);
-}
-
-.hero-btn.gold{
-    color:var(--oro2);
-
-    background:rgba(10,10,12,.55);
-
-    border:1px solid var(--oro);
-}
-
-.hero-btn:hover{
-    transform:translateY(-4px);
-}
-
-.hero-btn.red:hover{
-    box-shadow:
-        0 18px 40px rgba(215,25,32,.55);
-}
-
-.hero-stats{
-    display:flex;
-
-    flex-wrap:wrap;
-
-    margin-top:50px;
-
-    animation:
-        heroIn .9s .85s both;
-}
-
-.stat{
-    padding:
-        0 30px;
-
-    border-left:
-        1px solid rgba(212,175,55,.25);
-}
-
-.stat:first-child{
-    padding-left:0;
-    border-left:0;
-}
-
-.stat strong{
-    display:block;
-
-    font-family:'Barlow Condensed';
-
-    color:var(--oro);
-
-    font-size:38px;
-
-    line-height:1;
-}
-
-.stat span{
-    color:#aaa;
-
-    font-size:10px;
-
-    letter-spacing:2px;
-
-    text-transform:uppercase;
-}
-
-@keyframes heroIn{
-    from{
-        opacity:0;
-        transform:translateY(35px);
+    h1 span {
+      color: var(--accent-green);
     }
 
-    to{
-        opacity:1;
-        transform:none;
-    }
-}
-
-
-/* =========================================================
-   DECORATIVE LINES
-========================================================= */
-
-.hero-lines{
-    position:absolute;
-
-    right:0;
-    top:0;
-    bottom:0;
-
-    width:35%;
-
-    overflow:hidden;
-
-    pointer-events:none;
-}
-
-.hero-lines span{
-    position:absolute;
-
-    right:-15%;
-
-    width:500px;
-    height:2px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            rgba(212,175,55,.7)
-        );
-
-    transform:rotate(-55deg);
-
-    animation:lineMove 6s linear infinite;
-}
-
-.hero-lines span:nth-child(1){
-    top:15%;
-}
-
-.hero-lines span:nth-child(2){
-    top:45%;
-    animation-delay:2s;
-}
-
-.hero-lines span:nth-child(3){
-    top:75%;
-    animation-delay:4s;
-}
-
-@keyframes lineMove{
-    from{
-        transform:
-            translateX(300px)
-            rotate(-55deg);
-        opacity:0;
+    .container {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
-    30%{
-        opacity:1;
+    .camera-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
     }
 
-    to{
-        transform:
-            translateX(-500px)
-            rotate(-55deg);
-        opacity:0;
-    }
-}
-
-
-/* =========================================================
-   SECTION HEADER
-========================================================= */
-
-.section-header{
-    margin-bottom:35px;
-}
-
-.kicker{
-    display:inline-flex;
-
-    align-items:center;
-
-    gap:10px;
-
-    color:var(--oro);
-
-    font-size:11px;
-
-    font-weight:800;
-
-    letter-spacing:3px;
-
-    text-transform:uppercase;
-}
-
-.kicker::before{
-    content:"";
-
-    width:30px;
-    height:2px;
-
-    background:var(--gradOro);
-}
-
-.section-title{
-    margin-top:8px;
-
-    font-family:'Barlow Condensed';
-
-    font-size:clamp(42px,6vw,70px);
-
-    line-height:.95;
-
-    text-transform:uppercase;
-
-    font-weight:900;
-}
-
-.section-title span{
-    color:var(--rojo);
-}
-
-
-/* =========================================================
-   CARDS
-========================================================= */
-
-.cards{
-    display:grid;
-
-    grid-template-columns:
-        repeat(3,1fr);
-
-    gap:20px;
-}
-
-.card{
-    background:
-        linear-gradient(
-            145deg,
-            #18191f,
-            #0e0f13
-        );
-
-    border:1px solid rgba(255,255,255,.07);
-
-    border-radius:16px;
-
-    overflow:hidden;
-
-    transition:.35s;
-}
-
-.card:hover{
-    transform:translateY(-7px);
-
-    border-color:
-        rgba(215,25,32,.6);
-
-    box-shadow:
-        0 20px 50px rgba(0,0,0,.45);
-}
-
-.card-image{
-    height:190px;
-
-    background-size:cover;
-    background-position:center;
-
-    position:relative;
-}
-
-.card-image::after{
-    content:"";
-
-    position:absolute;
-    inset:0;
-
-    background:
-        linear-gradient(
-            transparent 40%,
-            rgba(0,0,0,.8)
-        );
-}
-
-.card-content{
-    padding:20px;
-}
-
-.card-tag{
-    color:var(--oro);
-
-    font-size:10px;
-
-    font-weight:800;
-
-    letter-spacing:2px;
-
-    text-transform:uppercase;
-}
-
-.card h3{
-    margin-top:8px;
-
-    font-family:'Barlow Condensed';
-
-    font-size:25px;
-
-    line-height:1.05;
-
-    text-transform:uppercase;
-}
-
-.card p{
-    margin-top:10px;
-
-    color:var(--grisTxt);
-
-    font-size:13px;
-
-    line-height:1.6;
-}
-
-
-/* =========================================================
-   TABLAS
-========================================================= */
-
-.table-container{
-    background:var(--carbon);
-
-    border:1px solid rgba(212,175,55,.2);
-
-    border-radius:16px;
-
-    overflow:auto;
-}
-
-table{
-    width:100%;
-
-    border-collapse:collapse;
-
-    min-width:700px;
-}
-
-th{
-    background:
-        rgba(215,25,32,.13);
-
-    color:var(--oro2);
-
-    font-family:'Barlow Condensed';
-
-    font-size:15px;
-
-    text-transform:uppercase;
-
-    letter-spacing:1.5px;
-
-    padding:15px;
-}
-
-td{
-    padding:14px 15px;
-
-    border-bottom:
-        1px solid rgba(255,255,255,.05);
-
-    font-size:14px;
-}
-
-tr:hover td{
-    background:
-        rgba(215,25,32,.05);
-}
-
-.position{
-    width:30px;
-    height:30px;
-
-    display:inline-flex;
-
-    align-items:center;
-    justify-content:center;
-
-    background:var(--gris);
-
-    border-radius:7px;
-
-    font-family:'Barlow Condensed';
-
-    font-weight:900;
-}
-
-.first{
-    background:var(--gradOro);
-
-    color:#111;
-}
-
-.points{
-    color:var(--oro);
-
-    font-weight:900;
-}
-
-
-/* =========================================================
-   RESULTADOS
-========================================================= */
-
-.results{
-    display:grid;
-
-    grid-template-columns:
-        repeat(2,1fr);
-
-    gap:18px;
-}
-
-.result{
-    background:var(--carbon);
-
-    border:1px solid rgba(255,255,255,.07);
-
-    padding:22px;
-
-    border-radius:15px;
-
-    transition:.3s;
-}
-
-.result:hover{
-    border-color:var(--oro);
-}
-
-.result-meta{
-    display:flex;
-
-    justify-content:space-between;
-
-    color:var(--oro);
-
-    font-size:10px;
-
-    text-transform:uppercase;
-
-    letter-spacing:2px;
-
-    margin-bottom:18px;
-}
-
-.score{
-    display:grid;
-
-    grid-template-columns:
-        1fr auto 1fr;
-
-    align-items:center;
-
-    gap:15px;
-
-    font-family:'Barlow Condensed';
-
-    font-size:21px;
-
-    font-weight:800;
-
-    text-transform:uppercase;
-}
-
-.score strong{
-    padding:8px 15px;
-
-    border-radius:8px;
-
-    background:var(--gradRojo);
-
-    font-size:24px;
-}
-
-
-/* =========================================================
-   FUTSAL
-========================================================= */
-
-.futsal-hero{
-    background:
-        linear-gradient(
-            120deg,
-            rgba(215,25,32,.2),
-            transparent
-        );
-
-    border:
-        1px solid rgba(215,25,32,.25);
-
-    border-radius:20px;
-
-    padding:35px;
-
-    margin-bottom:30px;
-}
-
-.futsal-label{
-    color:var(--rojo);
-
-    font-family:'Barlow Condensed';
-
-    font-size:18px;
-
-    font-weight:900;
-
-    letter-spacing:2px;
-
-    text-transform:uppercase;
-}
-
-.futsal-hero h3{
-    margin-top:5px;
-
-    font-family:'Barlow Condensed';
-
-    font-size:46px;
-
-    text-transform:uppercase;
-}
-
-.futsal-hero p{
-    margin-top:10px;
-
-    max-width:750px;
-
-    color:var(--grisTxt);
-
-    line-height:1.6;
-}
-
-.futsal-table{
-    display:grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap:25px;
-}
-
-.futsal-ranking{
-    background:var(--carbon);
-
-    border-radius:16px;
-
-    border:1px solid rgba(212,175,55,.18);
-
-    overflow:hidden;
-}
-
-.rank-title{
-    padding:17px 20px;
-
-    background:
-        rgba(215,25,32,.13);
-
-    font-family:'Barlow Condensed';
-
-    font-size:20px;
-
-    text-transform:uppercase;
-
-    color:var(--oro2);
-}
-
-.rank-row{
-    display:grid;
-
-    grid-template-columns:
-        35px 1fr 50px 50px;
-
-    gap:8px;
-
-    align-items:center;
-
-    padding:13px 18px;
-
-    border-bottom:
-        1px solid rgba(255,255,255,.05);
-
-    font-size:13px;
-}
-
-.rank-row strong{
-    color:var(--oro);
-}
-
-
-/* =========================================================
-   VIDEOS
-========================================================= */
-
-.video-grid{
-    display:grid;
-
-    grid-template-columns:
-        repeat(2,1fr);
-
-    gap:22px;
-}
-
-.video-card{
-    background:var(--carbon);
-
-    border:
-        1px solid rgba(255,255,255,.08);
-
-    border-radius:15px;
-
-    overflow:hidden;
-
-    transition:.3s;
-}
-
-.video-card:hover{
-    transform:translateY(-5px);
-
-    border-color:var(--rojo);
-}
-
-.video{
-    position:relative;
-
-    padding-top:56.25%;
-
-    background:#000;
-}
-
-.video iframe{
-    position:absolute;
-
-    inset:0;
-
-    width:100%;
-    height:100%;
-
-    border:0;
-}
-
-.video-info{
-    padding:17px;
-}
-
-.video-info h3{
-    font-family:'Barlow Condensed';
-
-    font-size:22px;
-
-    text-transform:uppercase;
-}
-
-.video-info p{
-    color:var(--grisTxt);
-
-    font-size:12px;
-
-    margin-top:5px;
-}
-
-
-/* =========================================================
-   CANONA
-========================================================= */
-
-.canona{
-    display:grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap:35px;
-
-    align-items:center;
-}
-
-.canona-title{
-    font-family:'Barlow Condensed';
-
-    font-weight:900;
-
-    font-size:
-        clamp(65px,9vw,120px);
-
-    line-height:.8;
-
-    text-transform:uppercase;
-}
-
-.canona-title .outline{
-    color:transparent;
-
-    -webkit-text-stroke:
-        2px var(--oro);
-}
-
-.canona-title .gold{
-    color:var(--oro);
-}
-
-.canona-text{
-    color:#c6c3bd;
-
-    line-height:1.8;
-
-    font-size:15px;
-
-    margin-top:25px;
-}
-
-.canona-box{
-    background:
-        linear-gradient(
-            145deg,
-            #1a1a20,
-            #0d0e12
-        );
-
-    border:
-        1px solid rgba(212,175,55,.25);
-
-    border-radius:20px;
-
-    padding:30px;
-
-    box-shadow:
-        0 30px 60px rgba(0,0,0,.35);
-}
-
-.canona-box h3{
-    color:var(--oro);
-
-    font-family:'Barlow Condensed';
-
-    font-size:26px;
-
-    text-transform:uppercase;
-}
-
-.canona-row{
-    display:flex;
-
-    justify-content:space-between;
-
-    padding:14px 0;
-
-    border-bottom:
-        1px dashed rgba(255,255,255,.1);
-
-    font-size:13px;
-}
-
-.canona-row span{
-    color:var(--grisTxt);
-}
-
-.canona-row strong{
-    text-align:right;
-}
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-.footer{
-    margin-top:50px;
-
-    padding-top:25px;
-
-    border-top:
-        1px solid rgba(255,255,255,.08);
-
-    color:#777;
-
-    font-size:11px;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    gap:15px;
-
-    flex-wrap:wrap;
-}
-
-
-/* =========================================================
-   BACK TOP
-========================================================= */
-
-#top{
-    position:fixed;
-
-    right:22px;
-    bottom:22px;
-
-    width:45px;
-    height:45px;
-
-    border-radius:50%;
-
-    border:1px solid var(--oro);
-
-    background:var(--gradRojo);
-
-    color:white;
-
-    z-index:6000;
-
-    opacity:0;
-    visibility:hidden;
-
-    transition:.3s;
-}
-
-#top.show{
-    opacity:1;
-    visibility:visible;
-}
-
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media(max-width:1000px){
-
-    .cards{
-        grid-template-columns:
-            repeat(2,1fr);
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
-    .canona{
-        grid-template-columns:1fr;
+    .rec-indicator {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
     }
 
-    .futsal-table{
-        grid-template-columns:1fr;
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #8b949e;
     }
 
-}
-
-@media(max-width:760px){
-
-    body{
-        overflow:hidden;
+    .recording .dot {
+      background-color: var(--accent-red);
+      animation: blink 1s infinite;
     }
 
-    header{
-        height:68px;
-
-        padding:
-            0 18px;
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
     }
 
-    .logo{
-        min-width:auto;
+    .cam-switch-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background-color: rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
     }
 
-    .logo-text strong{
-        font-size:18px;
+    .controls-card, .output-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
-    .logo-text small{
-        font-size:7px;
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
-    .logo-icon{
-        width:40px;
-        height:40px;
-        font-size:12px;
+    label {
+      font-size: 0.8rem;
+      color: var(--subtext-color);
+      font-weight: 700;
+      text-transform: uppercase;
     }
 
-    nav{
-        display:none;
+    input[type="text"] {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
     }
 
-    #menuMobile{
-        display:flex;
+    .action-buttons {
+      display: flex;
+      gap: 10px;
     }
 
-    main{
-        top:68px;
+    button.btn {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
     }
 
-    .page{
-        padding:
-            40px 20px 80px;
+    .btn-record { background-color: var(--accent-green); color: #fff; }
+    .btn-stop { background-color: var(--accent-red); color: #fff; display: none; }
+    .btn-download { background-color: #30363d; color: #fff; }
+    .btn-upload { background-color: var(--accent-blue); color: #fff; }
+
+    .status-msg {
+      font-size: 0.9rem;
+      padding: 12px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-left: 4px solid var(--subtext-color);
+      font-weight: 500;
+      line-height: 1.4;
     }
 
-    #inicio{
-        display:block;
+    .link-box {
+      background-color: #0d1117;
+      padding: 16px;
+      border-radius: 8px;
+      border: 2px dashed var(--accent-green);
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      text-align: center;
     }
 
-    .hero{
-        padding:
-            60px 24px 90px;
+    .link-box a {
+      color: #58a6ff;
+      font-weight: bold;
+      text-decoration: none;
+      word-break: break-all;
+      font-size: 1.1rem;
     }
 
-    .hero h1{
-        font-size:
-            clamp(
-                58px,
-                19vw,
-                100px
-            );
-
-        letter-spacing:-1px;
+    .share-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
     }
 
-    .hero-description{
-        font-size:14px;
+    .btn-copy { background-color: #238636; color: #fff; padding: 10px; border: none; border-radius: 6px; flex: 1; font-weight: bold; cursor: pointer;}
+    .btn-wsp { background-color: #25D366; color: #fff; padding: 10px; border: none; border-radius: 6px; flex: 1; font-weight: bold; cursor: pointer; text-decoration: none;}
+    
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
-
-    .hero-stats{
-        gap:20px;
-    }
-
-    .stat{
-        padding:0 15px;
-
-        min-width:
-            calc(50% - 20px);
-    }
-
-    .stat:first-child{
-        padding-left:0;
-    }
-
-    .stat strong{
-        font-size:30px;
-    }
-
-    .cards{
-        grid-template-columns:1fr;
-    }
-
-    .results{
-        grid-template-columns:1fr;
-    }
-
-    .video-grid{
-        grid-template-columns:1fr;
-    }
-
-    .section-title{
-        font-size:50px;
-    }
-
-    .futsal-hero{
-        padding:25px;
-    }
-
-    .futsal-hero h3{
-        font-size:38px;
-    }
-
-    .rank-row{
-        grid-template-columns:
-            28px 1fr 40px 40px;
-    }
-
-    .footer{
-        flex-direction:column;
-    }
-
-}
-
-</style>
+  </style>
 </head>
-
-
 <body>
 
+  <header>
+    <h1>CÁMARA<span>FÚTBOL</span></h1>
+    <div style="font-size: 0.8rem; color: var(--subtext-color); font-weight: bold;">PROTOTIPO V2</div>
+  </header>
 
-<!-- =====================================================
-     LOADER
-===================================================== -->
-
-<div id="loader">
-
-    <div class="loader-logo">
-        DD
+  <div class="container">
+    <!-- VISTA DE CÁMARA -->
+    <div class="camera-box">
+      <video id="preview" autoplay playsinline muted></video>
+      <div class="rec-indicator" id="recIndicator">
+        <div class="dot"></div>
+        <span id="timerDisplay" style="font-family: monospace;">00:00:00</span>
+      </div>
+      <button class="cam-switch-btn" id="switchCamBtn">🔄 Cambiar Cámara</button>
     </div>
 
-    <div class="loader-title">
-        DEPORTIVO DURAZNO
+    <!-- CONTROLES DE GRABACIÓN -->
+    <div class="controls-card" id="recordingControls">
+      <div class="input-group">
+        <label for="matchTitle">Nombre del Partido</label>
+        <input type="text" id="matchTitle" value="Partido_Fecha_1" placeholder="Ej: Final Torneo">
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-record" id="recordBtn">🔴 GRABAR</button>
+        <button class="btn btn-stop" id="stopBtn">⏹ DETENER</button>
+      </div>
     </div>
 
-</div>
+    <!-- PANEL DE VIDEO GENERADO (Oculto hasta que se detiene la grabación) -->
+    <div class="output-card" id="outputCard" style="display: none;">
+      <label>VIDEO GENERADO (LISTO PARA COMPARTIR)</label>
+      
+      <!-- Video para previsualizar -->
+      <video id="recordedVideo" controls style="width: 100%; border-radius: 8px; background: #000;"></video>
 
+      <div class="status-msg" id="statusMsg" style="border-left-color: var(--accent-green);">
+        ✅ ¡Grabación finalizada! Puedes guardar el video en tu celular o subirlo a la nube para compartirlo con tu equipo.
+      </div>
 
-<!-- =====================================================
-     APP
-===================================================== -->
+      <div class="action-buttons">
+        <button class="btn btn-download" id="downloadBtn">⬇️ Guardar en mi celular</button>
+      </div>
+      
+      <button class="btn btn-upload" id="uploadBtn" style="margin-top: 5px;">☁️ Subir y Generar Link</button>
 
-<div id="app">
-
-
-<!-- =====================================================
-     HEADER
-===================================================== -->
-
-<header>
-
-    <a href="#" class="logo" onclick="openPage('inicio');return false;">
-
-        <div class="logo-icon">
-            DD
+      <!-- CAJA DE ENLACE (Oculta hasta que se sube a la nube) -->
+      <div class="link-box" id="linkBox">
+        <label style="color: var(--accent-green);">¡ENLACE GENERADO CON ÉXITO!</label>
+        <a id="cloudLink" href="#" target="_blank">Cargando enlace...</a>
+        
+        <div class="share-buttons">
+          <button class="btn-copy" id="copyBtn">📋 Copiar Enlace</button>
+          <a class="btn-wsp" id="wspBtn" href="#" target="_blank">📱 Enviar por WhatsApp</a>
         </div>
-
-        <div class="logo-text">
-
-            <strong>
-                Deportivo Durazno
-            </strong>
-
-            <small>
-                Fútbol · Noticias · Resultados
-            </small>
-
-        </div>
-
-    </a>
-
-
-    <nav>
-
-        <button class="nav-btn active"
-                data-page="inicio">
-            Inicio
-        </button>
-
-        <button class="nav-btn"
-                data-page="noticias">
-            Noticias
-        </button>
-
-        <button class="nav-btn"
-                data-page="liga">
-            Liga Durazno
-        </button>
-
-        <button class="nav-btn"
-                data-page="futsal">
-            Fútbol Sala
-        </button>
-
-        <button class="nav-btn"
-                data-page="multimedia">
-            Multimedia
-        </button>
-
-        <button class="nav-btn"
-                data-page="canona">
-            Canona®
-        </button>
-
-    </nav>
-
-
-    <button id="menuMobile">
-
-        <span></span>
-        <span></span>
-        <span></span>
-
-    </button>
-
-</header>
-
-
-<!-- =====================================================
-     MOBILE MENU
-===================================================== -->
-
-<div class="mobile-menu" id="mobileMenu">
-
-    <button data-page="inicio">
-        🏠 Inicio
-    </button>
-
-    <button data-page="noticias">
-        📰 Noticias
-    </button>
-
-    <button data-page="liga">
-        ⚽ Liga Durazno
-    </button>
-
-    <button data-page="futsal">
-        🏟️ Fútbol Sala Uruguay
-    </button>
-
-    <button data-page="multimedia">
-        ▶️ Multimedia
-    </button>
-
-    <button data-page="canona">
-        📢 Canona Marca Registrada
-    </button>
-
-</div>
-
-
-<!-- =====================================================
-     MAIN
-===================================================== -->
-
-<main>
-
-
-<!-- =====================================================
-     INICIO
-===================================================== -->
-
-<section class="page active" id="inicio">
-
-    <div class="hero">
-
-        <div class="hero-lines">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-
-
-        <div class="hero-content">
-
-            <div class="hero-kicker">
-
-                <i></i>
-
-                ACTUALIDAD DEL FÚTBOL DURAZNENSE
-
-            </div>
-
-
-            <h1>
-
-                <span class="red">
-                    Deportivo
-                </span>
-
-                <span class="white">
-                    Durazno
-                </span>
-
-                <span class="gold">
-                    Fútbol
-                </span>
-
-            </h1>
-
-
-            <p class="hero-description">
-
-                La plataforma digital para seguir el fútbol de
-                Durazno, sus clubes, resultados, noticias,
-                selecciones y fútbol sala uruguayo.
-
-            </p>
-
-
-            <div class="hero-buttons">
-
-                <button class="hero-btn red"
-                        onclick="openPage('noticias')">
-
-                    📰 Ver Noticias
-
-                </button>
-
-
-                <button class="hero-btn gold"
-                        onclick="openPage('multimedia')">
-
-                    ▶ Ver Multimedia
-
-                </button>
-
-            </div>
-
-
-            <div class="hero-stats">
-
-                <div class="stat">
-
-                    <strong data-number="13">
-                        0
-                    </strong>
-
-                    <span>
-                        Clubes
-                    </span>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <strong data-number="99">
-                        0
-                    </strong>
-
-                    <span>
-                        Años de historia
-                    </span>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <strong data-number="1450">
-                        0
-                    </strong>
-
-                    <span>
-                        Partidos
-                    </span>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <strong data-number="32000">
-                        0
-                    </strong>
-
-                    <span>
-                        Comunidad
-                    </span>
-
-                </div>
-
-            </div>
-
-        </div>
+      </div>
 
     </div>
-
-</section>
-
-
-<!-- =====================================================
-     NOTICIAS
-===================================================== -->
-
-<section class="page" id="noticias">
-
-    <div class="section-header">
-
-        <span class="kicker">
-            Actualidad
-        </span>
-
-        <h2 class="section-title">
-            Últimas <span>Noticias</span>
-        </h2>
-
-    </div>
-
-
-    <div class="cards">
-
-
-        <article class="card">
-
-            <div class="card-image"
-                 style="
-                 background-image:
-                 url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=85&w=1000&auto=format&fit=crop');
-                 ">
-
-            </div>
-
-            <div class="card-content">
-
-                <span class="card-tag">
-                    Liga de Durazno
-                </span>
-
-                <h3>
-                    Actualidad de los clubes duraznenses
-                </h3>
-
-                <p>
-                    Noticias, resultados y protagonistas
-                    de la actividad local.
-                </p>
-
-            </div>
-
-        </article>
-
-
-        <article class="card">
-
-            <div class="card-image"
-                 style="
-                 background-image:
-                 url('https://images.unsplash.com/photo-1553778263-73a83bab9b0c?q=85&w=1000&auto=format&fit=crop');
-                 ">
-
-            </div>
-
-            <div class="card-content">
-
-                <span class="card-tag">
-                    Fútbol uruguayo
-                </span>
-
-                <h3>
-                    Resultados y partidos
-                </h3>
-
-                <p>
-                    Seguimiento de la actividad
-                    futbolística nacional.
-                </p>
-
-            </div>
-
-        </article>
-
-
-        <article class="card">
-
-            <div class="card-image"
-                 style="
-                 background-image:
-                 url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=85&w=1000&auto=format&fit=crop');
-                 ">
-
-            </div>
-
-            <div class="card-content">
-
-                <span class="card-tag">
-                    Fútbol femenino
-                </span>
-
-                <h3>
-                    La actividad femenina
-                </h3>
-
-                <p>
-                    Información y resultados del
-                    fútbol femenino.
-                </p>
-
-            </div>
-
-        </article>
-
-    </div>
-
-
-    <div class="footer">
-
-        <span>
-            Deportivo Durazno
-        </span>
-
-        <span>
-            Información deportiva local
-        </span>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     LIGA DURAZNO
-===================================================== -->
-
-<section class="page" id="liga">
-
-    <div class="section-header">
-
-        <span class="kicker">
-            Fútbol local
-        </span>
-
-        <h2 class="section-title">
-            Liga de <span>Durazno</span>
-        </h2>
-
-    </div>
-
-
-    <div class="table-container">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        Pos
-                    </th>
-
-                    <th>
-                        Club
-                    </th>
-
-                    <th>
-                        PJ
-                    </th>
-
-                    <th>
-                        PG
-                    </th>
-
-                    <th>
-                        PE
-                    </th>
-
-                    <th>
-                        PP
-                    </th>
-
-                    <th>
-                        GF
-                    </th>
-
-                    <th>
-                        GC
-                    </th>
-
-                    <th>
-                        Pts
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                <tr>
-
-                    <td>
-                        <span class="position first">
-                            1
-                        </span>
-                    </td>
-
-                    <td>
-                        <b>Wanderers</b>
-                    </td>
-
-                    <td>9</td>
-                    <td>7</td>
-                    <td>2</td>
-                    <td>0</td>
-                    <td>21</td>
-                    <td>6</td>
-
-                    <td class="points">
-                        23
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        <span class="position">
-                            2
-                        </span>
-                    </td>
-
-                    <td>
-                        <b>Champagnat</b>
-                    </td>
-
-                    <td>9</td>
-                    <td>6</td>
-                    <td>1</td>
-                    <td>2</td>
-                    <td>18</td>
-                    <td>10</td>
-
-                    <td class="points">
-                        19
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        <span class="position">
-                            3
-                        </span>
-                    </td>
-
-                    <td>
-                        <b>Central</b>
-                    </td>
-
-                    <td>9</td>
-                    <td>5</td>
-                    <td>2</td>
-                    <td>2</td>
-                    <td>14</td>
-                    <td>9</td>
-
-                    <td class="points">
-                        17
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        <span class="position">
-                            4
-                        </span>
-                    </td>
-
-                    <td>
-                        <b>Juvenil</b>
-                    </td>
-
-                    <td>9</td>
-                    <td>4</td>
-                    <td>3</td>
-                    <td>2</td>
-                    <td>15</td>
-                    <td>11</td>
-
-                    <td class="points">
-                        15
-                    </td>
-
-                </tr>
-
-
-                <tr>
-
-                    <td>
-                        <span class="position">
-                            5
-                        </span>
-                    </td>
-
-                    <td>
-                        <b>Nacional de Durazno</b>
-                    </td>
-
-                    <td>9</td>
-                    <td>4</td>
-                    <td>1</td>
-                    <td>4</td>
-                    <td>12</td>
-                    <td>13</td>
-
-                    <td class="points">
-                        13
-                    </td>
-
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-
-    <h2 class="section-title"
-        style="margin-top:55px;font-size:42px;">
-
-        Últimos <span>Resultados</span>
-
-    </h2>
-
-
-    <div class="results"
-         style="margin-top:25px;">
-
-
-        <div class="result">
-
-            <div class="result-meta">
-
-                <span>
-                    Liga Ciudad de Durazno
-                </span>
-
-                <span>
-                    Fecha 9
-                </span>
-
-            </div>
-
-            <div class="score">
-
-                <span>
-                    Champagnat
-                </span>
-
-                <strong>
-                    2 - 0
-                </strong>
-
-                <span>
-                    Central
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="result">
-
-            <div class="result-meta">
-
-                <span>
-                    Fútbol local
-                </span>
-
-                <span>
-                    Resultado
-                </span>
-
-            </div>
-
-            <div class="score">
-
-                <span>
-                    Wanderers
-                </span>
-
-                <strong>
-                    3 - 1
-                </strong>
-
-                <span>
-                    Juvenil
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="footer">
-
-        <span>
-            Deportivo Durazno · Liga local
-        </span>
-
-        <span>
-            Datos de demostración editables
-        </span>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     FUTSAL URUGUAY
-===================================================== -->
-
-<section class="page" id="futsal">
-
-    <div class="section-header">
-
-        <span class="kicker">
-            AUF · Fútbol Sala
-        </span>
-
-        <h2 class="section-title">
-            Fútbol Sala <span>Uruguay</span>
-        </h2>
-
-    </div>
-
-
-    <div class="futsal-hero">
-
-        <div class="futsal-label">
-            Campeonato Uruguayo 2026
-        </div>
-
-        <h3>
-            Fútbol Sala Masculino
-        </h3>
-
-        <p>
-            Seguimiento del Campeonato Uruguayo de Fútbol Sala,
-            con posiciones, resultados y resúmenes.
-        </p>
-
-    </div>
-
-
-    <div class="futsal-table">
-
-
-        <div class="futsal-ranking">
-
-            <div class="rank-title">
-                Posiciones · Mayores
-            </div>
-
-
-            <div class="rank-row">
-
-                <span>1</span>
-                <b>Nacional</b>
-                <span>34</span>
-                <strong>12</strong>
-
-            </div>
-
-
-            <div class="rank-row">
-
-                <span>2</span>
-                <b>Peñarol</b>
-                <span>30</span>
-                <strong>12</strong>
-
-            </div>
-
-
-            <div class="rank-row">
-
-                <span>3</span>
-                <b>Racing</b>
-                <span>18</span>
-                <strong>12</strong>
-
-            </div>
-
-
-            <div class="rank-row">
-
-                <span>4</span>
-                <b>Old Christians</b>
-                <span>15</span>
-                <strong>12</strong>
-
-            </div>
-
-
-            <div class="rank-row">
-
-                <span>5</span>
-                <b>Boston River</b>
-                <span>12</span>
-                <strong>12</strong>
-
-            </div>
-
-
-            <div class="rank-row">
-
-                <span>6</span>
-                <b>Dilio Sport</b>
-                <span>11</span>
-                <strong>12</strong>
-
-            </div>
-
-
-            <div class="rank-row">
-
-                <span>7</span>
-                <b>Villa Española</b>
-                <span>1</span>
-                <strong>12</strong>
-
-            </div>
-
-        </div>
-
-
-        <div class="futsal-ranking">
-
-            <div class="rank-title">
-                Últimos resultados
-            </div>
-
-
-            <div class="rank-row"
-                 style="
-                 grid-template-columns:1fr auto 1fr;
-                 ">
-
-                <span>
-                    Nacional
-                </span>
-
-                <strong>
-                    6 - 2
-                </strong>
-
-                <span>
-                    Peñarol
-                </span>
-
-            </div>
-
-
-            <div class="rank-row"
-                 style="
-                 grid-template-columns:1fr auto 1fr;
-                 ">
-
-                <span>
-                    Peñarol
-                </span>
-
-                <strong>
-                    5 - 0
-                </strong>
-
-                <span>
-                    Old Christians
-                </span>
-
-            </div>
-
-
-            <div class="rank-row"
-                 style="
-                 grid-template-columns:1fr auto 1fr;
-                 ">
-
-                <span>
-                    Nacional
-                </span>
-
-                <strong>
-                    9 - 1
-                </strong>
-
-                <span>
-                    Old Christians
-                </span>
-
-            </div>
-
-
-            <div class="rank-row"
-                 style="
-                 grid-template-columns:1fr auto 1fr;
-                 ">
-
-                <span>
-                    Villa Española
-                </span>
-
-                <strong>
-                    1 - 6
-                </strong>
-
-                <span>
-                    Racing
-                </span>
-
-            </div>
-
-
-            <div class="rank-row"
-                 style="
-                 grid-template-columns:1fr auto 1fr;
-                 ">
-
-                <span>
-                    Dilio Sport
-                </span>
-
-                <strong>
-                    1 - 3
-                </strong>
-
-                <span>
-                    Racing
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div style="
-        margin-top:30px;
-        padding:20px;
-        border-radius:14px;
-        background:#15161c;
-        border:1px solid rgba(212,175,55,.15);
-        color:#aaa;
-        font-size:12px;
-        line-height:1.6;
-    ">
-
-        <b style="color:#d4af37;">
-            Fuente:
-        </b>
-
-        Datos de referencia del Campeonato Uruguayo de
-        Fútbol Sala publicados por AUF.
-
-        Los resultados y posiciones oficiales pueden
-        actualizarse en el sistema correspondiente.
-
-    </div>
-
-
-    <div class="footer">
-
-        <span>
-            Deportivo Durazno · Fútbol Sala Uruguay
-        </span>
-
-        <span>
-            AUF · 2026
-        </span>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     MULTIMEDIA
-===================================================== -->
-
-<section class="page" id="multimedia">
-
-    <div class="section-header">
-
-        <span class="kicker">
-            Videos
-        </span>
-
-        <h2 class="section-title">
-            Multimedia <span>AUFTV</span>
-        </h2>
-
-    </div>
-
-
-    <div class="video-grid">
-
-
-        <!-- VIDEO REAL AUFTV -->
-
-        <article class="video-card">
-
-            <div class="video">
-
-                <iframe
-                    src="https://www.youtube.com/embed/7rmFi9M-Tew"
-                    title="AUF Summit 2026 - AUFTV"
-                    loading="lazy"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowfullscreen>
-                </iframe>
-
-            </div>
-
-            <div class="video-info">
-
-                <h3>
-                    AUF Summit 2026
-                </h3>
-
-                <p>
-                    Contenido oficial publicado por AUFTV.
-                </p>
-
-            </div>
-
-        </article>
-
-
-        <!-- VIDEO DURAZNO -->
-
-        <article class="video-card">
-
-            <div class="video">
-
-                <iframe
-                    src="https://www.youtube.com/embed/h9HNsKEOT2k"
-                    title="Durazno FC"
-                    loading="lazy"
-                    allowfullscreen>
-                </iframe>
-
-            </div>
-
-            <div class="video-info">
-
-                <h3>
-                    Durazno FC
-                </h3>
-
-                <p>
-                    Contenido audiovisual relacionado
-                    con el fútbol de Durazno.
-                </p>
-
-            </div>
-
-        </article>
-
-
-        <!-- VIDEO DURAZNO -->
-
-        <article class="video-card">
-
-            <div class="video">
-
-                <iframe
-                    src="https://www.youtube.com/embed/js9rAyFTQ84"
-                    title="Deportivo LSM - Durazno FC"
-                    loading="lazy"
-                    allowfullscreen>
-                </iframe>
-
-            </div>
-
-            <div class="video-info">
-
-                <h3>
-                    Deportivo LSM vs Durazno FC
-                </h3>
-
-                <p>
-                    Resumen audiovisual.
-                </p>
-
-            </div>
-
-        </article>
-
-
-        <!-- VIDEO LIGA -->
-
-        <article class="video-card">
-
-            <div class="video">
-
-                <iframe
-                    src="https://www.youtube.com/embed/1DEmjzb2aZ4"
-                    title="Fútbol de Durazno"
-                    loading="lazy"
-                    allowfullscreen>
-                </iframe>
-
-            </div>
-
-            <div class="video-info">
-
-                <h3>
-                    Fútbol de Durazno
-                </h3>
-
-                <p>
-                    Cobertura de la actividad local.
-                </p>
-
-            </div>
-
-        </article>
-
-    </div>
-
-
-    <div class="futsal-hero"
-         style="margin-top:35px;">
-
-        <div class="futsal-label">
-            Fútbol Sala
-        </div>
-
-        <h3>
-            Resúmenes y partidos
-        </h3>
-
-        <p>
-            Esta sección queda preparada para agregar
-            videos de AUFTV y resúmenes de partidos
-            de Fútbol Sala.
-        </p>
-
-    </div>
-
-
-    <div class="footer">
-
-        <span>
-            Deportivo Durazno Multimedia
-        </span>
-
-        <span>
-            Videos embebidos desde YouTube
-        </span>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     CANONA
-===================================================== -->
-
-<section class="page" id="canona">
-
-    <div class="section-header">
-
-        <span class="kicker">
-            Comunicación deportiva
-        </span>
-
-        <h2 class="section-title">
-            Canona <span>Marca Registrada</span>
-        </h2>
-
-    </div>
-
-
-    <div class="canona">
-
-
-        <div>
-
-            <div class="canona-title">
-
-                <span class="outline">
-                    CANONA
-                </span>
-
-                <br>
-
-                <span class="gold">
-                    ®
-                </span>
-
-            </div>
-
-
-            <p class="canona-text">
-
-                Espacio dedicado a Canona Marca Registrada
-                y a la cobertura de la actividad deportiva
-                de Durazno.
-
-                <br><br>
-
-                Noticias, resultados, fotografías,
-                transmisiones y actualidad del fútbol
-                departamental.
-
-            </p>
-
-        </div>
-
-
-        <div class="canona-box">
-
-            <h3>
-                Canona Marca Registrada
-            </h3>
-
-
-            <div class="canona-row">
-
-                <span>
-                    Ubicación
-                </span>
-
-                <strong>
-                    Durazno, Uruguay
-                </strong>
-
-            </div>
-
-
-            <div class="canona-row">
-
-                <span>
-                    Cobertura
-                </span>
-
-                <strong>
-                    Fútbol local
-                </strong>
-
-            </div>
-
-
-            <div class="canona-row">
-
-                <span>
-                    Contenido
-                </span>
-
-                <strong>
-                    Noticias y resultados
-                </strong>
-
-            </div>
-
-
-            <div class="canona-row">
-
-                <span>
-                    Selecciones
-                </span>
-
-                <strong>
-                    La Roja del Yí
-                </strong>
-
-            </div>
-
-
-            <div class="canona-row">
-
-                <span>
-                    Estadio
-                </span>
-
-                <strong>
-                    Silvestre Octavio Landoni
-                </strong>
-
-            </div>
-
-
-            <div class="canona-row">
-
-                <span>
-                    Estado
-                </span>
-
-                <strong style="color:#16d66d;">
-                    ● Activo
-                </strong>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="footer">
-
-        <span>
-            Deportivo Durazno & Canona®
-        </span>
-
-        <span>
-            Fútbol de Durazno
-        </span>
-
-    </div>
-
-</section>
-
-
-</main>
-
-
-<!-- =====================================================
-     TOP
-===================================================== -->
-
-<button id="top">
-    ↑
-</button>
-
-
-</div>
-
-
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
-
-<script>
-
-
-/* =========================================================
-   LOADER
-========================================================= */
-
-window.addEventListener(
-    "load",
-    () => {
-
-        setTimeout(
-            () => {
-
-                document
-                    .getElementById("loader")
-                    .classList
-                    .add("hide");
-
-            },
-            900
-        );
-
-    }
-);
-
-
-/* =========================================================
-   NAVEGACIÓN ENTRE VENTANAS
-========================================================= */
-
-const pages =
-    document.querySelectorAll(".page");
-
-const navButtons =
-    document.querySelectorAll(".nav-btn");
-
-const mobileButtons =
-    document.querySelectorAll(".mobile-menu button");
-
-
-function openPage(id){
-
-    pages.forEach(
-        page => {
-
-            page.classList.remove("active");
-
-        }
-    );
-
-
-    const target =
-        document.getElementById(id);
-
-    if(target){
-
-        target.classList.add("active");
-
-        target.scrollTop = 0;
-
+  </div>
+
+  <script>
+    // Variables de estado
+    let mediaRecorder;
+    let recordedChunks = [];
+    let currentStream;
+    let facingMode = 'environment'; // Cámara trasera por defecto
+    let startTime;
+    let timerInterval;
+    let recordedBlob = null;
+    let finalCloudUrl = '';
+
+    // Referencias al DOM
+    const preview = document.getElementById('preview');
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const switchCamBtn = document.getElementById('switchCamBtn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const recIndicator = document.getElementById('recIndicator');
+    const outputCard = document.getElementById('outputCard');
+    const recordedVideo = document.getElementById('recordedVideo');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const linkBox = document.getElementById('linkBox');
+    const cloudLink = document.getElementById('cloudLink');
+    const copyBtn = document.getElementById('copyBtn');
+    const wspBtn = document.getElementById('wspBtn');
+    const matchTitleInput = document.getElementById('matchTitle');
+
+    // 1. INICIALIZAR CÁMARA
+    async function initCamera() {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
+      try {
+        const constraints = {
+          video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: true
+        };
+        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+        preview.srcObject = currentStream;
+      } catch (err) {
+        alert("Permiso de cámara denegado o no disponible.");
+      }
     }
 
-
-    navButtons.forEach(
-        button => {
-
-            button.classList.toggle(
-                "active",
-                button.dataset.page === id
-            );
-
-        }
-    );
-
-
-    document
-        .getElementById("mobileMenu")
-        .classList
-        .remove("open");
-
-}
-
-
-/* Desktop */
-
-navButtons.forEach(
-    button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                openPage(
-                    button.dataset.page
-                );
-
-            }
-        );
-
-    }
-);
-
-
-/* Mobile */
-
-mobileButtons.forEach(
-    button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                openPage(
-                    button.dataset.page
-                );
-
-            }
-        );
-
-    }
-);
-
-
-/* =========================================================
-   MENÚ MOBILE
-========================================================= */
-
-const menuMobile =
-    document.getElementById("menuMobile");
-
-const mobileMenu =
-    document.getElementById("mobileMenu");
-
-
-menuMobile.addEventListener(
-    "click",
-    () => {
-
-        mobileMenu.classList.toggle("open");
-
-    }
-);
-
-
-/* =========================================================
-   CONTADORES
-========================================================= */
-
-let countersStarted = false;
-
-
-function animateCounters(){
-
-    if(countersStarted) return;
-
-    countersStarted = true;
-
-
-    document
-        .querySelectorAll("[data-number]")
-        .forEach(
-            element => {
-
-                const target =
-                    Number(
-                        element.dataset.number
-                    );
-
-                let current = 0;
-
-                const duration = 1200;
-
-                const start =
-                    performance.now();
-
-
-                function update(now){
-
-                    const progress =
-                        Math.min(
-                            (now - start) /
-                            duration,
-                            1
-                        );
-
-
-                    const eased =
-                        1 -
-                        Math.pow(
-                            1 - progress,
-                            3
-                        );
-
-
-                    current =
-                        Math.floor(
-                            target * eased
-                        );
-
-
-                    element.textContent =
-                        current.toLocaleString(
-                            "es-UY"
-                        );
-
-
-                    if(progress < 1){
-
-                        requestAnimationFrame(
-                            update
-                        );
-
-                    }
-
-                }
-
-
-                requestAnimationFrame(update);
-
-            }
-        );
-
-}
-
-
-setTimeout(
-    animateCounters,
-    1200
-);
-
-
-/* =========================================================
-   BOTÓN ARRIBA
-========================================================= */
-
-const topButton =
-    document.getElementById("top");
-
-
-document
-    .querySelectorAll(".page")
-    .forEach(
-        page => {
-
-            page.addEventListener(
-                "scroll",
-                () => {
-
-                    if(page.scrollTop > 400){
-
-                        topButton
-                            .classList
-                            .add("show");
-
-                    }else{
-
-                        topButton
-                            .classList
-                            .remove("show");
-
-                    }
-
-                }
-            );
-
-        }
-    );
-
-
-topButton.addEventListener(
-    "click",
-    () => {
-
-        const active =
-            document.querySelector(
-                ".page.active"
-            );
-
-        if(active){
-
-            active.scrollTo({
-                top:0,
-                behavior:"smooth"
-            });
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   TECLADO
-========================================================= */
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if(event.key === "Escape"){
-
-            mobileMenu
-                .classList
-                .remove("open");
-
-        }
-
-    }
-);
-
-
-</script>
-
+    // Cambiar entre cámara frontal y trasera
+    switchCamBtn.addEventListener('click', () => {
+      facingMode = facingMode === 'environment' ? 'user' : 'environment';
+      initCamera();
+    });
+
+    // Arrancar la cámara al cargar la página
+    window.onload = initCamera;
+
+    // 2. LÓGICA DE GRABACIÓN
+    recordBtn.addEventListener('click', () => {
+      recordedChunks = [];
+      try {
+        mediaRecorder = new MediaRecorder(currentStream, { mimeType: 'video/mp4' });
+      } catch (e) {
+        mediaRecorder = new MediaRecorder(currentStream); // Fallback para Safari/iOS
+      }
+
+      mediaRecorder.ondataavailable = event => {
+        if (event.data.size > 0) recordedChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        // Crear el archivo de video final
+        recordedBlob = new Blob(recordedChunks, { type: 'video/mp4' });
+        
+        // Mostrarlo en el reproductor de abajo
+        recordedVideo.src = URL.createObjectURL(recordedBlob);
+        outputCard.style.display = 'flex';
+        linkBox.style.display = 'none'; // Esconder link por si es una segunda grabación
+        
+        // Hacer scroll automático hacia abajo
+        outputCard.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      // Iniciar grabación guardando en memoria cada 1 segundo
+      mediaRecorder.start(1000);
+      
+      // Cambiar botones UI
+      recordBtn.style.display = 'none';
+      stopBtn.style.display = 'flex';
+      recIndicator.classList.add('recording');
+      
+      // Iniciar Temporizador
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const hrs = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+        const secs = String(elapsed % 60).padStart(2, '0');
+        timerDisplay.innerText = `${hrs}:${mins}:${secs}`;
+      }, 1000);
+    });
+
+    // 3. DETENER GRABACIÓN
+    stopBtn.addEventListener('click', () => {
+      mediaRecorder.stop();
+      recordBtn.style.display = 'flex';
+      stopBtn.style.display = 'none';
+      recIndicator.classList.remove('recording');
+      clearInterval(timerInterval);
+      timerDisplay.innerText = "00:00:00";
+    });
+
+    // 4. DESCARGAR AL CELULAR (Local)
+    downloadBtn.addEventListener('click', () => {
+      if (!recordedBlob) return;
+      const title = matchTitleInput.value.trim() || 'Partido';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(recordedBlob);
+      a.download = `${title}.mp4`;
+      a.click();
+    });
+
+    // 5. SUBIR A LA NUBE (GoFile API Pública) Y GENERAR LINK
+    uploadBtn.addEventListener('click', async () => {
+      if (!recordedBlob) return;
+      
+      // UI de carga
+      uploadBtn.disabled = true;
+      uploadBtn.innerText = "⏳ Subiendo... (Por favor espera)";
+      statusMsg.style.borderLeftColor = "var(--accent-blue)";
+      statusMsg.innerText = "Preparando conexión segura con la nube...";
+      linkBox.style.display = 'none';
+
+      try {
+        // Paso 1: Pedir a GoFile qué servidor usar
+        statusMsg.innerText = "Conectando al servidor... Subiendo video...";
+        const serverRes = await fetch('https://api.gofile.io/servers');
+        const serverData = await serverRes.json();
+        
+        if (serverData.status !== 'ok') throw new Error("No hay servidores disponibles");
+        const server = serverData.data.servers[0].name;
+
+        // Paso 2: Preparar el archivo
+        const title = matchTitleInput.value.trim() || 'Partido';
+        const formData = new FormData();
+        formData.append('file', recordedBlob, `${title}.mp4`);
+
+        // Paso 3: Subir el archivo
+        const uploadRes = await fetch(`https://${server}.gofile.io/contents/uploadfile`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const uploadData = await uploadRes.json();
+        if (uploadData.status !== 'ok') throw new Error("Fallo al subir el archivo");
+
+        // ÉXITO: Obtener el Link
+        finalCloudUrl = uploadData.data.downloadPage;
+        
+        // Actualizar UI
+        statusMsg.innerText = "✅ ¡Video subido exitosamente a la nube!";
+        statusMsg.style.borderLeftColor = "var(--accent-green)";
+        uploadBtn.innerText = "☁️ Subir nuevamente";
+        uploadBtn.disabled = false;
+        
+        // Mostrar Caja de Enlace
+        linkBox.style.display = 'flex';
+        cloudLink.href = finalCloudUrl;
+        cloudLink.innerText = finalCloudUrl;
+
+        // Configurar botón de WhatsApp
+        const wspMensaje = encodeURIComponent(`⚽ ¡Mirá el partido que grabamos hoy!\nDescargá el video acá: ${finalCloudUrl}`);
+        wspBtn.href = `whatsapp://send?text=${wspMensaje}`;
+
+      } catch (error) {
+        // Manejo de Errores
+        console.error(error);
+        statusMsg.innerText = "❌ Error al subir a la nube. Intenta guardarlo en tu celular primero. Detalle: " + error.message;
+        statusMsg.style.borderLeftColor = "var(--accent-red)";
+        uploadBtn.innerText = "☁️ Reintentar Subida";
+        uploadBtn.disabled = false;
+      }
+    });
+
+    // 6. COPIAR ENLACE AL PORTAPAPELES
+    copyBtn.addEventListener('click', async () => {
+      if (!finalCloudUrl) return;
+      try {
+        await navigator.clipboard.writeText(finalCloudUrl);
+        copyBtn.innerText = "✅ ¡Copiado!";
+        setTimeout(() => { copyBtn.innerText = "📋 Copiar Enlace"; }, 2000);
+      } catch (err) {
+        alert("No se pudo copiar el enlace automáticamente.");
+      }
+    });
+  </script>
 </body>
 </html>
