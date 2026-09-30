@@ -55,18 +55,19 @@
     .action-buttons { display: flex; gap: 10px; }
     button.btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; text-transform: uppercase; transition: opacity 0.2s; }
     button.btn:active { opacity: 0.7; }
+    button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-record { background-color: var(--accent-green); color: #fff; }
     .btn-stop { background-color: var(--accent-red); color: #fff; display: none; }
     
     /* SECCIÓN MONITOR EN VIVO */
     .monitor-panel { border: 1px dashed var(--accent-blue); background-color: rgba(31, 107, 235, 0.05); }
     .monitor-panel label { color: var(--accent-blue); }
-    .qr-row { display: flex; gap: 12px; align-items: center; }
+    .qr-row { display: flex; gap: 12px; align-items: center; width: 100%; }
     .qr-img { width: 100px; height: 100px; background: #fff; padding: 4px; border-radius: 8px; flex-shrink: 0; }
     .link-controls { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow: hidden; }
-    .link-controls input { padding: 8px; font-size: 0.85rem; }
+    .link-controls input { padding: 8px; font-size: 0.85rem; width: 100%; }
     .link-buttons { display: flex; gap: 6px; }
-    .btn-sm { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; color: #fff; text-align: center; text-decoration: none; }
+    .btn-sm { flex: 1; padding: 10px 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; color: #fff; text-align: center; text-decoration: none; display: flex; justify-content: center; align-items: center; }
     
     /* MODO ESPECTADOR */
     .viewer-warning { background-color: rgba(210, 153, 34, 0.15); border: 1px solid var(--accent-yellow); color: #f0f6fc; padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin-bottom: 12px; display: flex; gap: 10px; align-items: center;}
@@ -76,7 +77,7 @@
 <body>
 
   <div id="errorBanner">
-    ⚠️ ATENCIÓN: Para que la cámara web funcione, debes subir este archivo a un servidor seguro (HTTPS) o usar localhost. Si solo lo abriste con doble clic (file://), NO FUNCIONARÁ.
+    ⚠️ ATENCIÓN: Para que la cámara web funcione, debes subir este archivo a un servidor seguro (HTTPS) o usar localhost.
   </div>
 
   <!-- ========================================== -->
@@ -124,11 +125,31 @@
       </div>
     </div>
 
+    <!-- TARJETA DE VIDEO GENERADO -->
     <div class="card" id="outputCard" style="display: none;">
-      <label>VIDEO GENERADO</label>
+      <label>✅ VIDEO GENERADO</label>
+      
+      <!-- Botón para guardar localmente -->
       <div class="action-buttons">
         <button class="btn" id="downloadBtn" style="background: #30363d; color: white;">⬇️ Guardar en mi celular</button>
       </div>
+
+      <!-- Botón para subir a la nube -->
+      <button class="btn" id="uploadBtn" style="margin-top: 5px; background: var(--accent-blue); color: white;">☁️ Subir a la nube y Compartir</button>
+      <div id="uploadStatusMsg" style="font-size: 0.85rem; margin-top: 5px; text-align: center; font-weight: bold;"></div>
+
+      <!-- Sección de Link Generado (Oculta hasta que se suba el video) -->
+      <div id="cloudShareSection" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+        <label style="color: var(--accent-green);">🔗 LINK DEL PARTIDO LISTO</label>
+        <div class="link-controls" style="width: 100%;">
+          <input type="text" id="cloudLinkInput" readonly>
+          <div class="link-buttons">
+            <button class="btn-sm" id="copyCloudBtn" style="background: var(--border-color);">Copiar</button>
+            <a class="btn-sm" id="wspCloudBtn" href="#" target="_blank" style="background: #25D366;">WhatsApp</a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -169,25 +190,20 @@
 
 
   <script>
-    // Comprobar seguridad de la página para la cámara
+    // Comprobar seguridad de la página
     if (window.location.protocol === 'file:' || (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
       document.getElementById('errorBanner').style.display = 'block';
     }
 
-    // Configuración robusta de servidores STUN
     const peerConfig = {
       config: {
         'iceServers': [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:global.stun.twilio.com:3478' }
+          { urls: 'stun:stun1.l.google.com:19302' }
         ]
       }
     };
 
-    // ========================================================
-    // RUTEO: Detectar si somos Grabador o Espectador
-    // ========================================================
     const urlParams = new URLSearchParams(window.location.search);
     const hostPeerId = urlParams.get('view');
 
@@ -208,7 +224,7 @@
       let activeConnections = new Map();
       let isRecording = false;
 
-      // 1. GENERAR ID Y QR INMEDIATAMENTE
+      // 1. GENERAR ID Y QR
       const myUniqueId = 'camfut-' + Math.random().toString(36).substring(2, 9);
       const cleanUrl = window.location.origin + window.location.pathname;
       const generatedViewerUrl = cleanUrl + '?view=' + myUniqueId;
@@ -224,7 +240,7 @@
         });
       });
 
-      // 2. INICIAR PEERJS (Sin esperar a la cámara)
+      // 2. INICIAR PEERJS
       const peerStatus = document.getElementById('peerStatus');
       peer = new Peer(myUniqueId, peerConfig); 
 
@@ -236,29 +252,17 @@
       peer.on('connection', (conn) => {
         conn.on('open', () => {
           activeConnections.set(conn.peer, conn);
-          peerStatus.innerText = "👁️ Espectador conectado. Sincronizando...";
+          peerStatus.innerText = "👁️ Espectador conectado";
           peerStatus.style.color = "var(--accent-blue)";
-          
-          // Enviar estado de grabación actual
           conn.send({ type: 'STATE', isRecording: isRecording });
         });
         
         conn.on('data', (data) => {
-          if (data.type === 'VIEWER_READY') {
-            if (currentStream) {
-              // Si la cámara ya está activa, le llamamos
-              peer.call(conn.peer, currentStream);
-              peerStatus.innerText = "🟢 Transmitiendo video al espectador";
-            } else {
-              peerStatus.innerText = "⏳ Espectador en espera (acepta permisos de cámara)";
-            }
+          if (data.type === 'VIEWER_READY' && currentStream) {
+            peer.call(conn.peer, currentStream);
           } 
-          else if (data.type === 'CMD_START_REC') {
-            document.getElementById('recordBtn').click();
-          } 
-          else if (data.type === 'CMD_STOP_REC') {
-            document.getElementById('stopBtn').click();
-          }
+          else if (data.type === 'CMD_START_REC') document.getElementById('recordBtn').click();
+          else if (data.type === 'CMD_STOP_REC') document.getElementById('stopBtn').click();
         });
 
         conn.on('close', () => {
@@ -268,38 +272,28 @@
         });
       });
 
-      // Función para avisar a todos los espectadores del estado
       function broadcastState() {
         activeConnections.forEach(conn => {
           if(conn.open) conn.send({ type: 'STATE', isRecording: isRecording });
         });
       }
 
-      // 3. INICIAR CÁMARA (Asíncrono)
+      // 3. INICIAR CÁMARA
       let facingMode = 'environment';
       const preview = document.getElementById('preview');
       
       async function startCamera() {
-        if (currentStream) {
-          currentStream.getTracks().forEach(t => t.stop());
-        }
+        if (currentStream) currentStream.getTracks().forEach(t => t.stop());
         try {
           const constraints = { video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 } }, audio: true };
           currentStream = await navigator.mediaDevices.getUserMedia(constraints);
           preview.srcObject = currentStream;
           
-          // Si ya hay espectadores conectados esperando, les mandamos el video ahora
           activeConnections.forEach((conn, peerId) => {
             peer.call(peerId, currentStream);
-            peerStatus.innerText = "🟢 Transmitiendo video al espectador";
           });
-
-        } catch (err) { 
-          alert("Error de cámara: " + err.message + "\nAsegúrate de dar permisos."); 
-        }
+        } catch (err) { alert("Error de cámara: " + err.message); }
       }
-      
-      // Llamamos a la cámara sin bloquear el resto del código
       startCamera();
 
       document.getElementById('switchCamBtn').addEventListener('click', () => {
@@ -312,6 +306,7 @@
       let recordedChunks = []; 
       let startTime; 
       let timerInterval; 
+      let recordedBlob; // Guardaremos el video aquí
       
       const recordBtn = document.getElementById('recordBtn'); 
       const stopBtn = document.getElementById('stopBtn');
@@ -324,19 +319,25 @@
         let mimeType = MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 
                       (MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : '');
 
-        try { 
-          mediaRecorder = new MediaRecorder(currentStream, mimeType ? { mimeType } : undefined); 
-        } catch (e) { 
-          mediaRecorder = new MediaRecorder(currentStream); 
-        }
+        try { mediaRecorder = new MediaRecorder(currentStream, mimeType ? { mimeType } : undefined); } 
+        catch (e) { mediaRecorder = new MediaRecorder(currentStream); }
 
         mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
         mediaRecorder.onstop = () => {
           const finalExt = mimeType.includes('webm') ? 'webm' : 'mp4';
-          const recordedBlob = new Blob(recordedChunks, { type: mimeType || 'video/mp4' });
+          recordedBlob = new Blob(recordedChunks, { type: mimeType || 'video/mp4' });
           
+          // Mostrar panel de descargas y ocultar secciones viejas de subida
           document.getElementById('outputCard').style.display = 'flex';
+          document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth' });
           
+          document.getElementById('uploadBtn').style.display = 'flex';
+          document.getElementById('uploadBtn').disabled = false;
+          document.getElementById('uploadBtn').innerText = '☁️ Subir a la nube y Compartir';
+          document.getElementById('cloudShareSection').style.display = 'none';
+          document.getElementById('uploadStatusMsg').innerText = '';
+          
+          // Preparar descarga local
           const a = document.createElement('a');
           a.href = URL.createObjectURL(recordedBlob);
           a.download = `${document.getElementById('matchTitle').value}.${finalExt}`;
@@ -349,6 +350,7 @@
         recordBtn.style.display = 'none'; 
         stopBtn.style.display = 'flex';
         recIndicator.classList.add('recording');
+        document.getElementById('outputCard').style.display = 'none';
         
         startTime = Date.now();
         timerInterval = setInterval(() => {
@@ -358,7 +360,7 @@
           document.getElementById('timerDisplay').innerText = `00:${mins}:${secs}`;
         }, 1000);
 
-        broadcastState(); // Avisa al espectador
+        broadcastState(); 
       });
 
       stopBtn.addEventListener('click', () => {
@@ -370,7 +372,77 @@
         recIndicator.classList.remove('recording');
         clearInterval(timerInterval);
         
-        broadcastState(); // Avisa al espectador
+        broadcastState(); 
+      });
+
+      // 5. LÓGICA DE SUBIDA A LA NUBE (GOFILE) Y COMPARTIR EN WHATSAPP
+      document.getElementById('uploadBtn').addEventListener('click', async () => {
+        if(!recordedBlob) return;
+        
+        const btn = document.getElementById('uploadBtn');
+        const msg = document.getElementById('uploadStatusMsg');
+        const shareSection = document.getElementById('cloudShareSection');
+        const linkInput = document.getElementById('cloudLinkInput');
+        const wspBtn = document.getElementById('wspCloudBtn');
+
+        btn.disabled = true;
+        btn.innerText = "⏳ Subiendo... Esto puede tardar unos minutos";
+        msg.innerText = "";
+        msg.style.color = "var(--accent-yellow)";
+
+        try {
+          // A. Obtener el mejor servidor de Gofile
+          const sRes = await fetch('https://api.gofile.io/servers');
+          const sData = await sRes.json();
+          if (sData.status !== 'ok') throw new Error("No se pudo contactar al servidor en la nube");
+          const serverName = sData.data.servers[0].name;
+
+          // B. Preparar el archivo
+          const matchName = document.getElementById('matchTitle').value;
+          const ext = recordedBlob.type.includes('webm') ? 'webm' : 'mp4';
+          const formData = new FormData();
+          formData.append('file', recordedBlob, `${matchName}.${ext}`);
+
+          // C. Subir el archivo
+          const uRes = await fetch(`https://${serverName}.gofile.io/contents/uploadfile`, {
+            method: 'POST',
+            body: formData
+          });
+          const uData = await uRes.json();
+          if (uData.status !== 'ok') throw new Error("Fallo la transferencia del archivo");
+
+          // D. Éxito: Mostrar link y configurar WhatsApp
+          const downloadLink = uData.data.downloadPage;
+          
+          btn.style.display = "none"; // Ocultamos el botón de subir
+          msg.innerText = "✅ ¡Video guardado en la nube!";
+          msg.style.color = "var(--accent-green)";
+          
+          shareSection.style.display = "flex";
+          linkInput.value = downloadLink;
+
+          // Configurar texto de WhatsApp
+          const wspText = encodeURIComponent(`⚽ ¡Mira el partido grabado! Ya está disponible aquí:\n\n${downloadLink}`);
+          wspBtn.href = `whatsapp://send?text=${wspText}`;
+
+        } catch (error) {
+          console.error(error);
+          btn.disabled = false;
+          btn.innerText = "☁️ Reintentar subida";
+          msg.innerText = "❌ Error al subir: " + error.message;
+          msg.style.color = "var(--accent-red)";
+        }
+      });
+
+      // Copiar enlace de la nube
+      document.getElementById('copyCloudBtn').addEventListener('click', () => {
+        const input = document.getElementById('cloudLinkInput');
+        input.select();
+        navigator.clipboard.writeText(input.value).then(() => {
+          const btn = document.getElementById('copyCloudBtn');
+          btn.innerText = "¡Copiado!";
+          setTimeout(() => { btn.innerText = "Copiar"; }, 2000);
+        });
       });
     }
 
@@ -385,23 +457,18 @@
       const vRecIndicator = document.getElementById('vRecIndicator');
       
       let viewerConn; 
-
       const viewerPeer = new Peer(peerConfig); 
 
       viewerPeer.on('open', () => {
         viewerStatus.innerText = "Conectando al teléfono del poste... 🟡";
-        
         viewerConn = viewerPeer.connect(targetId, { reliable: true });
         
         viewerConn.on('open', () => {
           viewerStatus.innerText = "Conectado. Solicitando video... 🟡";
-          
-          // Le decimos al teléfono principal que estamos listos para recibir video
           viewerConn.send({ type: 'VIEWER_READY' }); 
           vRecordBtn.disabled = false;
         });
 
-        // Escuchar los cambios de estado (si el host empezó a grabar o no)
         viewerConn.on('data', (data) => {
           if (data.type === 'STATE') {
             if (data.isRecording) {
@@ -417,11 +484,9 @@
         });
       });
 
-      // Recibir la llamada de video del Host
       viewerPeer.on('call', (call) => {
         viewerStatus.innerText = "Recibiendo señal de video... 🟡";
         call.answer(); 
-        
         call.on('stream', (remoteStream) => {
           viewerVideo.srcObject = remoteStream;
           viewerStatus.innerText = "TRANSMISIÓN EN VIVO 🟢";
@@ -429,13 +494,6 @@
         });
       });
 
-      viewerPeer.on('error', (err) => {
-        viewerStatus.innerText = "Error de red 🔴";
-        viewerStatus.style.color = "var(--accent-red)";
-        alert("No se pudo conectar. Verifica que el celular principal tenga la pantalla encendida y buena señal de internet.");
-      });
-
-      // Botones Remotos
       vRecordBtn.addEventListener('click', () => {
         if(viewerConn && viewerConn.open) {
           viewerConn.send({ type: 'CMD_START_REC' });
@@ -444,9 +502,7 @@
       });
 
       vStopBtn.addEventListener('click', () => {
-        if(viewerConn && viewerConn.open) {
-          viewerConn.send({ type: 'CMD_STOP_REC' });
-        }
+        if(viewerConn && viewerConn.open) viewerConn.send({ type: 'CMD_STOP_REC' });
       });
     }
   </script>
