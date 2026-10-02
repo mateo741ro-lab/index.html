@@ -82,7 +82,9 @@
     ⚠️ ATENCIÓN: Si no abres esta página con HTTPS, el celular bloqueará el acceso a la cámara.
   </div>
 
-  <!-- MODO 1: GRABADOR PRINCIPAL (Celular en el poste) -->
+  <!-- ============================================== -->
+  <!-- MODO 1: GRABADOR PRINCIPAL (CELULAR EN POSTE)  -->
+  <!-- ============================================== -->
   <div id="recorder-app" class="container">
     <header>
       <h1>CÁMARA<span>FÚTBOL</span> PRO</h1>
@@ -116,7 +118,7 @@
 
     <div class="card monitor-panel">
       <label>📡 COMPARTIR CON PC / OTRO CELULAR</label>
-      <p style="font-size: 0.8rem; color: var(--subtext-color);">Copia el enlace y mándalo por WhatsApp a tu PC para controlar remotamente.</p>
+      <p style="font-size: 0.8rem; color: var(--subtext-color);">Copia el enlace y mándalo por WhatsApp a tu PC.</p>
       <div class="qr-row">
         <img id="qrImage" class="qr-img" src="" alt="Generando QR...">
         <div class="link-controls">
@@ -148,7 +150,9 @@
     </div>
   </div>
 
-  <!-- MODO 2: VISOR (PC o segundo celular) -->
+  <!-- ============================================== -->
+  <!-- MODO 2: VISOR (PC O SEGUNDO CELULAR)           -->
+  <!-- ============================================== -->
   <div id="viewer-app" class="container" style="display: none;">
     <header>
       <h1>MONITOR<span>EN VIVO</span></h1>
@@ -181,35 +185,26 @@
   </div>
 
   <script>
+    // Validar HTTPS para que la cámara no sea bloqueada
     if (window.location.protocol === 'file:' || (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
       document.getElementById('errorBanner').style.display = 'block';
     }
 
     // =========================================================================
-    // 🔥 EL ARREGLO ESTÁ AQUÍ: Se añadieron servidores TURN gratuitos 
-    // para cruzar obligatoriamente redes distintas (Celular con Datos a PC con Wi-Fi)
+    // CONFIGURACIÓN DE RED MEJORADA (STUN + TURN)
     // =========================================================================
     const peerConfig = {
       config: {
         iceServers: [
+          // STUN de Google (para mismas redes)
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },
-          // Servidor TURN del proyecto público OpenRelay (Fundamental para cruzar redes distintas)
-          {
-            urls: 'turn:openrelay.metered.ca:80',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-          },
-          {
-            urls: 'turn:openrelay.metered.ca:443',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-          },
-          {
-            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-          }
+          // STUN de Twilio (muy potente como respaldo)
+          { urls: 'stun:global.stun.twilio.com:3478' },
+          // TURN de OpenRelay (Obligatorio para cruzar 4G a WiFi)
+          { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
         ]
       }
     };
@@ -224,6 +219,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const hostPeerId = urlParams.get('view');
 
+    // Inicializar la vista correspondiente
     if (hostPeerId) {
       document.getElementById('recorder-app').style.display = 'none';
       document.getElementById('viewer-app').style.display = 'flex';
@@ -233,7 +229,7 @@
     }
 
     // ========================================================
-    // MODO 1: GRABADOR PRINCIPAL
+    // LÓGICA DEL GRABADOR (CELULAR)
     // ========================================================
     function initRecorderMode() {
       let currentStream = null;
@@ -267,14 +263,20 @@
       peer = new Peer(myUniqueId, peerConfig); 
 
       peer.on('open', () => {
-        peerStatus.innerText = "✅ Red lista. Esperando conexión...";
+        peerStatus.innerText = "✅ Red lista. Esperando monitor...";
         peerStatus.style.color = "var(--accent-green)";
       });
 
-      // Nuevo control de errores para el host
+      // Reconexión automática si el celular pierde señal de datos
+      peer.on('disconnected', () => {
+        peerStatus.innerText = "⚠️ Micro-corte. Reconectando...";
+        peerStatus.style.color = "var(--accent-yellow)";
+        peer.reconnect();
+      });
+
       peer.on('error', (err) => {
         console.error("PeerJS Error:", err);
-        peerStatus.innerText = "❌ Error de conexión. Recarga la página.";
+        peerStatus.innerText = "❌ Error. Recarga la página.";
         peerStatus.style.color = "var(--accent-red)";
       });
 
@@ -297,7 +299,7 @@
         conn.on('close', () => {
           activeConnections.delete(conn.peer);
           if(activeConnections.size === 0) {
-            peerStatus.innerText = "✅ Red lista. Esperando conexión...";
+            peerStatus.innerText = "✅ Red lista. Esperando monitor...";
             peerStatus.style.color = "var(--accent-green)";
           }
         });
@@ -416,9 +418,7 @@
           const uploadBtn = document.getElementById('uploadBtn');
           uploadBtn.style.display = 'flex';
           uploadBtn.disabled = false;
-          document.getElementById('cloudShareSection').style.display = 'none';
-          document.getElementById('uploadStatusMsg').innerText = '';
-
+          
           const clipsList = document.getElementById('clipsList');
           const clipDiv = document.createElement('div');
           clipDiv.className = 'clip-item';
@@ -486,12 +486,13 @@
         broadcastState(); 
       });
 
-      // Subida (Igual)
-      document.getElementById('uploadBtn').addEventListener('click', async () => { /* Sin cambios aquí */ });
+      document.getElementById('uploadBtn').addEventListener('click', () => {
+        alert("Botón de subida presionado. Aquí iría la lógica de tu nube.");
+      });
     }
 
     // ========================================================
-    // MODO 2: VISOR REMOTE MONITOR
+    // LÓGICA DEL VISOR (PC) CON BUCLE DE REINTENTO
     // ========================================================
     function initViewerMode(targetId) {
       const viewerVideo = document.getElementById('viewerVideo');
@@ -500,23 +501,51 @@
       const vStopBtn = document.getElementById('vStopBtn');
       const vRecIndicator = document.getElementById('vRecIndicator');
       
-      let viewerConn; 
+      let viewerConn = null;
+      let connectionAttempts = 0;
+      let connectionTimeout = null;
+
       const viewerPeer = new Peer(peerConfig); 
 
-      // Nuevo control de errores para el visor en la PC
+      // Reconexión automática si perdemos el server
+      viewerPeer.on('disconnected', () => {
+        viewerStatus.innerText = "Reconectando al servidor... 🔄";
+        viewerPeer.reconnect();
+      });
+
       viewerPeer.on('error', (err) => {
         console.error("PeerJS Error:", err);
-        viewerStatus.innerText = "Error de red 🔴";
-        viewerStatus.style.color = "var(--accent-red)";
-        alert("No se pudo conectar a través de la red. Asegúrate de que el teléfono sigue con la pantalla encendida y recarga esta página.");
+        viewerStatus.innerText = "Buscando ruta alternativa... 🔄";
+        // Si hay error, intentar forzar reconexión después de un momento
+        setTimeout(() => connectToHost(), 3000);
       });
 
       viewerPeer.on('open', () => {
-        viewerStatus.innerText = "Conectando al teléfono (Cruzando red)... 🟡";
+        connectToHost();
+      });
+
+      // Función de fuerza bruta para intentar conectar hasta que se logre
+      function connectToHost() {
+        connectionAttempts++;
+        viewerStatus.innerText = `Intentando conectar (Intento ${connectionAttempts})... 🟡`;
+        viewerStatus.style.color = "var(--accent-yellow)";
+
+        if (viewerConn) viewerConn.close();
+
         viewerConn = viewerPeer.connect(targetId, { reliable: true });
-        
+
+        // Si pasan 6 segundos y no conecta, abortamos e intentamos de nuevo
+        connectionTimeout = setTimeout(() => {
+          if (viewerConn && !viewerConn.open) {
+            viewerStatus.innerText = "Tiempo agotado. Forzando reintento... 🔄";
+            connectToHost(); // Bucle
+          }
+        }, 6000);
+
         viewerConn.on('open', () => {
-          viewerStatus.innerText = "Solicitando video... 🟡";
+          clearTimeout(connectionTimeout); // Detenemos el bucle porque conectó
+          connectionAttempts = 0;
+          viewerStatus.innerText = "Conectado. Solicitando video... 🟡";
           viewerConn.send({ type: 'VIEWER_READY' }); 
           vRecordBtn.disabled = false;
         });
@@ -534,8 +563,16 @@
             }
           }
         });
-      });
 
+        viewerConn.on('close', () => {
+          viewerStatus.innerText = "Conexión perdida. Reconectando... 🔴";
+          viewerStatus.style.color = "var(--accent-red)";
+          vRecordBtn.disabled = true;
+          connectToHost(); // Intentar recuperar si se cae en medio partido
+        });
+      }
+
+      // Recibir la llamada de video del celular
       viewerPeer.on('call', (call) => {
         call.answer(); 
         call.on('stream', (remoteStream) => {
