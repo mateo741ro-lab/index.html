@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Monitor</title>
+  <title>Monitor Fútbol - Gofile</title>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
@@ -25,7 +25,7 @@
     
     #errorBanner { display: none; background-color: var(--accent-red); color: white; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 0.85rem; width: 100%; max-width: 1000px; margin-bottom: 10px;}
 
-    /* LAYOUT INTELIGENTE (ADAPTABLE A HORIZONTAL Y VERTICAL) */
+    /* LAYOUT INTELIGENTE */
     .app-layout { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 600px; }
     .camera-container { width: 100%; }
     .controls-container { display: flex; flex-direction: column; gap: 12px; width: 100%; }
@@ -75,7 +75,7 @@
     .clip-btn { flex: 1; min-width: 30%; padding: 10px 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.8rem; cursor: pointer; color: #fff; display: flex; justify-content: center; align-items: center; gap: 4px; }
     .btn-preview { background-color: #30363d; }
     .btn-download { background-color: var(--accent-blue); }
-    .btn-upload { background-color: #8957e5; }
+    .btn-upload { background-color: #0b70e1; } /* Azul Gofile */
     .btn-whatsapp { background-color: #25D366; }
 
     /* MODAL DE PREVISUALIZACIÓN */
@@ -90,7 +90,7 @@
 <body>
 
   <div id="errorBanner">
-    ⚠️ ATENCIÓN: Conéctate mediante HTTPS para activar la cámara.
+    ⚠️ ATENCIÓN: Conéctate mediante HTTPS para activar la cámara de forma segura.
   </div>
 
   <!-- MODAL DE PREVIEW -->
@@ -182,17 +182,14 @@
       document.getElementById('errorBanner').style.display = 'block';
     }
 
-    // FORZAR MODO HORIZONTAL EN EL DISPOSITIVO
     async function forceLandscapeScreen() {
       try {
         if (screen.orientation && screen.orientation.lock) {
           await screen.orientation.lock('landscape');
         }
       } catch (e) {
-        // Algunos dispositivos (como iOS) no soportan esta función, usamos las constraints de la cámara como plan B.
       }
     }
-    // Intentar forzar horizontal al primer toque en la pantalla
     document.addEventListener('click', forceLandscapeScreen, { once: true });
 
     const peerConfig = {
@@ -233,7 +230,6 @@
       const preview = document.getElementById('preview');
       const peerStatus = document.getElementById('peerStatus');
 
-      // WAKE LOCK (Pantalla siempre activa)
       async function solicitarWakeLock() {
         try {
           if ('wakeLock' in navigator) {
@@ -245,14 +241,13 @@
         if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
       }
 
-      // AUTO GUARDADO DE EMERGENCIA
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
           if (isRecording) solicitarWakeLock();
         } else {
           if (isRecording) {
             document.getElementById('stopBtn').click();
-            alert("⚠️ Se detectó que saliste de la página o bloqueaste la pantalla. La grabación fue detenida y guardada por seguridad.");
+            alert("⚠️ Se detectó que bloqueaste la pantalla. La grabación fue detenida y guardada por seguridad.");
           }
         }
       });
@@ -290,17 +285,15 @@
         activeConnections.forEach(conn => { if(conn.open) conn.send({ type: 'STATE', isRecording: isRecording }); });
       }
 
-      // INICIO DE CÁMARA - FORZADA TOTALMENTE A HORIZONTAL (16:9)
       async function startCamera() {
         if (currentStream) currentStream.getTracks().forEach(t => t.stop());
         try {
-          // Intentamos forzar al hardware a usar formato horizontal estricto (16:9)
           let constraints = { 
             video: { 
               facingMode: { ideal: facingMode }, 
               width: { ideal: 1920 }, 
               height: { ideal: 1080 },
-              aspectRatio: { exact: 16/9 } // OBLIGA al hardware a dar imagen apaisada
+              aspectRatio: { exact: 16/9 } 
             }, 
             audio: false 
           };
@@ -308,7 +301,6 @@
           try {
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
           } catch(e) {
-            // Si el celular rechaza el exact, usamos ideal (plan de contingencia)
             constraints.video.aspectRatio = { ideal: 16/9 };
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
           }
@@ -333,8 +325,8 @@
       recordBtn.addEventListener('click', () => {
         if(!currentStream) return;
         
-        forceLandscapeScreen(); // Refuerzo para rotar la pantalla
-        solicitarWakeLock(); // Activa pantalla infinita
+        forceLandscapeScreen(); 
+        solicitarWakeLock(); 
         
         recordedChunks = [];
         let options = { mimeType: MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' : 'video/webm' };
@@ -347,7 +339,7 @@
           const finalExt = mediaRecorder.mimeType.includes('mp4') ? 'mp4' : 'webm';
           const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'video/mp4' });
           const clipIndex = matchClips.length + 1; 
-          const fileName = `Video_${clipIndex}.${finalExt}`;
+          const fileName = `Practico_Futbol_${clipIndex}.${finalExt}`;
 
           matchClips.push({ blob, fileName });
           renderClipItem(blob, fileName, clipIndex);
@@ -387,18 +379,18 @@
         const blobUrl = URL.createObjectURL(blob);
 
         clipDiv.innerHTML = `
-          <div class="clip-header">🎬 Video ${index}</div>
+          <div class="clip-header">🎬 Práctico de Fútbol #${index}</div>
           <div class="clip-actions">
             <button class="clip-btn btn-preview" id="prev-${index}">👁️ Ver</button>
             <button class="clip-btn btn-download" id="down-${index}">⬇️ Descargar</button>
           </div>
           <div id="cloud-container-${index}" style="margin-top: 5px;">
-            <button class="clip-btn btn-upload" id="upload-${index}" style="width: 100%;">☁️ Generar Link (Subir a Nube)</button>
+            <button class="clip-btn btn-upload" id="upload-${index}" style="width: 100%;">☁️ Generar Link de Gofile</button>
           </div>
         `;
         clipsList.prepend(clipDiv); 
 
-        // PREVIEW
+        // VER PREVIEW
         document.getElementById(`prev-${index}`).onclick = () => {
           const modal = document.getElementById('previewModal');
           const player = document.getElementById('previewPlayer');
@@ -407,7 +399,7 @@
           player.play();
         };
 
-        // DESCARGAR
+        // DESCARGAR LOCALMENTE
         document.getElementById(`down-${index}`).onclick = () => {
           const a = document.createElement('a');
           a.href = blobUrl;
@@ -415,42 +407,54 @@
           a.click();
         };
 
-        // GENERAR LINK (NUEVO SISTEMA ROBUSTO)
+        // SUBIR A GOFILE Y MANDAR A WHATSAPP
         document.getElementById(`upload-${index}`).onclick = async function() {
           const container = document.getElementById(`cloud-container-${index}`);
-          this.innerText = "⏳ Subiendo archivo (por favor espera)...";
+          this.innerText = "⏳ Conectando con Gofile...";
           this.disabled = true;
 
           try {
+            // 1. Obtener el servidor más rápido de Gofile
+            const serverResponse = await fetch('https://api.gofile.io/servers');
+            const serverData = await serverResponse.json();
+            
+            if (serverData.status !== 'ok' || !serverData.data || serverData.data.servers.length === 0) {
+                throw new Error('Error obteniendo servidor Gofile');
+            }
+            const server = serverData.data.servers[0].name;
+
+            this.innerText = "⏳ Subiendo video (espera por favor)...";
+
+            // 2. Subir el video al servidor
             const formData = new FormData();
             formData.append('file', blob, fileName);
 
-            const response = await fetch('https://tmpfiles.org/api/v1/upload', {
+            const uploadResponse = await fetch(`https://${server}.gofile.io/contents/uploadfile`, {
               method: 'POST',
               body: formData
             });
-            const data = await response.json();
+            const uploadResult = await uploadResponse.json();
 
-            if(data.status === 'success' && data.data && data.data.url) {
-              const fileUrl = data.data.url;
+            if(uploadResult.status === 'ok' && uploadResult.data && uploadResult.data.downloadPage) {
+              const fileUrl = uploadResult.data.downloadPage;
               
               container.innerHTML = `
                 <div style="background: var(--bg-color); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
-                  <label style="color: #48bb78; font-size: 0.8rem;">✅ Link generado exitosamente</label>
-                  <input type="text" value="${fileUrl}" readonly id="link-input-${index}" style="background: var(--card-bg);">
+                  <label style="color: #48bb78; font-size: 0.8rem;">✅ Link de Gofile generado</label>
+                  <input type="text" value="${fileUrl}" readonly style="background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 6px;">
                   <div class="clip-actions">
-                    <button class="clip-btn btn-preview" onclick="window.open('${fileUrl}', '_blank')">🌐 Abrir Link</button>
-                    <button class="clip-btn btn-whatsapp" onclick="window.open('https://wa.me/?text=' + encodeURIComponent('¡Mira el video que acabo de grabar! Haz clic aquí: ${fileUrl}'), '_blank')">📲 WhatsApp</button>
+                    <button class="clip-btn btn-whatsapp" style="width:100%; font-size: 0.9rem;" onclick="window.open('https://wa.me/?text=' + encodeURIComponent('¡Hola! Aquí tienes la grabación del práctico de fútbol ⚽ para ver o descargar: \\n\\n${fileUrl}'), '_blank')">📲 Compartir Link por WhatsApp</button>
                   </div>
                 </div>
               `;
             } else {
-              throw new Error('Error en el servidor remoto');
+              throw new Error('Error al subir a Gofile');
             }
           } catch (err) {
+            console.error(err);
             this.innerText = "❌ Falló la subida. Reintentar";
             this.disabled = false;
-            alert("Hubo un error al subir. Asegúrate de tener buena conexión o que el archivo no supere 1GB.");
+            alert("No se pudo conectar con Gofile. Asegúrate de tener buena señal de internet (los videos de fútbol pesan bastante).");
           }
         };
       }
