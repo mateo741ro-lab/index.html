@@ -1,519 +1,127 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Monitor Fútbol - Gofile</title>
-
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
-  <style>
-    :root {
-      --bg-color: #0d1117;
-      --card-bg: #161b22;
-      --accent-green: #238636;
-      --accent-red: #da3633;
-      --accent-blue: #1f6beb;
-      --accent-yellow: #d29922;
-      --text-color: #f0f6fc;
-      --subtext-color: #8b949e;
-      --border-color: #30363d;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 12px; overflow-x: hidden; }
-    
-    #errorBanner { display: none; background-color: var(--accent-red); color: white; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 0.85rem; width: 100%; max-width: 1000px; margin-bottom: 10px;}
-
-    /* LAYOUT INTELIGENTE */
-    .app-layout { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 600px; }
-    .camera-container { width: 100%; }
-    .controls-container { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-
-    @media (orientation: landscape) {
-      .app-layout { flex-direction: row; max-width: 1200px; height: calc(100vh - 24px); }
-      .camera-container { flex: 2; height: 100%; display: flex; align-items: center; justify-content: center; }
-      .controls-container { flex: 1; height: 100%; overflow-y: auto; padding-right: 5px; }
-    }
-
-    /* CÁMARA */
-    .camera-box { position: relative; width: 100%; aspect-ratio: 16 / 9; background-color: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
-    video { width: 100%; height: 100%; object-fit: cover; }
-
-    .overlay-badge { position: absolute; background-color: rgba(0, 0, 0, 0.75); padding: 4px 10px; border-radius: 16px; font-size: 0.75rem; font-weight: bold; border: 1px solid var(--border-color); z-index: 10; display: flex; align-items: center; gap: 6px; }
-    .rec-indicator { top: 12px; left: 12px; visibility: hidden; }
-    .rec-indicator.visible { visibility: visible; }
-    
-    .dot { width: 8px; height: 8px; border-radius: 50%; background-color: #8b949e; }
-    .recording .dot { background-color: var(--accent-red); animation: blink 1s infinite; }
-    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-    
-    .cam-switch-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(0, 0, 0, 0.75); border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; cursor: pointer; z-index: 10; }
-
-    /* TARJETAS Y BOTONES */
-    .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-    label { font-size: 0.75rem; color: var(--subtext-color); font-weight: 700; text-transform: uppercase; }
-    
-    .action-buttons { display: flex; gap: 10px; }
-    button.btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; text-transform: uppercase; transition: opacity 0.2s; }
-    button.btn:active { opacity: 0.7; }
-    button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-record { background-color: var(--accent-green); color: #fff; }
-    .btn-stop { background-color: var(--accent-red); color: #fff; display: none; }
-    
-    /* CONEXIÓN / LINK */
-    .qr-row { display: flex; gap: 12px; align-items: center; width: 100%; }
-    .link-controls { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow: hidden; }
-    input[type="text"] { padding: 10px; font-size: 0.85rem; width: 100%; background: var(--bg-color); color: white; border: 1px solid var(--border-color); border-radius: 6px; outline: none; }
-    .btn-sm { padding: 10px 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; color: #fff; text-align: center; display: flex; justify-content: center; align-items: center; flex: 1; }
-
-    /* LISTA DE VIDEOS GRABADOS */
-    .clip-list { display: flex; flex-direction: column; gap: 12px; }
-    .clip-item { background-color: var(--bg-color); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
-    .clip-header { font-size: 0.95rem; font-weight: bold; color: var(--text-color); display: flex; align-items: center; gap: 8px; }
-    .clip-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-    .clip-btn { flex: 1; min-width: 30%; padding: 10px 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.8rem; cursor: pointer; color: #fff; display: flex; justify-content: center; align-items: center; gap: 4px; }
-    .btn-preview { background-color: #30363d; }
-    .btn-download { background-color: var(--accent-blue); }
-    .btn-upload { background-color: #0b70e1; } /* Azul Gofile */
-    .btn-whatsapp { background-color: #25D366; }
-
-    /* MODAL DE PREVISUALIZACIÓN */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; padding: 12px; }
-    .modal-content { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
-    .modal-header { padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-    .modal-close { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-    .modal-body video { width: 100%; max-height: 70vh; background: #000; }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transmisión IA Fútbol</title>
+    <!-- Cargamos la IA de Google (TensorFlow.js y el modelo de detección COCO-SSD) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <style>
+        body { background-color: #111; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        canvas { border: 2px solid #00ff88; max-width: 100%; border-radius: 8px; box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+        video { display: none; } /* Ocultamos el video original, solo mostramos el zoom */
+        button { background: #00ff88; color: black; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-bottom: 20px;}
+        #status { margin-bottom: 15px; color: #aaa; }
+    </style>
 </head>
 <body>
 
-  <div id="errorBanner">
-    ⚠️ ATENCIÓN: Conéctate mediante HTTPS para activar la cámara de forma segura.
-  </div>
+    <h2>🎥 IA Auto-Tracker de Fútbol</h2>
+    <input type="file" id="videoUpload" accept="video/*" style="margin-bottom: 15px;">
+    <br>
+    <button id="startBtn" disabled>Cargando Cerebro de la IA...</button>
+    <div id="status">Espera, descargando modelo de IA (puede tardar 1 min)...</div>
 
-  <!-- MODAL DE PREVIEW -->
-  <div id="previewModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <label>Previsualización</label>
-        <button class="modal-close" onclick="closePreview()">✖</button>
-      </div>
-      <div class="modal-body">
-        <video id="previewPlayer" controls playsinline></video>
-      </div>
-    </div>
-  </div>
-
-  <!-- APLICACIÓN PRINCIPAL -->
-  <div id="recorder-app" class="app-layout">
+    <!-- El video original (amplio) que la IA mirará -->
+    <video id="sourceVideo" controls muted playsinline></video>
     
-    <div class="camera-container">
-      <div class="camera-box">
-        <video id="preview" autoplay playsinline muted></video>
-        
-        <div class="overlay-badge rec-indicator visible" id="recIndicator">
-          <div class="dot"></div>
-          <span id="timerDisplay" style="font-family: monospace;">00:00:00</span>
-        </div>
+    <!-- La "Televisión" donde se verá el zoom suave -->
+    <canvas id="broadcastCanvas"></canvas>
 
-        <button class="cam-switch-btn" id="switchCamBtn">🔄 Girar</button>
-      </div>
-    </div>
+    <script>
+        const video = document.getElementById('sourceVideo');
+        const canvas = document.getElementById('broadcastCanvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const status = document.getElementById('status');
+        const upload = document.getElementById('videoUpload');
 
-    <div class="controls-container">
-      <div class="card">
-        <div class="action-buttons">
-          <button class="btn btn-record" id="recordBtn">🔴 GRABAR</button>
-          <button class="btn btn-stop" id="stopBtn">⏹ DETENER</button>
-        </div>
-      </div>
+        let model;
+        // Variables para la cámara suave (Lerp)
+        let currentX = 0;
+        let currentY = 0;
+        const zoomLevel = 0.5; // Muestra el 50% de la cancha (Zoom 2x)
+        const smoothness = 0.05; // 0.01 es muy lento, 0.1 es más rápido. 0.05 es suave como TV.
 
-      <div class="card" id="outputCard" style="display: none;">
-        <label>✅ ARCHIVOS GUARDADOS</label>
-        <div id="clipsList" class="clip-list"></div>
-      </div>
-
-      <div class="card">
-        <label>📡 LINK DEL MONITOR REMOTO (OPCIONAL)</label>
-        <div class="qr-row">
-          <div class="link-controls">
-            <input type="text" id="monitorLinkInput" readonly>
-            <button class="btn-sm" id="copyMonitorBtn" style="background: var(--border-color);">Copiar Link</button>
-          </div>
-        </div>
-        <div id="peerStatus" style="font-size: 0.75rem; color: var(--accent-yellow); text-align: center; margin-top: 5px;">
-          Iniciando red de monitor...
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- MODO VISOR REMOTO -->
-  <div id="viewer-app" class="app-layout" style="display: none; max-width: 800px;">
-    <div class="controls-container">
-      <div class="card" style="text-align: center; border-color: var(--accent-yellow);">
-        <label id="viewerStatus" style="color: var(--accent-yellow);">Conectando... 🟡</label>
-      </div>
-    </div>
-    <div class="camera-container">
-      <div class="camera-box">
-        <video id="viewerVideo" autoplay playsinline muted></video>
-        <div class="overlay-badge rec-indicator" id="vRecIndicator" style="top: 12px; left: 12px;">
-          <div class="dot"></div>
-          <span style="font-family: monospace;">GRABANDO</span>
-        </div>
-      </div>
-    </div>
-    <div class="controls-container">
-      <div class="card">
-        <div class="action-buttons">
-          <button class="btn btn-record" id="vRecordBtn" disabled>🔴 GRABAR</button>
-          <button class="btn btn-stop" id="vStopBtn">⏹ DETENER</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    if (window.location.protocol === 'file:' || (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
-      document.getElementById('errorBanner').style.display = 'block';
-    }
-
-    async function forceLandscapeScreen() {
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock('landscape');
-        }
-      } catch (e) {
-      }
-    }
-    document.addEventListener('click', forceLandscapeScreen, { once: true });
-
-    const peerConfig = {
-      config: { iceServers: [ { urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:global.stun.twilio.com:3478' } ] }
-    };
-
-    function closePreview() {
-      const modal = document.getElementById('previewModal');
-      const player = document.getElementById('previewPlayer');
-      player.pause();
-      player.src = "";
-      modal.style.display = 'none';
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const hostPeerId = urlParams.get('view');
-
-    if (hostPeerId) {
-      document.getElementById('recorder-app').style.display = 'none';
-      document.getElementById('viewer-app').style.display = 'flex';
-      initViewerMode(hostPeerId);
-    } else {
-      initRecorderMode();
-    }
-
-    // ========================================================
-    // GRABADOR PRINCIPAL
-    // ========================================================
-    function initRecorderMode() {
-      let currentStream = null;
-      let peer = null;
-      let activeConnections = new Map();
-      let isRecording = false;
-      let matchClips = [];
-      let facingMode = 'environment';
-      let wakeLock = null;
-
-      const preview = document.getElementById('preview');
-      const peerStatus = document.getElementById('peerStatus');
-
-      async function solicitarWakeLock() {
-        try {
-          if ('wakeLock' in navigator) {
-            wakeLock = await navigator.wakeLock.request('screen');
-          }
-        } catch (err) {}
-      }
-      function liberarWakeLock() {
-        if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
-      }
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-          if (isRecording) solicitarWakeLock();
-        } else {
-          if (isRecording) {
-            document.getElementById('stopBtn').click();
-            alert("⚠️ Se detectó que bloqueaste la pantalla. La grabación fue detenida y guardada por seguridad.");
-          }
-        }
-      });
-
-      const myUniqueId = 'cam-' + Math.random().toString(36).substring(2, 9);
-      const generatedViewerUrl = window.location.origin + window.location.pathname + '?view=' + myUniqueId;
-      document.getElementById('monitorLinkInput').value = generatedViewerUrl;
-      
-      document.getElementById('copyMonitorBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(generatedViewerUrl).then(() => {
-          document.getElementById('copyMonitorBtn').innerText = "¡Copiado!";
-          setTimeout(() => { document.getElementById('copyMonitorBtn').innerText = "Copiar Link"; }, 2000);
+        // Cargar modelo de IA
+        cocoSsd.load().then(loadedModel => {
+            model = loadedModel;
+            startBtn.disabled = false;
+            startBtn.innerText = "▶ Iniciar Transmisión IA";
+            status.innerText = "IA Lista. Sube un video grabado en gran angular y presiona Iniciar.";
         });
-      });
 
-      peer = new Peer(myUniqueId, peerConfig); 
-      peer.on('open', () => { peerStatus.innerText = "Monitor remoto listo para conectar."; });
-      peer.on('disconnected', () => peer.reconnect());
-      
-      peer.on('connection', (conn) => {
-        conn.on('open', () => {
-          activeConnections.set(conn.peer, conn);
-          peerStatus.innerText = "👁️ Monitor visualizando";
-          conn.send({ type: 'STATE', isRecording: isRecording });
+        upload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const url = URL.createObjectURL(file);
+            video.src = url;
         });
-        conn.on('data', (data) => {
-          if (data.type === 'VIEWER_READY' && currentStream) peer.call(conn.peer, currentStream);
-          else if (data.type === 'CMD_START_REC') document.getElementById('recordBtn').click();
-          else if (data.type === 'CMD_STOP_REC') document.getElementById('stopBtn').click();
-        });
-        conn.on('close', () => activeConnections.delete(conn.peer));
-      });
 
-      function broadcastState() {
-        activeConnections.forEach(conn => { if(conn.open) conn.send({ type: 'STATE', isRecording: isRecording }); });
-      }
-
-      async function startCamera() {
-        if (currentStream) currentStream.getTracks().forEach(t => t.stop());
-        try {
-          let constraints = { 
-            video: { 
-              facingMode: { ideal: facingMode }, 
-              width: { ideal: 1920 }, 
-              height: { ideal: 1080 },
-              aspectRatio: { exact: 16/9 } 
-            }, 
-            audio: false 
-          };
-          
-          try {
-            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-          } catch(e) {
-            constraints.video.aspectRatio = { ideal: 16/9 };
-            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-          }
-          
-          preview.srcObject = currentStream;
-          activeConnections.forEach((conn, peerId) => peer.call(peerId, currentStream));
-        } catch (err) {
-          alert("Error de cámara. Asegúrate de dar permisos.");
-        }
-      }
-      startCamera();
-
-      document.getElementById('switchCamBtn').addEventListener('click', () => {
-        facingMode = facingMode === 'environment' ? 'user' : 'environment';
-        startCamera();
-      });
-
-      let mediaRecorder, recordedChunks = [], startTime, timerInterval; 
-      const recordBtn = document.getElementById('recordBtn'); 
-      const stopBtn = document.getElementById('stopBtn');
-      
-      recordBtn.addEventListener('click', () => {
-        if(!currentStream) return;
-        
-        forceLandscapeScreen(); 
-        solicitarWakeLock(); 
-        
-        recordedChunks = [];
-        let options = { mimeType: MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' : 'video/webm' };
-        try { mediaRecorder = new MediaRecorder(currentStream, options); } 
-        catch (e) { mediaRecorder = new MediaRecorder(currentStream); }
-
-        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
-        
-        mediaRecorder.onstop = () => {
-          const finalExt = mediaRecorder.mimeType.includes('mp4') ? 'mp4' : 'webm';
-          const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'video/mp4' });
-          const clipIndex = matchClips.length + 1; 
-          const fileName = `Practico_Futbol_${clipIndex}.${finalExt}`;
-
-          matchClips.push({ blob, fileName });
-          renderClipItem(blob, fileName, clipIndex);
-        };
-
-        mediaRecorder.start(1000); 
-        isRecording = true;
-        recordBtn.style.display = 'none'; stopBtn.style.display = 'flex';
-        document.getElementById('recIndicator').classList.add('recording');
-        
-        startTime = Date.now();
-        timerInterval = setInterval(() => {
-          const elapsed = Math.floor((Date.now() - startTime) / 1000);
-          document.getElementById('timerDisplay').innerText = new Date(elapsed * 1000).toISOString().substr(11, 8);
-        }, 1000);
-
-        broadcastState(); 
-      });
-
-      stopBtn.addEventListener('click', () => {
-        if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-        liberarWakeLock();
-        isRecording = false;
-        recordBtn.style.display = 'flex'; stopBtn.style.display = 'none';
-        document.getElementById('recIndicator').classList.remove('recording');
-        clearInterval(timerInterval);
-        broadcastState(); 
-      });
-
-      function renderClipItem(blob, fileName, index) {
-        document.getElementById('outputCard').style.display = 'flex';
-        const clipsList = document.getElementById('clipsList');
-        
-        const clipDiv = document.createElement('div');
-        clipDiv.className = 'clip-item';
-        
-        const blobUrl = URL.createObjectURL(blob);
-
-        clipDiv.innerHTML = `
-          <div class="clip-header">🎬 Práctico de Fútbol #${index}</div>
-          <div class="clip-actions">
-            <button class="clip-btn btn-preview" id="prev-${index}">👁️ Ver</button>
-            <button class="clip-btn btn-download" id="down-${index}">⬇️ Descargar</button>
-          </div>
-          <div id="cloud-container-${index}" style="margin-top: 5px;">
-            <button class="clip-btn btn-upload" id="upload-${index}" style="width: 100%;">☁️ Generar Link de Gofile</button>
-          </div>
-        `;
-        clipsList.prepend(clipDiv); 
-
-        // VER PREVIEW
-        document.getElementById(`prev-${index}`).onclick = () => {
-          const modal = document.getElementById('previewModal');
-          const player = document.getElementById('previewPlayer');
-          player.src = blobUrl;
-          modal.style.display = 'flex';
-          player.play();
-        };
-
-        // DESCARGAR LOCALMENTE
-        document.getElementById(`down-${index}`).onclick = () => {
-          const a = document.createElement('a');
-          a.href = blobUrl;
-          a.download = fileName;
-          a.click();
-        };
-
-        // SUBIR A GOFILE Y MANDAR A WHATSAPP
-        document.getElementById(`upload-${index}`).onclick = async function() {
-          const container = document.getElementById(`cloud-container-${index}`);
-          this.innerText = "⏳ Conectando con Gofile...";
-          this.disabled = true;
-
-          try {
-            // 1. Obtener el servidor más rápido de Gofile
-            const serverResponse = await fetch('https://api.gofile.io/servers');
-            const serverData = await serverResponse.json();
+        startBtn.addEventListener('click', () => {
+            if (!video.src) return alert("Sube un video primero.");
+            video.play();
+            canvas.width = video.videoWidth * zoomLevel;
+            canvas.height = video.videoHeight * zoomLevel;
             
-            if (serverData.status !== 'ok' || !serverData.data || serverData.data.servers.length === 0) {
-                throw new Error('Error obteniendo servidor Gofile');
-            }
-            const server = serverData.data.servers[0].name;
+            // Iniciar en el centro de la cancha
+            currentX = video.videoWidth / 4;
+            currentY = video.videoHeight / 4;
+            
+            startBtn.style.display = 'none';
+            status.innerText = "Transmitiendo en vivo...";
+            trackAction();
+        });
 
-            this.innerText = "⏳ Subiendo video (espera por favor)...";
+        async function trackAction() {
+            if (video.paused || video.ended) return;
 
-            // 2. Subir el video al servidor
-            const formData = new FormData();
-            formData.append('file', blob, fileName);
+            // La IA detecta qué hay en el video
+            const predictions = await model.detect(video);
+            
+            let targetX = currentX;
+            let targetY = currentY;
+            let validTargets = 0;
+            let sumX = 0;
+            let sumY = 0;
 
-            const uploadResponse = await fetch(`https://${server}.gofile.io/contents/uploadfile`, {
-              method: 'POST',
-              body: formData
+            // Buscamos la pelota ('sports ball') y los jugadores ('person')
+            predictions.forEach(p => {
+                if (p.class === 'person' || p.class === 'sports ball') {
+                    // Centro del objeto detectado
+                    sumX += p.bbox[0] + (p.bbox[2] / 2);
+                    sumY += p.bbox[1] + (p.bbox[3] / 2);
+                    validTargets++;
+                }
             });
-            const uploadResult = await uploadResponse.json();
 
-            if(uploadResult.status === 'ok' && uploadResult.data && uploadResult.data.downloadPage) {
-              const fileUrl = uploadResult.data.downloadPage;
-              
-              container.innerHTML = `
-                <div style="background: var(--bg-color); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
-                  <label style="color: #48bb78; font-size: 0.8rem;">✅ Link de Gofile generado</label>
-                  <input type="text" value="${fileUrl}" readonly style="background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 6px;">
-                  <div class="clip-actions">
-                    <button class="clip-btn btn-whatsapp" style="width:100%; font-size: 0.9rem;" onclick="window.open('https://wa.me/?text=' + encodeURIComponent('¡Hola! Aquí tienes la grabación del práctico de fútbol ⚽ para ver o descargar: \\n\\n${fileUrl}'), '_blank')">📲 Compartir Link por WhatsApp</button>
-                  </div>
-                </div>
-              `;
-            } else {
-              throw new Error('Error al subir a Gofile');
+            // Si hay jugadores o pelota, calculamos el "centro de la jugada"
+            if (validTargets > 0) {
+                const centerX = sumX / validTargets;
+                const centerY = sumY / validTargets;
+                
+                // Restamos la mitad del canvas para que la jugada quede en el medio de la pantalla
+                targetX = centerX - (canvas.width / 2);
+                targetY = centerY - (canvas.height / 2);
             }
-          } catch (err) {
-            console.error(err);
-            this.innerText = "❌ Falló la subida. Reintentar";
-            this.disabled = false;
-            alert("No se pudo conectar con Gofile. Asegúrate de tener buena señal de internet (los videos de fútbol pesan bastante).");
-          }
-        };
-      }
-    }
 
-    // ========================================================
-    // VISOR REMOTO
-    // ========================================================
-    function initViewerMode(targetId) {
-      const viewerVideo = document.getElementById('viewerVideo');
-      const viewerStatus = document.getElementById('viewerStatus');
-      const vRecordBtn = document.getElementById('vRecordBtn');
-      const vStopBtn = document.getElementById('vStopBtn');
-      
-      let viewerConn = null;
-      const viewerPeer = new Peer(peerConfig); 
+            // Evitar que la cámara se salga de los bordes de la cancha (video)
+            targetX = Math.max(0, Math.min(targetX, video.videoWidth - canvas.width));
+            targetY = Math.max(0, Math.min(targetY, video.videoHeight - canvas.height));
 
-      viewerPeer.on('open', () => { connectToHost(); });
-      viewerPeer.on('disconnected', () => { viewerPeer.reconnect(); });
+            // LA MAGIA: Movimiento suave (Interpolación Lineal - Lerp)
+            currentX += (targetX - currentX) * smoothness;
+            currentY += (targetY - currentY) * smoothness;
 
-      function connectToHost() {
-        viewerConn = viewerPeer.connect(targetId, { reliable: true });
+            // Dibujar el recorte en el canvas (nuestra transmisión)
+            ctx.drawImage(video, 
+                currentX, currentY, canvas.width, canvas.height, // Qué parte del video original cortamos
+                0, 0, canvas.width, canvas.height // Dónde lo pegamos en el canvas
+            );
 
-        viewerConn.on('open', () => {
-          viewerStatus.innerText = "Conectado. Solicitando video... 🟡";
-          viewerConn.send({ type: 'VIEWER_READY' }); 
-          vRecordBtn.disabled = false;
-        });
-
-        viewerConn.on('data', (data) => {
-          if (data.type === 'STATE') {
-            if (data.isRecording) {
-              vRecordBtn.style.display = 'none'; vStopBtn.style.display = 'flex';
-              document.getElementById('vRecIndicator').classList.add('visible', 'recording');
-            } else {
-              vRecordBtn.style.display = 'flex'; vStopBtn.style.display = 'none';
-              document.getElementById('vRecIndicator').classList.remove('visible', 'recording');
-            }
-          }
-        });
-
-        viewerConn.on('close', () => {
-          viewerStatus.innerText = "Desconectado. Reconectando... 🔴";
-          setTimeout(connectToHost, 3000);
-        });
-      }
-
-      viewerPeer.on('call', (call) => {
-        call.answer(); 
-        call.on('stream', (remoteStream) => {
-          viewerVideo.srcObject = remoteStream;
-          viewerStatus.innerText = "EN VIVO 🟢";
-          viewerStatus.style.color = "var(--accent-green)";
-        });
-      });
-
-      vRecordBtn.addEventListener('click', () => { if(viewerConn && viewerConn.open) viewerConn.send({ type: 'CMD_START_REC' }); });
-      vStopBtn.addEventListener('click', () => { if(viewerConn && viewerConn.open) viewerConn.send({ type: 'CMD_STOP_REC' }); });
-    }
-  </script>
+            // Repetir el ciclo infinitamente mientras el video ruede
+            requestAnimationFrame(trackAction);
+        }
+    </script>
 </body>
 </html>
