@@ -6,431 +6,591 @@
     <title>Taller El Yama</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #111827; /* Dark gray/black theme */
-            color: #f3f4f6;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            -webkit-tap-highlight-color: transparent;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1f2937; }
-        ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #ea580c; }
-
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
+        /* Ocultar elementos por defecto para manejar vistas con JS */
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        
+        /* Animaciones suaves */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .modal-backdrop {
-            background-color: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
+        /* Utilidad para botones gigantes y legibles */
+        .btn-giant {
+            width: 100%;
+            min-height: 140px;
+            font-size: 1.875rem; /* 30px */
+            font-weight: 800;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.1s, background-color 0.2s;
+            line-height: 1.2;
+            word-wrap: break-word;
+            hyphens: auto;
         }
-
-        /* Card Hover Effects */
-        .car-card {
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-        }
-        .car-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.15);
-            border-color: #f97316;
-        }
-
-        /* Big Button Effects */
-        .big-btn {
-            transition: all 0.2s ease-in-out;
-        }
-        .big-btn:hover {
-            transform: scale(1.02);
-            filter: brightness(1.1);
-        }
-        .big-btn:active {
+        .btn-giant:active {
             transform: scale(0.98);
+        }
+        
+        /* Entradas de formulario grandes */
+        .input-large {
+            width: 100%;
+            font-size: 1.25rem;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid #d1d5db;
+            margin-top: 0.5rem;
+            background-color: white;
+        }
+        .input-large:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <header class="bg-gray-900 border-b-4 border-orange-500 shadow-xl sticky top-0 z-20">
-        <div class="max-w-7xl mx-auto p-4 flex items-center justify-between">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="showView('home')">
-                <!-- SVG Logo: Crossed Pistons -->
-                <svg viewBox="0 0 100 100" class="w-12 h-12 sm:w-16 sm:h-16 text-orange-500" fill="currentColor">
-                    <!-- Piston 1 -->
-                    <g transform="translate(50,50) rotate(45) translate(-50,-50)">
-                        <path d="M35 15 h30 v25 h-30 z" stroke="currentColor" stroke-width="4" fill="none" stroke-linejoin="round"/>
-                        <line x1="35" y1="23" x2="65" y2="23" stroke="currentColor" stroke-width="3"/>
-                        <line x1="35" y1="31" x2="65" y2="31" stroke="currentColor" stroke-width="3"/>
-                        <line x1="50" y1="40" x2="50" y2="85" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
-                        <circle cx="50" cy="85" r="7" fill="#111827" stroke="currentColor" stroke-width="4"/>
-                    </g>
-                    <!-- Piston 2 -->
-                    <g transform="translate(50,50) rotate(-45) translate(-50,-50)">
-                        <path d="M35 15 h30 v25 h-30 z" stroke="currentColor" stroke-width="4" fill="#111827" stroke-linejoin="round"/>
-                        <line x1="35" y1="23" x2="65" y2="23" stroke="currentColor" stroke-width="3"/>
-                        <line x1="35" y1="31" x2="65" y2="31" stroke="currentColor" stroke-width="3"/>
-                        <line x1="50" y1="40" x2="50" y2="85" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
-                        <circle cx="50" cy="85" r="7" fill="#111827" stroke="currentColor" stroke-width="4"/>
-                    </g>
-                </svg>
-                <div class="flex flex-col">
-                    <h1 class="text-2xl sm:text-4xl font-black tracking-wider text-white uppercase italic leading-none">
-                        Taller <span class="text-orange-500">El Yama</span>
-                    </h1>
-                    <span class="text-xs sm:text-sm text-gray-400 font-semibold tracking-widest mt-1">MECÁNICA GENERAL</span>
-                </div>
-            </div>
-            
-            <!-- Navigation Breadcrumbs (Hidden on home) -->
-            <div id="nav-actions" class="hidden">
-                <button onclick="showView('home')" class="text-gray-400 hover:text-white flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg border border-gray-700 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    <span class="hidden sm:inline">Volver al Inicio</span>
-                </button>
-            </div>
+    <header class="bg-white shadow-md p-4 sticky top-0 z-10">
+        <div class="max-w-3xl mx-auto flex flex-col items-center justify-center">
+            <!-- Logo SVG de Pistones Cruzados -->
+            <svg viewBox="0 0 100 100" class="w-20 h-20 text-gray-800 mb-2" fill="currentColor">
+                <!-- Cilindro Central / Detalles -->
+                <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="8 4"/>
+                <!-- Pistón Izquierdo -->
+                <g transform="translate(50, 50) rotate(45) translate(-50, -50)">
+                    <rect x="35" y="15" width="30" height="25" rx="3" fill="currentColor" />
+                    <rect x="43" y="40" width="14" height="45" fill="currentColor" />
+                    <!-- Líneas del pistón -->
+                    <line x1="35" y1="22" x2="65" y2="22" stroke="white" stroke-width="2"/>
+                    <line x1="35" y1="28" x2="65" y2="28" stroke="white" stroke-width="2"/>
+                </g>
+                <!-- Pistón Derecho -->
+                <g transform="translate(50, 50) rotate(-45) translate(-50, -50)">
+                    <rect x="35" y="15" width="30" height="25" rx="3" fill="currentColor" />
+                    <rect x="43" y="40" width="14" height="45" fill="currentColor" />
+                    <!-- Líneas del pistón -->
+                    <line x1="35" y1="22" x2="65" y2="22" stroke="white" stroke-width="2"/>
+                    <line x1="35" y1="28" x2="65" y2="28" stroke="white" stroke-width="2"/>
+                </g>
+                <!-- Unión central -->
+                <circle cx="50" cy="50" r="8" fill="white" stroke="currentColor" stroke-width="3"/>
+            </svg>
+            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">El Yama</h1>
+            <button id="btnVolverInicio" class="hidden mt-4 text-blue-600 font-bold text-lg underline p-2 active:bg-blue-50 rounded">
+                ← Volver al Inicio
+            </button>
         </div>
     </header>
 
-    <main class="flex-grow w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col relative">
+    <main class="flex-grow p-4 max-w-3xl mx-auto w-full">
         
-        <div id="view-home" class="flex-grow flex flex-col items-center justify-center gap-8 fade-in">
-            <h2 class="text-3xl sm:text-4xl font-bold text-center text-gray-200 mb-4">¿Cómo deseas ingresar?</h2>
+        <!-- VISTA: INICIO -->
+        <section id="view-home" class="view-section active fade-in h-full flex flex-col justify-center gap-8 mt-8">
+            <h2 class="text-2xl text-center font-semibold text-gray-700 mb-4">Bienvenido al taller. ¿Quién eres?</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-                <!-- Client Button -->
-                <button onclick="showView('client')" class="big-btn bg-gradient-to-br from-blue-700 to-blue-900 border-2 border-blue-500 rounded-2xl p-10 flex flex-col items-center justify-center gap-6 shadow-[0_0_30px_rgba(37,99,235,0.3)]">
-                    <svg class="w-24 h-24 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <div class="text-center">
-                        <span class="block text-4xl font-black text-white uppercase tracking-wide">Soy Cliente</span>
-                        <span class="block text-blue-200 mt-2 text-lg">Ver estado de mi vehículo</span>
-                    </div>
-                </button>
-
-                <!-- Mechanic Button -->
-                <button onclick="promptMechanicLogin()" class="big-btn bg-gradient-to-br from-orange-600 to-red-900 border-2 border-orange-500 rounded-2xl p-10 flex flex-col items-center justify-center gap-6 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
-                    <svg class="w-24 h-24 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    <div class="text-center">
-                        <span class="block text-4xl font-black text-white uppercase tracking-wide">Dueño / Trabajador</span>
-                        <span class="block text-orange-200 mt-2 text-lg">Ingresar y gestionar autos</span>
-                    </div>
-                </button>
-            </div>
-        </div>
-
-        <div id="view-client" class="hidden flex-grow flex flex-col fade-in">
-            <div class="mb-8 border-l-4 border-blue-500 pl-4">
-                <h2 class="text-3xl font-bold text-white">Vehículos en Reparación</h2>
-                <p class="text-gray-400 mt-1">Lista pública de los autos que están siendo atendidos actualmente en el taller.</p>
-            </div>
+            <button onclick="navigateTo('client')" class="btn-giant bg-blue-600 text-white hover:bg-blue-700">
+                Soy<br>Cliente
+            </button>
             
-            <!-- Client Cars Grid -->
-            <div id="client-cars-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Cars will be injected here via JS -->
-            </div>
-            <div id="client-empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
-                <svg class="w-20 h-20 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                <p class="text-xl">No hay vehículos en reparación en este momento.</p>
-            </div>
-        </div>
+            <button onclick="abrirModalClave()" class="btn-giant bg-gray-800 text-white hover:bg-gray-900 mt-4">
+                Soy Mecánico / Dueño
+            </button>
+        </section>
 
-        <div id="view-mechanic" class="hidden flex-grow flex flex-col fade-in">
-            <div class="mb-8 border-l-4 border-orange-500 pl-4 flex justify-between items-end flex-wrap gap-4">
-                <div>
-                    <h2 class="text-3xl font-bold text-white">Panel de Administración</h2>
-                    <p class="text-gray-400 mt-1">Ingresa nuevos vehículos y gestiona los trabajos.</p>
-                </div>
+        <!-- VISTA: CLIENTE -->
+        <section id="view-client" class="view-section fade-in">
+            <h2 class="text-3xl font-bold mb-6 border-b-4 border-blue-600 pb-2 inline-block">Estado de Vehículos</h2>
+            <p class="text-lg text-gray-600 mb-6">Aquí puedes ver en qué estamos trabajando.</p>
+            
+            <div id="lista-autos-cliente" class="space-y-6">
+                <!-- Los autos se cargarán aquí desde Firebase -->
+                <p class="text-center text-gray-500 text-xl py-10">Cargando información...</p>
             </div>
+        </section>
 
-            <!-- Add Car Form -->
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8 shadow-lg">
-                <h3 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
-                    <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                    Ingresar Nuevo Vehículo
-                </h3>
-                <form id="add-car-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Nombre del Cliente / Auto</label>
-                        <input type="text" id="car-name" required placeholder="Ej: Auto de Correa" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Kilometraje Actual (Km)</label>
-                        <input type="number" id="car-mileage" required min="0" placeholder="Ej: 62000" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors">
-                    </div>
-                    <div>
-                        <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md border border-orange-700 hover:border-orange-400 flex items-center justify-center gap-2">
-                            Analizar y Guardar
+        <!-- VISTA: MECÁNICO -->
+        <section id="view-mechanic" class="view-section fade-in">
+            <h2 class="text-3xl font-bold mb-6 border-b-4 border-gray-800 pb-2 inline-block">Panel del Mecánico</h2>
+            
+            <!-- Formulario de Nuevo Ingreso -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 mb-10">
+                <h3 class="text-2xl font-bold mb-6 text-blue-800">Ingresar Nuevo Auto</h3>
+                <form id="form-nuevo-auto" onsubmit="guardarAuto(event)">
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-xl font-semibold text-gray-700">Identificador (ej. Auto de Correa)</label>
+                            <input type="text" id="auto-id" class="input-large" required placeholder="¿De quién es?">
+                        </div>
+                        <div>
+                            <label class="block text-xl font-semibold text-gray-700">Vehículo (Marca y Modelo)</label>
+                            <input type="text" id="auto-vehiculo" class="input-large" required placeholder="Ej. VW Gol">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-xl font-semibold text-gray-700">Matrícula</label>
+                                <input type="text" id="auto-matricula" class="input-large uppercase" required placeholder="AAA 1234">
+                            </div>
+                            <div>
+                                <label class="block text-xl font-semibold text-gray-700">Kilometraje</label>
+                                <input type="number" id="auto-km" class="input-large" required placeholder="Ej. 85000" oninput="generarSugerenciaAuto()">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xl font-semibold text-gray-700">Teléfono del Cliente</label>
+                            <input type="tel" id="auto-tel" class="input-large" required placeholder="09...">
+                        </div>
+                        <div>
+                            <label class="block text-xl font-semibold text-gray-700">Problema reportado / Síntomas</label>
+                            <textarea id="auto-problema" class="input-large" rows="3" required placeholder="¿Qué le duele al auto?" oninput="generarSugerenciaAuto()"></textarea>
+                        </div>
+                        
+                        <!-- Sugerencias Automáticas -->
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 mt-4">
+                            <label class="block text-lg font-semibold text-blue-800 mb-2">💡 Diagnóstico / Tareas Sugeridas (Automático)</label>
+                            <textarea id="auto-tareas" class="input-large bg-white" rows="4" required></textarea>
+                            <p class="text-sm text-gray-600 mt-2">Puedes editar este texto antes de guardar.</p>
+                        </div>
+
+                        <button type="submit" id="btn-guardar" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-2xl py-5 rounded-xl mt-6 shadow-lg transition-colors active:scale-95">
+                            GUARDAR INGRESO
                         </button>
                     </div>
                 </form>
             </div>
-            
-            <!-- Mechanic Cars Grid -->
-            <h3 class="text-xl font-bold text-gray-300 mb-4">Vehículos Actuales</h3>
-            <div id="mechanic-cars-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Cars will be injected here via JS -->
-            </div>
-            <div id="mechanic-empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
-                <svg class="w-20 h-20 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                <p class="text-xl">El taller está vacío. ¡Ingresa un vehículo arriba!</p>
-            </div>
-        </div>
 
+            <!-- Lista de Autos - Mecánico -->
+            <h3 class="text-2xl font-bold mb-4 text-gray-800">Autos en el Taller</h3>
+            <div id="lista-autos-mecanico" class="space-y-6 mb-12">
+                <!-- Autos -->
+            </div>
+
+            <!-- CHAT DE IA -->
+            <div class="bg-gray-800 rounded-2xl shadow-xl overflow-hidden mt-12 mb-8">
+                <div class="p-6 bg-gray-900 text-white">
+                    <h3 class="text-2xl font-bold flex items-center gap-2">
+                        <span>🤖</span> Asistente de Inteligencia Artificial
+                    </h3>
+                    <p class="text-gray-400 mt-2 text-lg">Pregúntale algo que no sepas sobre la web o el auto y la inteligencia artificial te ayudará.</p>
+                </div>
+                
+                <div id="chat-history" class="p-6 h-80 overflow-y-auto bg-gray-100 flex flex-col gap-4">
+                    <div class="bg-white p-4 rounded-xl rounded-tl-none max-w-[85%] shadow border border-gray-200">
+                        <p class="text-lg">¡Hola Yamandu! Soy tu asistente. ¿En qué te ayudo hoy?</p>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-200 flex gap-2">
+                    <input type="text" id="chat-input" class="input-large !mt-0 flex-grow" placeholder="Escribe tu consulta aquí..." onkeypress="if(event.key === 'Enter') enviarMensajeIA()">
+                    <button onclick="enviarMensajeIA()" id="chat-btn" class="bg-blue-600 text-white font-bold px-6 rounded-xl text-xl hover:bg-blue-700 active:scale-95 transition-transform">
+                        Enviar
+                    </button>
+                </div>
+            </div>
+
+        </section>
     </main>
 
-    <div id="modal-login" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4 fade-in">
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 max-w-sm w-full shadow-2xl relative">
-            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <h3 class="text-2xl font-bold text-white mb-2">Acceso Restringido</h3>
-            <p class="text-sm text-gray-400 mb-6">Ingresa la contraseña para acceder al panel del taller.</p>
-            
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <input type="password" id="password-input" required placeholder="Contraseña..." class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors">
-                    <p id="login-error" class="text-red-500 text-sm mt-2 hidden">Contraseña incorrecta.</p>
-                </div>
-                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-lg transition-colors">
-                    Entrar
-                </button>
-            </form>
+    <!-- MODAL DE CONTRASEÑA -->
+    <div id="modal-clave" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl transform transition-all">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">Acceso Mecánico</h3>
+            <p class="text-gray-600 mb-6 text-center text-lg">Ingresa la contraseña para continuar.</p>
+            <input type="password" id="input-clave" class="input-large text-center text-2xl tracking-widest mb-6" placeholder="•••••••">
+            <div class="flex gap-4">
+                <button onclick="cerrarModalClave()" class="flex-1 bg-gray-200 text-gray-800 font-bold py-4 rounded-xl text-xl">Cancelar</button>
+                <button onclick="verificarClave()" class="flex-1 bg-gray-800 text-white font-bold py-4 rounded-xl text-xl">Entrar</button>
+            </div>
         </div>
     </div>
 
-    <script>
-        // Data Structure & LocalStorage Management
-        const STORAGE_KEY = 'tallerElYama_cars_v1';
-        let carsData = [];
+    <!-- MODAL DE MENSAJE (Reemplazo de alert) -->
+    <div id="modal-mensaje" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+            <div id="modal-icono" class="text-5xl mb-4">ℹ️</div>
+            <h3 id="modal-titulo" class="text-2xl font-bold text-gray-900 mb-2">Atención</h3>
+            <p id="modal-texto" class="text-lg text-gray-600 mb-8">Mensaje aquí.</p>
+            <button onclick="cerrarModalMensaje()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl text-xl active:bg-blue-700">Entendido</button>
+        </div>
+    </div>
 
-        function loadData() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                try {
-                    carsData = JSON.parse(stored);
-                } catch (e) {
-                    carsData = [];
-                }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // CONFIGURACIÓN ENTORNO
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-taller-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            // Fake config to avoid crash if running outside canvas
+            apiKey: "demo", authDomain: "demo", projectId: "demo"
+        };
+        const geminiApiKey = ""; // Automáticamente provisto por el entorno
+
+        let db, auth;
+        let unsubscribeAutos = null;
+        let conversacionIA = [];
+
+        // INICIALIZACIÓN
+        async function init() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                await signInAnonymously(auth);
+                console.log("Autenticación anónima exitosa");
+                
+                // Empezar a escuchar datos
+                escucharAutos();
+            } catch (error) {
+                console.error("Error inicializando Firebase:", error);
+                mostrarMensaje("Error de Conexión", "No se pudo conectar a la base de datos. Verifica tu conexión a internet.", "❌");
+            }
+        }
+
+        // FUNCIONES DE UI / NAVEGACIÓN
+        window.navigateTo = function(view) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${view}`).classList.add('active');
+            
+            const btnVolver = document.getElementById('btnVolverInicio');
+            if(view === 'home') {
+                btnVolver.classList.add('hidden');
             } else {
-                // Initial dummy data to demonstrate functionality if empty
-                carsData = [
-                    { id: Date.now(), name: "Auto de Correa", mileage: 45000, tasks: getMaintenanceTasks(45000), date: new Date().toLocaleDateString() },
-                    { id: Date.now() + 1, name: "Camioneta de Martinez", mileage: 62000, tasks: getMaintenanceTasks(62000), date: new Date().toLocaleDateString() }
-                ];
-                saveData();
+                btnVolver.classList.remove('hidden');
             }
+            window.scrollTo(0, 0);
         }
 
-        function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(carsData));
-        }
-
-        // Maintenance Logic Calculator
-        function getMaintenanceTasks(km) {
-            let tasks = ["Revisión general de niveles y luces"];
-            
-            // Base maintenance rules based on mileage
-            
-            // Oil and filters every 10,000 km
-            if (km >= 10000) {
-                tasks.push("Cambio de Aceite y Filtros (Rutina 10k)");
-            }
-            
-            // Spark plugs every 40,000 km (Notify if within 5k margin of the multiple)
-            if (km >= 35000 && (km % 40000 <= 5000 || km % 40000 >= 35000)) {
-                tasks.push("Revisión/Cambio de Bujías (Mantenimiento 40k)");
-            }
-
-            // Timing belt every 60,000 km (Notify if within 5k margin of the multiple)
-            if (km >= 55000 && (km % 60000 <= 5000 || km % 60000 >= 55000)) {
-                tasks.push("⚠️ Cambio de Correa de Distribución (Crítico 60k)");
-            }
-
-            // Brake fluid / coolant every 80,000 km
-            if (km >= 75000 && (km % 80000 <= 5000 || km % 80000 >= 75000)) {
-                tasks.push("Cambio de Líquido de Frenos y Refrigerante (80k)");
-            }
-
-            return tasks;
-        }
-
-        // View Routing Logic
-        function hideAllViews() {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-client').classList.add('hidden');
-            document.getElementById('view-mechanic').classList.add('hidden');
-            document.getElementById('nav-actions').classList.add('hidden');
-        }
-
-        function showView(viewName) {
-            hideAllViews();
-            if (viewName === 'home') {
-                document.getElementById('view-home').classList.remove('hidden');
-            } else if (viewName === 'client') {
-                document.getElementById('view-client').classList.remove('hidden');
-                document.getElementById('nav-actions').classList.remove('hidden');
-                renderClientCars();
-            } else if (viewName === 'mechanic') {
-                document.getElementById('view-mechanic').classList.remove('hidden');
-                document.getElementById('nav-actions').classList.remove('hidden');
-                renderMechanicCars();
-            }
-        }
-
-        // Login Modal Logic
-        function promptMechanicLogin() {
-            document.getElementById('modal-login').classList.remove('hidden');
-            document.getElementById('password-input').value = '';
-            document.getElementById('password-input').focus();
-            document.getElementById('login-error').classList.add('hidden');
-        }
-
-        function closeLoginModal() {
-            document.getElementById('modal-login').classList.add('hidden');
-        }
-
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const pass = document.getElementById('password-input').value;
-            if (pass === 'Yamandu') {
-                closeLoginModal();
-                showView('mechanic');
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-            }
+        document.getElementById('btnVolverInicio').addEventListener('click', () => {
+            window.navigateTo('home');
         });
 
-        // DOM Rendering: Card Generator
-        function generateCarCardHTML(car, isMechanic) {
-            let tasksHTML = car.tasks.map(task => {
-                const isWarning = task.includes('⚠️');
-                return `<li class="flex items-start gap-2 text-sm ${isWarning ? 'text-red-400 font-bold' : 'text-gray-300'}">
-                            <span class="text-orange-500 mt-0.5">•</span>
-                            <span>${task}</span>
-                        </li>`;
-            }).join('');
+        // MODAL CONTRASEÑA
+        window.abrirModalClave = function() {
+            document.getElementById('modal-clave').classList.remove('hidden');
+            document.getElementById('input-clave').value = '';
+            document.getElementById('input-clave').focus();
+        }
+        
+        window.cerrarModalClave = function() {
+            document.getElementById('modal-clave').classList.add('hidden');
+        }
 
-            let deleteBtn = '';
-            if (isMechanic) {
-                deleteBtn = `
-                <div class="mt-5 pt-4 border-t border-gray-700">
-                    <button onclick="deleteCar(${car.id})" class="w-full bg-gray-700 hover:bg-red-600/80 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border border-gray-600 hover:border-red-500">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        Marcar como Entregado
-                    </button>
-                </div>`;
+        window.verificarClave = function() {
+            const clave = document.getElementById('input-clave').value;
+            if(clave === 'Yamandu') {
+                cerrarModalClave();
+                window.navigateTo('mechanic');
+            } else {
+                mostrarMensaje("Contraseña Incorrecta", "La contraseña ingresada no es válida.", "🔒");
+                document.getElementById('input-clave').value = '';
+            }
+        }
+
+        // Permitir enter en el input de clave
+        document.getElementById('input-clave').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') window.verificarClave();
+        });
+
+        // MODAL MENSAJES
+        window.mostrarMensaje = function(titulo, texto, icono = "ℹ️") {
+            document.getElementById('modal-titulo').innerText = titulo;
+            document.getElementById('modal-texto').innerText = texto;
+            document.getElementById('modal-icono').innerText = icono;
+            document.getElementById('modal-mensaje').classList.remove('hidden');
+        }
+
+        window.cerrarModalMensaje = function() {
+            document.getElementById('modal-mensaje').classList.add('hidden');
+        }
+
+        
+        // AUTO-SUGERENCIAS
+        window.generarSugerenciaAuto = function() {
+            const km = parseInt(document.getElementById('auto-km').value) || 0;
+            const problema = document.getElementById('auto-problema').value.trim();
+            const textareaTareas = document.getElementById('auto-tareas');
+            
+            if(!problema && km === 0) {
+                textareaTareas.value = "";
+                return;
             }
 
-            return `
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 car-card flex flex-col h-full">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-gray-900 p-2 rounded-lg border border-gray-700 text-orange-500">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+            let diagnostico = `Prioridad 1: Revisar ${problema || 'vehículo en general'}.\n\n`;
+            
+            diagnostico += `Mantenimiento recomendado por kilometraje (${km} km):\n`;
+            if (km >= 100000) {
+                diagnostico += "- Cambio de aceite y todos los filtros (aire, aceite, combustible, habitáculo).\n- Revisar urgente estado de correa de distribución y bomba de agua.\n- Chequeo completo de frenos y fluidos.";
+            } else if (km >= 50000) {
+                diagnostico += "- Cambio de aceite y filtros básicos.\n- Revisar pastillas y discos de freno.\n- Inspección de tren delantero.";
+            } else if (km > 0) {
+                diagnostico += "- Cambio de aceite y filtro de aceite (si corresponde por fecha/uso).\n- Revisión general visual de fluidos.";
+            } else {
+                diagnostico += "- Completar información para sugerencias.";
+            }
+
+            textareaTareas.value = diagnostico;
+        }
+
+        // GUARDAR AUTO
+        window.guardarAuto = async function(e) {
+            e.preventDefault();
+            if(!auth.currentUser) {
+                mostrarMensaje("Error", "No estás conectado a la base de datos.", "⚠️");
+                return;
+            }
+
+            const btn = document.getElementById('btn-guardar');
+            const textoOriginal = btn.innerText;
+            btn.innerText = "Guardando...";
+            btn.disabled = true;
+
+            const nuevoAuto = {
+                identificador: document.getElementById('auto-id').value,
+                vehiculo: document.getElementById('auto-vehiculo').value,
+                matricula: document.getElementById('auto-matricula').value.toUpperCase(),
+                km: document.getElementById('auto-km').value,
+                telefono: document.getElementById('auto-tel').value,
+                problema: document.getElementById('auto-problema').value,
+                tareas: document.getElementById('auto-tareas').value,
+                fechaIngreso: new Date().toISOString(),
+                estado: "En Taller" // Puede ser útil después
+            };
+
+            try {
+                const path = `artifacts/${appId}/public/data/cars`;
+                await addDoc(collection(db, path), nuevoAuto);
+                
+                // Limpiar formulario
+                document.getElementById('form-nuevo-auto').reset();
+                document.getElementById('auto-tareas').value = '';
+                
+                mostrarMensaje("¡Éxito!", "El vehículo ha sido ingresado correctamente.", "✅");
+            } catch (error) {
+                console.error("Error al guardar:", error);
+                mostrarMensaje("Error", "No se pudo guardar el registro.", "❌");
+            } finally {
+                btn.innerText = textoOriginal;
+                btn.disabled = false;
+            }
+        }
+
+        // MARCAR COMO ENTREGADO (ELIMINAR)
+        window.eliminarAuto = async function(docId) {
+            // Se usa custom modal en vez de confirm
+            const confirmar = confirm("¿Estás seguro que deseas marcar este auto como entregado? Se eliminará de la lista activa.");
+            if(!confirmar) return;
+
+            try {
+                const path = `artifacts/${appId}/public/data/cars`;
+                await deleteDoc(doc(db, path, docId));
+                mostrarMensaje("Entregado", "El vehículo ha sido retirado de la lista.", "👋");
+            } catch (error) {
+                console.error("Error al eliminar:", error);
+                mostrarMensaje("Error", "No se pudo actualizar el registro.", "❌");
+            }
+        }
+
+        // ESCUCHAR DATOS (TIEMPO REAL)
+        function escucharAutos() {
+            if (!auth.currentUser) return;
+            const path = `artifacts/${appId}/public/data/cars`;
+            
+            // Regla 2: Sin queries complejos
+            const q = collection(db, path);
+
+            unsubscribeAutos = onSnapshot(q, (snapshot) => {
+                const autos = [];
+                snapshot.forEach((doc) => {
+                    autos.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Ordenar en memoria (más recientes primero)
+                autos.sort((a, b) => new Date(b.fechaIngreso) - new Date(a.fechaIngreso));
+                
+                renderizarListas(autos);
+            }, (error) => {
+                console.error("Error en snapshot:", error);
+                document.getElementById('lista-autos-cliente').innerHTML = '<p class="text-red-500 text-center">Error al cargar los datos.</p>';
+            });
+        }
+
+        // RENDERIZAR LISTAS (CLIENTE Y MECÁNICO)
+        function renderizarListas(autos) {
+            const listaCliente = document.getElementById('lista-autos-cliente');
+            const listaMecanico = document.getElementById('lista-autos-mecanico');
+
+            if (autos.length === 0) {
+                const emptyHTML = `<div class="text-center p-8 bg-white rounded-2xl shadow"><p class="text-2xl text-gray-500 font-semibold">No hay autos en el taller ahora mismo.</p></div>`;
+                listaCliente.innerHTML = emptyHTML;
+                listaMecanico.innerHTML = emptyHTML;
+                return;
+            }
+
+            let htmlCliente = '';
+            let htmlMecanico = '';
+
+            autos.forEach(auto => {
+                const fecha = new Date(auto.fechaIngreso).toLocaleDateString('es-UY');
+                
+                // TARJETA CLIENTE
+                htmlCliente += `
+                    <div class="bg-white p-6 rounded-2xl shadow-md border-l-8 border-blue-500">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-900">${auto.vehiculo}</h3>
+                                <p class="text-lg text-gray-500 font-semibold mt-1">Matrícula: <span class="text-gray-800">${auto.matricula}</span></p>
+                            </div>
+                            <span class="bg-yellow-100 text-yellow-800 text-sm font-bold px-3 py-1 rounded-full uppercase">En Taller</span>
                         </div>
-                        <div>
-                            <h4 class="font-bold text-lg text-white leading-tight">${car.name}</h4>
-                            <span class="text-xs text-gray-500">Ingreso: ${car.date}</span>
+                        <div class="mt-4 bg-gray-50 p-4 rounded-xl">
+                            <p class="text-lg font-semibold text-gray-700">🔍 Problema / Tareas:</p>
+                            <p class="text-gray-600 mt-2 whitespace-pre-line text-lg">${auto.tareas}</p>
                         </div>
+                        <p class="text-sm text-gray-400 mt-4 text-right">Ingresado el: ${fecha}</p>
                     </div>
-                </div>
-                
-                <div class="bg-gray-900 rounded-lg p-3 mb-4 inline-flex items-center gap-2 w-max border border-gray-700">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="text-orange-400 font-mono font-bold">${car.mileage.toLocaleString('es-UY')} Km</span>
-                </div>
+                `;
 
-                <div class="flex-grow">
-                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tareas a realizar:</h5>
-                    <ul class="space-y-1.5">
-                        ${tasksHTML}
-                    </ul>
-                </div>
+                // TARJETA MECÁNICO
+                htmlMecanico += `
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 mb-4 gap-4">
+                            <div>
+                                <h3 class="text-3xl font-extrabold text-gray-900">${auto.identificador}</h3>
+                                <p class="text-xl text-blue-600 font-bold mt-1">${auto.vehiculo} - <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded">${auto.matricula}</span></p>
+                            </div>
+                            <div class="text-right w-full sm:w-auto">
+                                <p class="text-lg text-gray-600 font-semibold">KM: ${auto.km}</p>
+                                <p class="text-lg text-gray-600 font-semibold">Tel: <a href="tel:${auto.telefono}" class="text-blue-500 underline">${auto.telefono}</a></p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                                <p class="text-lg font-bold text-red-800 mb-2">Reporte Inicial:</p>
+                                <p class="text-gray-700 text-lg">${auto.problema}</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                <p class="text-lg font-bold text-blue-800 mb-2">Tareas a realizar:</p>
+                                <p class="text-gray-700 text-lg whitespace-pre-line">${auto.tareas}</p>
+                            </div>
+                        </div>
 
-                ${deleteBtn}
-            </div>
-            `;
+                        <button onclick="eliminarAuto('${auto.id}')" class="w-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800 font-bold text-2xl py-4 rounded-xl transition-colors">
+                            ✓ MARCAR COMO ENTREGADO
+                        </button>
+                    </div>
+                `;
+            });
+
+            listaCliente.innerHTML = htmlCliente;
+            listaMecanico.innerHTML = htmlMecanico;
         }
 
-        // DOM Rendering: Client
-        function renderClientCars() {
-            const container = document.getElementById('client-cars-container');
-            const emptyState = document.getElementById('client-empty-state');
+        
+        // ASISTENTE IA GEMINI
+        const systemPrompt = "Eres un mecánico experto y un asistente tecnológico amable. Tu usuario es Yamandu, dueño de 'Taller El Yama'. Responde preguntas sobre problemas mecánicos de autos o dudas sobre cómo usar esta página web. Usa un lenguaje claro, párrafos cortos y sé muy servicial y amigable. No uses terminología excesivamente compleja sin explicarla.";
+
+        window.enviarMensajeIA = async function() {
+            const inputElement = document.getElementById('chat-input');
+            const textoUsuario = inputElement.value.trim();
+            if (!textoUsuario) return;
+
+            // Agregar mensaje del usuario al chat visual
+            agregarMensajeChat('usuario', textoUsuario);
+            inputElement.value = '';
             
-            if (carsData.length === 0) {
-                container.innerHTML = '';
-                emptyState.classList.remove('hidden');
+            // Estado de carga
+            const btn = document.getElementById('chat-btn');
+            btn.innerText = "Pensando...";
+            btn.disabled = true;
+            
+            // Preparar historial para la API
+            const partesHistorial = conversacionIA.map(msg => ({
+                role: msg.role === 'usuario' ? 'user' : 'model',
+                parts: [{ text: msg.text }]
+            }));
+            
+            // Agregar el nuevo mensaje
+            partesHistorial.push({
+                role: 'user',
+                parts: [{ text: textoUsuario }]
+            });
+
+            const payload = {
+                contents: partesHistorial,
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                }
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${geminiApiKey}`;
+
+            try {
+                // Implementación de retraso/backoff simple (recomendado en instrucciones)
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) throw new Error("Error en la respuesta de la IA");
+                
+                const result = await response.json();
+                const textoRespuesta = result.candidates?.[0]?.content?.parts?.[0]?.text || "Lo siento, no pude entender eso.";
+                
+                // Guardar en historial local
+                conversacionIA.push({ role: 'usuario', text: textoUsuario });
+                conversacionIA.push({ role: 'asistente', text: textoRespuesta });
+                
+                agregarMensajeChat('asistente', textoRespuesta);
+
+            } catch (error) {
+                console.error("Error Gemini:", error);
+                agregarMensajeChat('asistente', "⚠️ Ups, hubo un problema de conexión. Intenta de nuevo más tarde.");
+            } finally {
+                btn.innerText = "Enviar";
+                btn.disabled = false;
+            }
+        }
+
+        function agregarMensajeChat(rol, texto) {
+            const chatHistory = document.getElementById('chat-history');
+            const div = document.createElement('div');
+            
+            if (rol === 'usuario') {
+                div.className = "bg-blue-600 text-white p-4 rounded-xl rounded-tr-none max-w-[85%] self-end shadow-md ml-auto";
             } else {
-                emptyState.classList.add('hidden');
-                container.innerHTML = carsData.map(car => generateCarCardHTML(car, false)).join('');
+                div.className = "bg-white p-4 rounded-xl rounded-tl-none max-w-[85%] shadow border border-gray-200 text-gray-800";
+                // Convertir saltos de línea a <br>
+                texto = texto.replace(/\n/g, '<br>');
             }
+            
+            div.innerHTML = `<p class="text-lg">${texto}</p>`;
+            chatHistory.appendChild(div);
+            
+            // Scroll al final
+            chatHistory.scrollTop = chatHistory.scrollHeight;
         }
 
-        // DOM Rendering: Mechanic
-        function renderMechanicCars() {
-            const container = document.getElementById('mechanic-cars-container');
-            const emptyState = document.getElementById('mechanic-empty-state');
-            
-            if (carsData.length === 0) {
-                container.innerHTML = '';
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-                container.innerHTML = carsData.map(car => generateCarCardHTML(car, true)).join('');
-            }
-        }
-
-        // Add Car Logic
-        document.getElementById('add-car-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const nameInput = document.getElementById('car-name');
-            const mileageInput = document.getElementById('car-mileage');
-            
-            const name = nameInput.value.trim();
-            const mileage = parseInt(mileageInput.value, 10);
-            
-            if (name && !isNaN(mileage)) {
-                const newCar = {
-                    id: Date.now(),
-                    name: name,
-                    mileage: mileage,
-                    tasks: getMaintenanceTasks(mileage),
-                    date: new Date().toLocaleDateString()
-                };
-                
-                carsData.unshift(newCar); // Add to beginning of array
-                saveData();
-                renderMechanicCars();
-                
-                // Reset form
-                nameInput.value = '';
-                mileageInput.value = '';
-                nameInput.focus();
-            }
-        });
-
-        // Delete Car Logic (Mark as delivered)
-        function deleteCar(id) {
-            // Using a custom modal is better, but since native confirm is banned and building another modal 
-            // adds bulk, a simple delete works fine for a mechanic fast workflow.
-            carsData = carsData.filter(car => car.id !== id);
-            saveData();
-            renderMechanicCars();
-        }
-
-        // Initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            loadData();
-            showView('home');
-        });
+        // Iniciar App
+        window.addEventListener('DOMContentLoaded', init);
 
     </script>
 </body>
