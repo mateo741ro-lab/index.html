@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- CRÍTICO: Prevenir zoom en dispositivos móviles (iOS/Android) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <title>Taller El Yama</title>
     
     <!-- Tailwind CSS -->
@@ -22,7 +23,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* CRÍTICO: Prevenir zoom automático en iOS/Android al hacer focus en inputs */
+        /* CRÍTICO: Forzar tamaño mínimo de fuente para prevenir Auto-Zoom en inputs de móviles */
         input, textarea, select {
             font-size: 16px !important;
         }
@@ -35,208 +36,211 @@
             background: #1e293b;
         }
         ::-webkit-scrollbar-thumb {
-            background: #f59e0b; /* Amber 500 */
+            background: #d97706; /* Amber 600 */
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #d97706; /* Amber 600 */
+            background: #f59e0b; /* Amber 500 */
         }
 
-        /* Animaciones */
+        /* Animaciones para vistas y notificaciones */
         .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.3s ease-out forwards;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .toast-slide {
-            animation: slideIn 0.3s forwards, slideOut 0.3s 2.7s forwards;
+        .toast-enter {
+            animation: slideIn 0.3s forwards, slideOut 0.3s 3.5s forwards;
         }
         @keyframes slideIn {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         @keyframes slideOut {
-            from { transform: translateX(0); }
-            to { transform: translateX(100%); }
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .loader {
+            border-top-color: #f59e0b;
+            animation: spinner 1.5s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col relative overflow-x-hidden">
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+    <!-- Contenedor de Notificaciones (Toasts) -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 w-72 max-w-full pr-4"></div>
 
-    <header class="bg-slate-800 border-b border-slate-700 shadow-md py-4 px-6 sticky top-0 z-40">
+    <header class="bg-slate-800 border-b border-slate-700 shadow-md py-4 px-4 sm:px-6 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="navigate('home')">
+            <div class="flex items-center gap-3 cursor-pointer" id="header-logo">
                 <!-- Logo SVG: Pistones cruzados (X) -->
                 <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-amber-500">
-                    <!-- Piston 1 (Left to Right) -->
                     <g transform="rotate(45 50 50)">
                         <rect x="42" y="10" width="16" height="25" rx="2" fill="currentColor"/>
                         <rect x="46" y="35" width="8" height="45" fill="currentColor"/>
                         <circle cx="50" cy="80" r="6" fill="#0f172a" stroke="currentColor" stroke-width="4"/>
                         <line x1="42" y1="15" x2="58" y2="15" stroke="#0f172a" stroke-width="2"/>
                         <line x1="42" y1="20" x2="58" y2="20" stroke="#0f172a" stroke-width="2"/>
-                        <line x1="42" y1="25" x2="58" y2="25" stroke="#0f172a" stroke-width="2"/>
                     </g>
-                    <!-- Piston 2 (Right to Left) -->
                     <g transform="rotate(-45 50 50)">
                         <rect x="42" y="10" width="16" height="25" rx="2" fill="currentColor"/>
                         <rect x="46" y="35" width="8" height="45" fill="currentColor"/>
                         <circle cx="50" cy="80" r="6" fill="#0f172a" stroke="currentColor" stroke-width="4"/>
                         <line x1="42" y1="15" x2="58" y2="15" stroke="#0f172a" stroke-width="2"/>
                         <line x1="42" y1="20" x2="58" y2="20" stroke="#0f172a" stroke-width="2"/>
-                        <line x1="42" y1="25" x2="58" y2="25" stroke="#0f172a" stroke-width="2"/>
                     </g>
                 </svg>
                 <h1 class="text-2xl font-bold tracking-wider text-white">Taller <span class="text-amber-500">El Yama</span></h1>
             </div>
-            <button id="btn-home" onclick="navigate('home')" class="hidden text-slate-300 hover:text-amber-500 transition-colors">
+            <button id="btn-home" class="hidden text-slate-300 hover:text-amber-500 transition-colors bg-slate-700/50 p-2 rounded-lg">
                 <i class="fas fa-home text-xl"></i>
             </button>
         </div>
     </header>
 
-    <main class="flex-grow w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col relative">
+    <main class="flex-grow w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col relative">
 
-        <!-- VIEW: HOME -->
+        <!-- VIEW: INICIO -->
         <div id="view-home" class="flex-grow flex flex-col items-center justify-center gap-6 fade-in">
-            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-8">Bienvenido al Sistema</h2>
+            <h2 class="text-3xl sm:text-4xl font-bold text-center mb-6 sm:mb-8 text-white">Bienvenido al Sistema</h2>
             
-            <button onclick="navigate('client')" class="w-full max-w-md p-6 bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 hover:border-amber-500 text-white rounded-2xl shadow-xl transition-all flex items-center justify-center gap-4 group">
+            <button id="btn-nav-client" class="w-full max-w-md p-6 bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 hover:border-amber-500 text-white rounded-2xl shadow-xl transition-all flex items-center justify-center gap-4 group">
                 <i class="fas fa-user text-4xl text-slate-400 group-hover:text-amber-500 transition-colors"></i>
-                <span class="text-xl sm:text-2xl font-bold whitespace-normal text-left">Soy Cliente</span>
+                <span class="text-xl sm:text-2xl font-bold text-left w-full">Soy Cliente</span>
             </button>
             
-            <button onclick="promptLogin()" class="w-full max-w-md p-6 bg-amber-600 hover:bg-amber-500 border-2 border-amber-600 hover:border-amber-400 text-slate-900 rounded-2xl shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all flex items-center justify-center gap-4 group">
+            <button id="btn-nav-login" class="w-full max-w-md p-6 bg-amber-600 hover:bg-amber-500 border-2 border-amber-600 hover:border-amber-400 text-slate-900 rounded-2xl shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all flex items-center justify-center gap-4 group">
                 <i class="fas fa-wrench text-4xl group-hover:rotate-12 transition-transform"></i>
-                <!-- Texto wrap para evitar recortes en pantallas muy finas -->
-                <span class="text-xl sm:text-2xl font-bold whitespace-normal text-left leading-tight">Soy Dueño / Trabajador del Taller</span>
+                <span class="text-xl sm:text-2xl font-bold text-left leading-tight w-full">Soy el Dueño / Trabajador del Taller</span>
             </button>
         </div>
 
-        <!-- VIEW: CLIENT (Public list) -->
-        <div id="view-client" class="hidden flex-col gap-6 fade-in w-full max-w-4xl mx-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl sm:text-3xl font-bold border-l-4 border-amber-500 pl-3">Estado de Vehículos</h2>
-                <button onclick="navigate('home')" class="text-slate-400 hover:text-white"><i class="fas fa-arrow-left mr-2"></i>Volver</button>
+        <!-- VIEW: CLIENTE -->
+        <div id="view-client" class="hidden flex-col gap-6 fade-in w-full max-w-5xl mx-auto">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                <h2 class="text-2xl sm:text-3xl font-bold border-l-4 border-amber-500 pl-3">Autos en Reparación</h2>
+                <div class="flex items-center text-sm text-slate-400 bg-slate-800/50 px-3 py-1.5 rounded-full w-fit">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+                    Sincronizado en tiempo real
+                </div>
             </div>
             
+            <!-- Lista de vehículos para el cliente -->
             <div id="client-vehicle-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Vehículos se renderizan aquí -->
+                <div class="col-span-full flex justify-center py-12"><div class="loader ease-linear rounded-full border-4 border-t-4 border-slate-700 h-12 w-12"></div></div>
             </div>
         </div>
 
-        <!-- VIEW: MECHANIC (Admin) -->
+        <!-- VIEW: MECÁNICO -->
         <div id="view-mechanic" class="hidden flex-col gap-6 fade-in w-full h-full">
             <div class="flex items-center justify-between mb-2">
                 <h2 class="text-2xl sm:text-3xl font-bold border-l-4 border-amber-500 pl-3">Panel de Gestión</h2>
-                <button onclick="logout()" class="text-red-400 hover:text-red-300"><i class="fas fa-sign-out-alt mr-2"></i>Salir</button>
+                <button id="btn-logout" class="text-red-400 hover:text-red-300 bg-red-400/10 px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Salir
+                </button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full items-start">
                 
-                <!-- Columna Izquierda: Formulario y Lista -->
-                <div class="lg:col-span-2 flex flex-col gap-6">
-                    
-                    <!-- Formulario de Vehículo -->
+                <!-- Columna Izquierda: Formulario -->
+                <div class="flex flex-col gap-6">
                     <div class="bg-slate-800 rounded-xl p-5 shadow-lg border border-slate-700">
-                        <h3 class="text-xl font-semibold mb-4 text-amber-500"><i class="fas fa-car mr-2"></i>Registrar / Editar Vehículo</h3>
-                        <form id="vehicle-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <h3 class="text-xl font-semibold mb-4 text-amber-500 border-b border-slate-700 pb-2"><i class="fas fa-car mr-2"></i>Registrar / Editar</h3>
+                        <form id="vehicle-form" class="flex flex-col gap-4">
                             <input type="hidden" id="v-id">
                             
                             <div>
                                 <label class="block text-sm text-slate-400 mb-1">Matrícula</label>
-                                <input type="text" id="v-plate" required placeholder="Ej: SAA-1234" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors uppercase">
+                                <input type="text" id="v-plate" required placeholder="Ej: SAA-1234" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-amber-500 transition-colors uppercase">
                             </div>
                             
                             <div>
                                 <label class="block text-sm text-slate-400 mb-1">Marca y Modelo</label>
-                                <input type="text" id="v-model" required placeholder="Ej: Toyota Hilux" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors">
+                                <input type="text" id="v-model" required placeholder="Ej: VW Gol" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-amber-500 transition-colors">
                             </div>
                             
-                            <div>
-                                <label class="block text-sm text-slate-400 mb-1">Kilometraje</label>
-                                <div class="relative">
-                                    <input type="number" id="v-km" required placeholder="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors pr-12">
-                                    <span class="absolute right-3 top-2 text-slate-500">km</span>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm text-slate-400 mb-1">Kilometraje</label>
+                                    <div class="relative">
+                                        <input type="number" id="v-km" required placeholder="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg pl-3 pr-10 py-2.5 text-white focus:outline-none focus:border-amber-500 transition-colors">
+                                        <span class="absolute right-3 top-2.5 text-slate-500 text-sm">km</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-slate-400 mb-1">Estado</label>
+                                    <select id="v-status" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-amber-500 transition-colors">
+                                        <option value="En espera">En espera</option>
+                                        <option value="En proceso">En proceso</option>
+                                        <option value="Terminado">Terminado</option>
+                                    </select>
                                 </div>
                             </div>
                             
                             <div>
-                                <label class="block text-sm text-slate-400 mb-1">Estado</label>
-                                <select id="v-status" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors">
-                                    <option value="En espera">En espera</option>
-                                    <option value="En proceso">En proceso</option>
-                                    <option value="Listo">Listo</option>
-                                </select>
-                            </div>
-                            
-                            <div class="sm:col-span-2">
-                                <label class="block text-sm text-slate-400 mb-1">Notas del problema</label>
-                                <textarea id="v-notes" rows="2" placeholder="Falla al arrancar, ruido en suspensión..." class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors resize-none"></textarea>
+                                <label class="block text-sm text-slate-400 mb-1">Descripción / Notas</label>
+                                <textarea id="v-notes" rows="2" placeholder="Detalles de la reparación..." class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-amber-500 transition-colors resize-none"></textarea>
                             </div>
 
-                            <!-- Área de sugerencias de mantenimiento calculadas -->
-                            <div id="maintenance-suggestion" class="sm:col-span-2 hidden bg-blue-900/30 border border-blue-500/50 text-blue-200 p-3 rounded-lg text-sm">
-                                <i class="fas fa-info-circle mr-2"></i><span id="maint-text"></span>
+                            <!-- Sugerencia Automática de Mantenimiento -->
+                            <div id="maint-box" class="hidden bg-slate-900 border border-amber-500/30 rounded-lg p-3">
+                                <p class="text-xs text-amber-500 font-bold mb-1 uppercase tracking-wider"><i class="fas fa-wrench mr-1"></i> Sugerencia Automática</p>
+                                <p id="maint-text" class="text-sm text-slate-300"></p>
                             </div>
                             
-                            <div class="sm:col-span-2 flex gap-3 mt-2">
-                                <button type="submit" class="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold py-3 px-4 rounded-lg transition-colors">
-                                    Guardar Vehículo
+                            <div class="flex gap-3 pt-2">
+                                <button type="submit" id="btn-save-vehicle" class="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center">
+                                    <i class="fas fa-save mr-2"></i> Guardar
                                 </button>
-                                <button type="button" onclick="resetForm()" class="px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">
+                                <button type="button" id="btn-reset-form" class="px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors">
                                     Limpiar
                                 </button>
                             </div>
                         </form>
                     </div>
+                </div>
 
-                    <!-- Lista de Vehículos del Taller -->
-                    <div class="bg-slate-800 rounded-xl p-5 shadow-lg border border-slate-700 flex-grow">
-                        <h3 class="text-xl font-semibold mb-4"><i class="fas fa-list mr-2"></i>Vehículos en Taller</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="border-b border-slate-600 text-slate-400">
-                                        <th class="p-2">Matrícula</th>
-                                        <th class="p-2">Modelo</th>
-                                        <th class="p-2">Estado</th>
-                                        <th class="p-2 text-right">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="mechanic-vehicle-list">
-                                    <!-- Filas -->
-                                </tbody>
-                            </table>
-                        </div>
+                <!-- Columna Central: Lista de Vehículos del Mecánico -->
+                <div class="bg-slate-800 rounded-xl flex flex-col shadow-lg border border-slate-700 h-[600px]">
+                    <div class="p-5 border-b border-slate-700">
+                        <h3 class="text-xl font-semibold"><i class="fas fa-list mr-2"></i>Gestión de Vehículos</h3>
+                    </div>
+                    <div class="flex-grow overflow-y-auto p-3" id="mechanic-vehicle-list">
+                        <!-- Items rendered here -->
+                        <div class="flex justify-center py-12"><div class="loader ease-linear rounded-full border-4 border-t-4 border-slate-700 h-10 w-10"></div></div>
                     </div>
                 </div>
 
                 <!-- Columna Derecha: IA Chat -->
-                <div class="bg-slate-800 rounded-xl flex flex-col shadow-lg border border-slate-700 h-[600px] lg:h-auto overflow-hidden">
-                    <div class="bg-slate-900 p-4 border-b border-slate-700">
+                <div class="bg-slate-800 rounded-xl flex flex-col shadow-lg border border-slate-700 h-[600px]">
+                    <div class="bg-slate-900 p-4 rounded-t-xl border-b border-amber-500/30">
                         <h3 class="text-lg font-bold text-amber-500 flex items-center gap-2">
-                            <i class="fas fa-robot"></i> Asistente IA
+                            <i class="fas fa-robot text-xl"></i> Asistente IA para Mecánicos
                         </h3>
-                        <p class="text-xs text-slate-400 mt-1 leading-tight">Pregúntale algo que no sepas sobre la web o el auto y la inteligencia artificial te ayudará</p>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                            Pregúntale algo que no sepas sobre la web o el auto y la inteligencia artificial te ayudará.
+                        </p>
                     </div>
                     
-                    <div id="chat-messages" class="flex-grow p-4 overflow-y-auto flex flex-col gap-3">
-                        <div class="bg-slate-700 p-3 rounded-lg rounded-tl-none self-start max-w-[85%] text-sm shadow">
-                            ¡Hola Yama! Soy tu asistente. ¿En qué te ayudo hoy con el taller?
+                    <div id="chat-messages" class="flex-grow p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth">
+                        <div class="bg-slate-700 p-3 rounded-xl rounded-tl-sm self-start max-w-[85%] text-sm shadow">
+                            ¡Hola Yama! Estoy conectado. ¿Qué consulta mecánica tienes hoy?
                         </div>
                     </div>
                     
-                    <div class="p-3 bg-slate-900 border-t border-slate-700">
+                    <div class="p-3 bg-slate-900 rounded-b-xl border-t border-slate-700">
                         <form id="chat-form" class="flex gap-2">
-                            <input type="text" id="chat-input" placeholder="Escribe aquí..." required autocomplete="off" class="flex-grow bg-slate-800 border border-slate-600 rounded-full px-4 py-2 text-white focus:outline-none focus:border-amber-500 text-sm transition-colors">
-                            <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-slate-900 rounded-full w-10 h-10 flex items-center justify-center shrink-0 transition-colors">
+                            <input type="text" id="chat-input" placeholder="Ej: Torque de culata VW Gol..." required autocomplete="off" class="flex-grow bg-slate-800 border border-slate-600 rounded-full px-4 py-2.5 text-white focus:outline-none focus:border-amber-500 text-sm transition-colors">
+                            <button type="submit" id="btn-chat-submit" class="bg-amber-600 hover:bg-amber-500 text-slate-900 rounded-full w-11 h-11 flex items-center justify-center shrink-0 transition-colors">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </form>
@@ -249,366 +253,457 @@
     </main>
 
     <!-- Modal Login -->
-    <div id="login-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-slate-800 p-6 rounded-2xl w-full max-w-sm border border-slate-600 shadow-2xl fade-in">
-            <h3 class="text-2xl font-bold text-center mb-4 text-amber-500">Acceso Restringido</h3>
-            <p class="text-sm text-slate-400 text-center mb-6">Ingrese la contraseña del dueño/trabajador para continuar.</p>
-            <input type="password" id="password-input" placeholder="Contraseña..." class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 mb-4 text-center">
+    <div id="login-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-800 p-6 sm:p-8 rounded-2xl w-full max-w-sm border border-slate-600 shadow-2xl fade-in relative overflow-hidden">
+            <!-- Decorative accent -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-amber-400"></div>
+            
+            <h3 class="text-2xl font-bold text-center mb-2 text-white">Acceso Restringido</h3>
+            <p class="text-sm text-slate-400 text-center mb-6">Contraseña de administrador requerida.</p>
+            
+            <input type="password" id="password-input" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 mb-6 text-center tracking-widest text-lg">
+            
             <div class="flex gap-3">
-                <button onclick="closeLogin()" class="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">Cancelar</button>
-                <button onclick="verifyLogin()" class="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold rounded-lg transition-colors">Ingresar</button>
+                <button id="btn-login-cancel" class="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition-colors">Cancelar</button>
+                <button id="btn-login-submit" class="flex-1 px-4 py-3 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold rounded-lg transition-colors shadow-lg">Ingresar</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // ESTADO DE LA APLICACIÓN (Persistido localmente para robustez sin red)
-        let vehicles = JSON.parse(localStorage.getItem('yama_vehicles')) || [];
-        let isAuthenticated = false;
+    <!-- Firebase Imports and Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // SISTEMA DE NOTIFICACIONES (TOAST)
-        function showToast(message, type = 'success') {
+        // DOM Elements
+        const views = {
+            home: document.getElementById('view-home'),
+            client: document.getElementById('view-client'),
+            mechanic: document.getElementById('view-mechanic')
+        };
+        const loginModal = document.getElementById('login-modal');
+        const passInput = document.getElementById('password-input');
+        const btnHome = document.getElementById('btn-home');
+        
+        // Form & Maintenance Logic
+        const form = document.getElementById('vehicle-form');
+        const kmInput = document.getElementById('v-km');
+        const maintBox = document.getElementById('maint-box');
+        const maintText = document.getElementById('maint-text');
+
+        // State
+        let cars = [];
+        let isAuthenticatedAsMechanic = false;
+        let db, carsCollection;
+
+        // --- SISTEMA DE NOTIFICACIONES (TOASTS) ---
+        window.showToast = (message, type = 'info') => {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             
-            const bgClass = type === 'error' ? 'bg-red-600' : 'bg-amber-500 text-slate-900';
-            const icon = type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle';
+            let bgClass = 'bg-slate-800 border-slate-700 text-white';
+            let icon = 'fa-info-circle text-blue-400';
+            
+            if (type === 'success') {
+                bgClass = 'bg-slate-800 border-emerald-900 text-white';
+                icon = 'fa-check-circle text-emerald-500';
+            } else if (type === 'error') {
+                bgClass = 'bg-red-950 border-red-900 text-red-100';
+                icon = 'fa-exclamation-triangle text-red-500';
+            }
 
-            toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg font-semibold text-sm toast-slide ${bgClass}`;
-            toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border font-medium text-sm toast-enter ${bgClass}`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="flex-1">${message}</span>`;
             
             container.appendChild(toast);
+            setTimeout(() => { if (toast.parentElement) toast.remove(); }, 4000);
+        };
+
+        // --- NAVEGACIÓN Y LOGIN ---
+        function setView(viewName) {
+            Object.values(views).forEach(el => el.classList.add('hidden'));
+            Object.values(views).forEach(el => el.classList.remove('flex'));
             
-            // Remove after animation completes (3s)
-            setTimeout(() => {
-                if(toast.parentElement) toast.remove();
-            }, 3000);
-        }
-
-        // NAVEGACIÓN
-        function navigate(viewId) {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-client').classList.add('hidden');
-            document.getElementById('view-mechanic').classList.add('hidden');
-            document.getElementById('btn-home').classList.remove('hidden');
-
-            if (viewId === 'home') {
-                document.getElementById('view-home').classList.remove('hidden');
-                document.getElementById('btn-home').classList.add('hidden');
-            } else if (viewId === 'client') {
-                document.getElementById('view-client').classList.remove('hidden');
-                document.getElementById('view-client').classList.add('flex');
-                renderClientList();
-            } else if (viewId === 'mechanic') {
-                if (!isAuthenticated) {
-                    promptLogin();
-                    return;
-                }
-                document.getElementById('view-mechanic').classList.remove('hidden');
-                document.getElementById('view-mechanic').classList.add('flex');
-                renderMechanicList();
-            }
-        }
-
-        // AUTENTICACIÓN
-        function promptLogin() {
-            document.getElementById('login-modal').classList.remove('hidden');
-            document.getElementById('login-modal').classList.add('flex');
-            document.getElementById('password-input').value = '';
-            setTimeout(() => document.getElementById('password-input').focus(), 100);
-        }
-
-        function closeLogin() {
-            document.getElementById('login-modal').classList.add('hidden');
-            document.getElementById('login-modal').classList.remove('flex');
-        }
-
-        function verifyLogin() {
-            const pass = document.getElementById('password-input').value;
-            if (pass === 'Yamandu') {
-                isAuthenticated = true;
-                closeLogin();
-                navigate('mechanic');
-                showToast("Acceso concedido");
+            if(viewName === 'home') {
+                views.home.classList.remove('hidden');
+                views.home.classList.add('flex');
+                btnHome.classList.add('hidden');
             } else {
-                showToast("Contraseña incorrecta", "error");
+                views[viewName].classList.remove('hidden');
+                views[viewName].classList.add('flex');
+                btnHome.classList.remove('hidden');
             }
         }
 
-        // Listen for Enter on password
-        document.getElementById('password-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') verifyLogin();
+        // Expose navigation to window for inline clicks (Header Logo)
+        document.getElementById('header-logo').addEventListener('click', () => setView('home'));
+        btnHome.addEventListener('click', () => setView('home'));
+
+        document.getElementById('btn-nav-client').addEventListener('click', () => {
+            setView('client');
+            renderClientList();
         });
 
-        function logout() {
-            isAuthenticated = false;
-            navigate('home');
-            showToast("Sesión cerrada");
-        }
+        document.getElementById('btn-nav-login').addEventListener('click', () => {
+            if (isAuthenticatedAsMechanic) {
+                setView('mechanic');
+            } else {
+                loginModal.classList.remove('hidden');
+                loginModal.classList.add('flex');
+                passInput.value = '';
+                setTimeout(() => passInput.focus(), 100);
+            }
+        });
 
-        // CRUD VEHÍCULOS
-        function saveVehicles() {
+        document.getElementById('btn-login-cancel').addEventListener('click', () => {
+            loginModal.classList.add('hidden');
+            loginModal.classList.remove('flex');
+        });
+
+        const verifyLogin = () => {
+            if (passInput.value === 'Yamandu') {
+                isAuthenticatedAsMechanic = true;
+                loginModal.classList.add('hidden');
+                loginModal.classList.remove('flex');
+                setView('mechanic');
+                showToast("Acceso de mecánico concedido", "success");
+            } else {
+                showToast("Contraseña incorrecta", "error");
+                passInput.value = '';
+                passInput.focus();
+            }
+        };
+        
+        document.getElementById('btn-login-submit').addEventListener('click', verifyLogin);
+        passInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') verifyLogin(); });
+
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            isAuthenticatedAsMechanic = false;
+            setView('home');
+            showToast("Sesión cerrada", "info");
+        });
+
+        // --- FIREBASE INITIALIZATION & SYNC ---
+        async function initFirebase() {
             try {
-                localStorage.setItem('yama_vehicles', JSON.stringify(vehicles));
-            } catch (e) {
-                console.error("Error saving local state", e);
-                showToast("Error al guardar localmente. Revise el espacio.", "error");
+                const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+                const firebaseConfig = JSON.parse(firebaseConfigStr);
+                
+                // Si no hay configuración de entorno, avisamos (esto ocurre fuera del canvas real)
+                if(!firebaseConfig.projectId) {
+                    console.warn("No Firebase config detected. Running UI mode only.");
+                    showToast("Modo UI sin conexión. Datos no se guardarán.", "error");
+                    document.getElementById('client-vehicle-list').innerHTML = `<p class="text-slate-400 p-4">Sin base de datos conectada.</p>`;
+                    document.getElementById('mechanic-vehicle-list').innerHTML = `<p class="text-slate-400 p-4">Sin base de datos conectada.</p>`;
+                    return;
+                }
+
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                const auth = getAuth(app);
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'taller-el-yama';
+                
+                // Auth Before Queries (Strict Rule)
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    await signInWithCustomToken(auth, token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                if(!auth.currentUser) throw new Error("Auth failed");
+
+                // Strict Path Rule: public/data/cars
+                carsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'cars');
+
+                // Real-time listener
+                onSnapshot(carsCollection, (snapshot) => {
+                    cars = [];
+                    snapshot.forEach(doc => {
+                        cars.push({ id: doc.id, ...doc.data() });
+                    });
+                    // Refresh current active view
+                    if(!views.client.classList.contains('hidden')) renderClientList();
+                    if(!views.mechanic.classList.contains('hidden')) renderMechanicList();
+                }, (error) => {
+                    console.error("Firestore error:", error);
+                    showToast("Error al sincronizar datos en tiempo real", "error");
+                });
+
+            } catch(e) {
+                console.error("Initialization error:", e);
+                showToast("No se pudo conectar a la nube. Compruebe su red.", "error");
             }
         }
 
-        const form = document.getElementById('vehicle-form');
-        const kmInput = document.getElementById('v-km');
-        const maintSuggestion = document.getElementById('maintenance-suggestion');
-        const maintText = document.getElementById('maint-text');
+        // Inicializar
+        initFirebase();
 
-        // Cálculo de mantenimiento dinámico
-        kmInput.addEventListener('input', function() {
-            const km = parseInt(this.value);
-            if (isNaN(km) || km < 0) {
-                maintSuggestion.classList.add('hidden');
+        // --- LÓGICA DE MANTENIMIENTO ---
+        function calculateMaintenance(kmText) {
+            const km = parseInt(kmText, 10);
+            if(isNaN(km) || km < 0) return "";
+            
+            let notes = [];
+            // Aproximaciones por hitos
+            if (km > 0 && km < 20000) notes.push("Filtros y Aceite (10k)");
+            if (km >= 35000 && km <= 45000) notes.push("Bujías, Líquido de Frenos (40k)");
+            if (km >= 55000 && km <= 65000) notes.push("Distribución, Bomba de Agua (60k)");
+            if (km >= 75000 && km <= 85000) notes.push("Amortiguadores, Frenos (80k)");
+            
+            if (notes.length > 0) return "Revisar: " + notes.join(" | ");
+            
+            // Calculo generico para próximo servicio de aceite (múltiplos de 10k)
+            const nextService = Math.ceil((km + 1) / 10000) * 10000;
+            return `Mantenimiento estándar. Próximo aceite sugerido a los ${nextService} km.`;
+        }
+
+        kmInput.addEventListener('input', (e) => {
+            const suggestion = calculateMaintenance(e.target.value);
+            if (suggestion) {
+                maintText.textContent = suggestion;
+                maintBox.classList.remove('hidden');
+            } else {
+                maintBox.classList.add('hidden');
+            }
+        });
+
+        // --- OPERACIONES DE VEHÍCULOS (FIRESTORE) ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!carsCollection) {
+                showToast("Base de datos no disponible", "error");
                 return;
             }
 
-            let suggestions = [];
-            // Reglas generales (se pueden ajustar)
-            if (km > 0 && km < 15000) suggestions.push("Sugerencia: Aceite y Filtros (10k)");
-            else if (km >= 35000 && km <= 45000) suggestions.push("Sugerencia: Revisión Frenos y Bujías (40k)");
-            else if (km >= 55000 && km <= 65000) suggestions.push("Sugerencia: Correa de Distribución (60k)");
-            else if (km >= 90000 && km <= 110000) suggestions.push("Sugerencia: Revisión Suspensión y Embrague (100k)");
-            
-            if (suggestions.length > 0) {
-                maintText.textContent = suggestions.join(" | ");
-                maintSuggestion.classList.remove('hidden');
-            } else {
-                const nextService = Math.ceil((km + 1) / 10000) * 10000;
-                maintText.textContent = `Próximo servicio general sugerido a los ${nextService} km.`;
-                maintSuggestion.classList.remove('hidden');
-            }
-        });
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
             const id = document.getElementById('v-id').value;
-            const vehicle = {
-                id: id ? id : Date.now().toString(),
+            const btn = document.getElementById('btn-save-vehicle');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
+            btn.disabled = true;
+
+            const kmVal = document.getElementById('v-km').value;
+            const maintSug = calculateMaintenance(kmVal);
+
+            const vehicleData = {
                 plate: document.getElementById('v-plate').value.toUpperCase(),
                 model: document.getElementById('v-model').value,
-                km: document.getElementById('v-km').value,
+                km: kmVal,
                 status: document.getElementById('v-status').value,
                 notes: document.getElementById('v-notes').value,
-                updatedAt: new Date().toLocaleDateString()
+                maintenance: maintSug,
+                timestamp: Date.now()
             };
 
-            if (id) {
-                const idx = vehicles.findIndex(v => v.id === id);
-                if(idx !== -1) vehicles[idx] = vehicle;
-                showToast("Vehículo actualizado");
-            } else {
-                vehicles.push(vehicle);
-                showToast("Vehículo registrado");
+            try {
+                if (id) {
+                    await updateDoc(doc(db, carsCollection.path, id), vehicleData);
+                    showToast("Vehículo actualizado con éxito", "success");
+                } else {
+                    await addDoc(carsCollection, vehicleData);
+                    showToast("Nuevo vehículo registrado", "success");
+                }
+                resetForm();
+            } catch (err) {
+                console.error(err);
+                showToast("Error al guardar en la nube", "error");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
-
-            saveVehicles();
-            resetForm();
-            renderMechanicList();
         });
 
         function resetForm() {
             form.reset();
             document.getElementById('v-id').value = '';
-            maintSuggestion.classList.add('hidden');
+            maintBox.classList.add('hidden');
         }
+        document.getElementById('btn-reset-form').addEventListener('click', resetForm);
 
-        function editVehicle(id) {
-            const vehicle = vehicles.find(v => v.id === id);
-            if (!vehicle) return;
+        window.editCar = (id) => {
+            const car = cars.find(c => c.id === id);
+            if(!car) return;
+            document.getElementById('v-id').value = car.id;
+            document.getElementById('v-plate').value = car.plate;
+            document.getElementById('v-model').value = car.model;
+            document.getElementById('v-km').value = car.km;
+            document.getElementById('v-status').value = car.status;
+            document.getElementById('v-notes').value = car.notes || '';
             
-            document.getElementById('v-id').value = vehicle.id;
-            document.getElementById('v-plate').value = vehicle.plate;
-            document.getElementById('v-model').value = vehicle.model;
-            document.getElementById('v-km').value = vehicle.km;
-            document.getElementById('v-status').value = vehicle.status;
-            document.getElementById('v-notes').value = vehicle.notes;
-            
-            // Trigger input event to update maintenance suggestions
+            // Trigger calculation
             kmInput.dispatchEvent(new Event('input'));
             
-            // Scroll to form (mobile)
-            form.scrollIntoView({ behavior: 'smooth' });
+            // Scroll en móviles
+            if(window.innerWidth < 1024) {
+                document.getElementById('view-mechanic').scrollIntoView({behavior: 'smooth'});
+            }
+        };
+
+        window.deleteCar = async (id) => {
+            if(!confirm("¿Confirmar eliminación del vehículo?")) return;
+            try {
+                await deleteDoc(doc(db, carsCollection.path, id));
+                showToast("Vehículo eliminado", "success");
+            } catch(e) {
+                showToast("Error al eliminar", "error");
+            }
+        };
+
+        // --- RENDERIZADO DE VISTAS ---
+        function getStatusBadge(status) {
+            if(status === 'En espera') return `<span class="px-2.5 py-1 rounded-md text-xs font-bold border border-red-500/30 bg-red-500/10 text-red-400"><i class="fas fa-clock mr-1"></i>En espera</span>`;
+            if(status === 'En proceso') return `<span class="px-2.5 py-1 rounded-md text-xs font-bold border border-blue-500/30 bg-blue-500/10 text-blue-400"><i class="fas fa-tools mr-1"></i>En proceso</span>`;
+            if(status === 'Terminado') return `<span class="px-2.5 py-1 rounded-md text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"><i class="fas fa-check-double mr-1"></i>Terminado</span>`;
+            return `<span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">${status}</span>`;
         }
 
-        function deleteVehicle(id) {
-            if(confirm("¿Seguro que desea eliminar este registro?")) {
-                vehicles = vehicles.filter(v => v.id !== id);
-                saveVehicles();
-                renderMechanicList();
-                showToast("Registro eliminado");
-            }
-        }
-
-        // RENDERIZADO DE LISTAS
-        function getStatusColor(status) {
-            switch(status) {
-                case 'En espera': return 'text-red-400 bg-red-400/10 border-red-400/20';
-                case 'En proceso': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-                case 'Listo': return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
-                default: return 'text-slate-400 bg-slate-400/10';
-            }
+        function sortCars(carList) {
+            return [...carList].sort((a, b) => {
+                // Terminado va abajo
+                if(a.status === 'Terminado' && b.status !== 'Terminado') return 1;
+                if(a.status !== 'Terminado' && b.status === 'Terminado') return -1;
+                return (b.timestamp || 0) - (a.timestamp || 0); // mas nuevos primero
+            });
         }
 
         function renderClientList() {
             const list = document.getElementById('client-vehicle-list');
-            list.innerHTML = '';
-            
-            if (vehicles.length === 0) {
-                list.innerHTML = `<div class="col-span-full text-center p-8 text-slate-500 bg-slate-800/50 rounded-xl border border-slate-700">No hay vehículos registrados en este momento.</div>`;
+            if (cars.length === 0) {
+                list.innerHTML = `<div class="col-span-full p-8 text-center text-slate-400 bg-slate-800 rounded-xl border border-slate-700">No hay vehículos registrados en el taller.</div>`;
                 return;
             }
-
-            // Ordenar: Listo al final
-            const sorted = [...vehicles].sort((a, b) => {
-                if (a.status === 'Listo' && b.status !== 'Listo') return 1;
-                if (a.status !== 'Listo' && b.status === 'Listo') return -1;
-                return 0;
-            });
-
-            sorted.forEach(v => {
-                const statusClasses = getStatusColor(v.status);
-                const card = document.createElement('div');
-                card.className = `bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-md flex flex-col gap-2`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <h3 class="text-xl font-bold tracking-wider">${v.plate}</h3>
-                        <span class="px-3 py-1 rounded-full text-xs font-bold border ${statusClasses}">${v.status}</span>
+            
+            list.innerHTML = '';
+            sortCars(cars).forEach(car => {
+                let maintHtml = car.maintenance ? `<div class="mt-4 pt-3 border-t border-slate-700/50"><p class="text-xs font-semibold text-amber-500 mb-1"><i class="fas fa-clipboard-list mr-1"></i> Mantenimiento Sugerido</p><p class="text-sm text-slate-300">${car.maintenance}</p></div>` : '';
+                
+                list.innerHTML += `
+                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg hover:border-slate-500 transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-black text-white tracking-widest uppercase">${car.plate}</h3>
+                            ${getStatusBadge(car.status)}
+                        </div>
+                        <p class="text-slate-300 font-medium mb-1">${car.model}</p>
+                        <p class="text-sm text-slate-500"><i class="fas fa-tachometer-alt mr-1"></i> ${car.km} km</p>
+                        ${maintHtml}
                     </div>
-                    <p class="text-slate-300 font-medium">${v.model}</p>
-                    <p class="text-xs text-slate-500 mt-2"><i class="far fa-clock mr-1"></i> Actualizado: ${v.updatedAt}</p>
                 `;
-                list.appendChild(card);
             });
         }
 
         function renderMechanicList() {
-            const tbody = document.getElementById('mechanic-vehicle-list');
-            tbody.innerHTML = '';
-            
-            if (vehicles.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-500">Sin registros</td></tr>`;
+            const list = document.getElementById('mechanic-vehicle-list');
+            if (cars.length === 0) {
+                list.innerHTML = `<p class="text-center text-slate-500 mt-8">Sin registros</p>`;
                 return;
             }
 
-            vehicles.forEach(v => {
-                const statusClasses = getStatusColor(v.status);
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors";
-                tr.innerHTML = `
-                    <td class="p-2 font-bold tracking-wider text-sm">${v.plate}</td>
-                    <td class="p-2 text-sm">${v.model}</td>
-                    <td class="p-2">
-                        <span class="px-2 py-1 rounded text-xs border ${statusClasses}">${v.status}</span>
-                    </td>
-                    <td class="p-2 text-right">
-                        <button onclick="editVehicle('${v.id}')" class="text-blue-400 hover:text-blue-300 p-1 mx-1" title="Editar"><i class="fas fa-edit"></i></button>
-                        <button onclick="deleteVehicle('${v.id}')" class="text-red-400 hover:text-red-300 p-1 mx-1" title="Eliminar"><i class="fas fa-trash"></i></button>
-                    </td>
+            list.innerHTML = '<div class="flex flex-col gap-3"></div>';
+            const container = list.querySelector('div');
+
+            sortCars(cars).forEach(car => {
+                container.innerHTML += `
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 hover:border-amber-500/50 transition-colors group">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex flex-col">
+                                <span class="text-lg font-bold text-white uppercase">${car.plate}</span>
+                                <span class="text-sm text-slate-400">${car.model}</span>
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                ${getStatusBadge(car.status)}
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-slate-800">
+                            <button onclick="editCar('${car.id}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded transition-colors text-sm"><i class="fas fa-edit mr-1"></i> Editar</button>
+                            <button onclick="deleteCar('${car.id}')" class="px-3 py-1.5 bg-slate-800 hover:bg-red-900/40 text-red-400 rounded transition-colors text-sm"><i class="fas fa-trash-alt mr-1"></i> Eliminar</button>
+                        </div>
+                    </div>
                 `;
-                tbody.appendChild(tr);
             });
         }
 
-        // LÓGICA DE CHAT IA (Con manejo de errores de red)
+        // --- ASISTENTE IA (GEMINI API) ---
         const chatForm = document.getElementById('chat-form');
         const chatInput = document.getElementById('chat-input');
         const chatMessages = document.getElementById('chat-messages');
 
-        function appendMessage(sender, text) {
+        function appendMsg(sender, text, isError = false) {
             const div = document.createElement('div');
-            const isAI = sender === 'IA' || sender === 'Sistema';
+            const isUser = sender === 'Yo';
             
-            div.className = `p-3 rounded-lg max-w-[85%] text-sm shadow ${
-                isAI 
-                ? 'bg-slate-700 rounded-tl-none self-start' 
-                : 'bg-amber-600 text-slate-900 font-medium rounded-tr-none self-end'
+            div.className = `p-3 rounded-xl max-w-[85%] text-sm shadow ${
+                isUser 
+                ? 'bg-amber-600 text-slate-900 font-medium rounded-tr-sm self-end'
+                : 'bg-slate-700 text-white rounded-tl-sm self-start leading-relaxed'
             }`;
             
-            if (sender === 'Sistema') {
-                div.className += ' border border-red-500 text-red-200 bg-red-900/50';
+            if (isError) {
+                div.className += ' border border-red-500 !bg-red-950 !text-red-200';
             }
 
-            div.textContent = text;
+            div.innerHTML = text.replace(/\n/g, '<br>');
             chatMessages.appendChild(div);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        async function fetchAIResponse(message) {
-            // Manejo estricto de errores de red (try/catch)
-            try {
-                const apiKey = ""; // Canvas will inject if available.
-                
-                // Si estamos en un entorno sin API key real (ej. offline o local simple)
-                // Simularemos una pequeña respuesta para que la UI no se rompa si no hay conexión real.
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                
-                const payload = {
-                    contents: [{ parts: [{ text: `Como experto mecánico automotriz, responde de forma muy breve y concisa a: ${message}` }] }]
-                };
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) throw new Error("Error en la respuesta del servidor");
-
-                const result = await response.json();
-                if (result.candidates && result.candidates.length > 0) {
-                    return result.candidates[0].content.parts[0].text;
-                } else {
-                    throw new Error("Formato de respuesta inesperado");
-                }
-                
-            } catch (error) {
-                console.error("AI Network Error:", error);
-                // Si la red falla o la API Key no está configurada, el catch captura el error.
-                // Evitamos que la app colapse y mostramos un error amigable.
-                showToast("Problema de conexión con la IA", "error");
-                throw error; // Rethrow para manejarlo en el submit
-            }
-        }
-
-        chatForm.addEventListener('submit', async function(e) {
+        chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const msg = chatInput.value.trim();
-            if (!msg) return;
+            const text = chatInput.value.trim();
+            if (!text) return;
 
-            // Bloquear input temporalmente
+            // UI Update
+            appendMsg('Yo', text);
             chatInput.value = '';
             chatInput.disabled = true;
-            appendMessage('Tú', msg);
-
-            // Loader temporal
-            const loaderId = 'loader-' + Date.now();
+            
+            // Loader
+            const loaderId = 'ai-loader';
             const loaderDiv = document.createElement('div');
             loaderDiv.id = loaderId;
-            loaderDiv.className = 'p-3 bg-slate-700 rounded-lg rounded-tl-none self-start text-sm text-slate-400 italic';
-            loaderDiv.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Pensando...';
+            loaderDiv.className = 'p-3 bg-slate-700 rounded-xl rounded-tl-sm self-start text-slate-400 text-sm flex items-center gap-2';
+            loaderDiv.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Procesando...';
             chatMessages.appendChild(loaderDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                const aiResponse = await fetchAIResponse(msg);
+                // Environment API key mechanism requirement
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                const prompt = `Eres un asistente experto para mecánicos automotrices. Responde de forma técnica pero directa, sin texto innecesario. Consulta: ${text}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+
+                if (!response.ok) throw new Error("API HTTP Error");
+                
+                const result = await response.json();
                 document.getElementById(loaderId).remove();
-                appendMessage('IA', aiResponse);
+                
+                if (result.candidates && result.candidates[0].content) {
+                    const aiText = result.candidates[0].content.parts[0].text;
+                    appendMsg('IA', aiText);
+                } else {
+                    throw new Error("Respuesta inválida");
+                }
+                
             } catch (err) {
-                document.getElementById(loaderId).remove();
-                appendMessage('Sistema', 'Error de red o servicio no disponible en este momento. Intenta usar las funciones de gestión local mientras se restablece la conexión.');
+                console.error("AI Error:", err);
+                document.getElementById(loaderId)?.remove();
+                showToast("Problema de conexión con la IA. Revisa tu red.", "error");
+                appendMsg('IA', 'Lo siento, no pude conectar con el servidor en este momento. Intenta de nuevo más tarde.', true);
             } finally {
                 chatInput.disabled = false;
                 chatInput.focus();
             }
         });
-
     </script>
 </body>
 </html>
