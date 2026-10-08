@@ -1,642 +1,874 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>IA Auto-Cámara Fútbol</title>
-
-  <!-- PeerJS para el monitor remoto -->
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-  
-  <!-- TensorFlow.js y COCO-SSD para la IA -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-
-  <style>
-    :root {
-      --bg-color: #0d1117;
-      --card-bg: #161b22;
-      --accent-green: #238636;
-      --accent-red: #da3633;
-      --accent-blue: #1f6beb;
-      --accent-yellow: #d29922;
-      --text-color: #f0f6fc;
-      --subtext-color: #8b949e;
-      --border-color: #30363d;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 12px; overflow-x: hidden; }
-    
-    #errorBanner { display: none; background-color: var(--accent-red); color: white; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 0.85rem; width: 100%; max-width: 1000px; margin-bottom: 10px;}
-    #iaStatusBanner { display: block; background-color: var(--accent-yellow); color: black; padding: 8px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 0.85rem; width: 100%; max-width: 1000px; margin-bottom: 10px;}
-
-    /* LAYOUT INTELIGENTE */
-    .app-layout { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 600px; }
-    .camera-container { width: 100%; }
-    .controls-container { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-
-    @media (orientation: landscape) {
-      .app-layout { flex-direction: row; max-width: 1200px; height: calc(100vh - 24px); }
-      .camera-container { flex: 2; height: 100%; display: flex; align-items: center; justify-content: center; }
-      .controls-container { flex: 1; height: 100%; overflow-y: auto; padding-right: 5px; }
-    }
-
-    /* CÁMARA */
-    .camera-box { position: relative; width: 100%; aspect-ratio: 16 / 9; background-color: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
-    
-    /* El video original está oculto, mostramos el canvas procesado por la IA */
-    #rawVideo { display: none; }
-    #previewCanvas { width: 100%; height: 100%; object-fit: cover; display: block; }
-    
-    /* Visor remoto si usa video nativo */
-    #viewerVideo { width: 100%; height: 100%; object-fit: cover; }
-
-    .overlay-badge { position: absolute; background-color: rgba(0, 0, 0, 0.75); padding: 4px 10px; border-radius: 16px; font-size: 0.75rem; font-weight: bold; border: 1px solid var(--border-color); z-index: 10; display: flex; align-items: center; gap: 6px; }
-    .rec-indicator { top: 12px; left: 12px; visibility: hidden; }
-    .rec-indicator.visible { visibility: visible; }
-    
-    .dot { width: 8px; height: 8px; border-radius: 50%; background-color: #8b949e; }
-    .recording .dot { background-color: var(--accent-red); animation: blink 1s infinite; }
-    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-    
-    .cam-switch-btn { position: absolute; top: 12px; right: 12px; background-color: rgba(0, 0, 0, 0.75); border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; cursor: pointer; z-index: 10; }
-
-    /* TARJETAS Y BOTONES */
-    .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-    label { font-size: 0.75rem; color: var(--subtext-color); font-weight: 700; text-transform: uppercase; }
-    
-    .action-buttons { display: flex; gap: 10px; }
-    button.btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; text-transform: uppercase; transition: opacity 0.2s; }
-    button.btn:active { opacity: 0.7; }
-    button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-record { background-color: var(--accent-green); color: #fff; }
-    .btn-stop { background-color: var(--accent-red); color: #fff; display: none; }
-    
-    /* CONEXIÓN / LINK */
-    .qr-row { display: flex; gap: 12px; align-items: center; width: 100%; }
-    .link-controls { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow: hidden; }
-    input[type="text"] { padding: 10px; font-size: 0.85rem; width: 100%; background: var(--bg-color); color: white; border: 1px solid var(--border-color); border-radius: 6px; outline: none; }
-    .btn-sm { padding: 10px 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; color: #fff; text-align: center; display: flex; justify-content: center; align-items: center; flex: 1; }
-
-    /* LISTA DE VIDEOS GRABADOS */
-    .clip-list { display: flex; flex-direction: column; gap: 12px; }
-    .clip-item { background-color: var(--bg-color); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
-    .clip-header { font-size: 0.95rem; font-weight: bold; color: var(--text-color); display: flex; align-items: center; gap: 8px; }
-    .clip-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-    .clip-btn { flex: 1; min-width: 30%; padding: 10px 8px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.8rem; cursor: pointer; color: #fff; display: flex; justify-content: center; align-items: center; gap: 4px; }
-    .btn-preview { background-color: #30363d; }
-    .btn-download { background-color: var(--accent-blue); }
-    .btn-upload { background-color: #0b70e1; }
-    .btn-whatsapp { background-color: #25D366; }
-
-    /* MODAL DE PREVISUALIZACIÓN */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; padding: 12px; }
-    .modal-content { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
-    .modal-header { padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-    .modal-close { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-    .modal-body video { width: 100%; max-height: 70vh; background: #000; }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Auto-Tracker Prototipo ESP32</title>
+    <!-- Tailwind CSS desde CDN para estilos responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- TensorFlow.js Core -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <!-- Modelo COCO-SSD para Detección de Objetos y Personas -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+    <!-- Fuentes e Iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            touch-action: manipulation;
+        }
+        .font-mono-custom {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: auto;
+        }
+        /* Ocultar barra de desplazamiento en consola virtual */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Efecto de pulso en barra de estado */
+        @keyframes pulse-fast {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .animate-pulse-fast {
+            animation: pulse-fast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between p-2 sm:p-4 max-w-lg mx-auto selection:bg-emerald-500 selection:text-black">
 
-  <div id="errorBanner">
-    ⚠️ ATENCIÓN: Conéctate mediante HTTPS para activar la cámara de forma segura.
-  </div>
-  <div id="iaStatusBanner">
-    🤖 Cargando cerebro de Inteligencia Artificial (aprox. 1 minuto)...
-  </div>
-
-  <!-- MODAL DE PREVIEW -->
-  <div id="previewModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <label>Previsualización</label>
-        <button class="modal-close" onclick="closePreview()">✖</button>
-      </div>
-      <div class="modal-body">
-        <video id="previewPlayer" controls playsinline></video>
-      </div>
-    </div>
-  </div>
-
-  <!-- APLICACIÓN PRINCIPAL -->
-  <div id="recorder-app" class="app-layout">
-    
-    <div class="camera-container">
-      <div class="camera-box">
-        <!-- Video crudo oculto que captura la cámara -->
-        <video id="rawVideo" autoplay playsinline muted></video>
-        
-        <!-- Canvas donde la IA dibuja el zoom y el seguimiento -->
-        <canvas id="previewCanvas"></canvas>
-        
-        <div class="overlay-badge rec-indicator visible" id="recIndicator">
-          <div class="dot"></div>
-          <span id="timerDisplay" style="font-family: monospace;">00:00:00</span>
+    <!-- CABECERA DE LA APLICACIÓN -->
+    <header class="bg-gray-900/90 backdrop-blur border border-gray-800 rounded-2xl p-3 mb-3 shadow-xl">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 font-bold">
+                    🎯
+                </div>
+                <div>
+                    <h1 class="text-base font-bold leading-tight text-white">AI Cam Tracker</h1>
+                    <p class="text-xs text-gray-400">Simulador ESP32 v1.0</p>
+                </div>
+            </div>
+            <!-- Estado de la Cámara e IA -->
+            <div class="flex flex-col items-end gap-1">
+                <span id="camera-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-950/80 text-red-400 border border-red-800/50">
+                    <span id="status-dot" class="w-2 h-2 rounded-full bg-red-500"></span>
+                    <span id="status-text">🔴 Cámara detenida</span>
+                </span>
+                <span id="fps-badge" class="text-[10px] text-gray-400 font-mono-custom hidden">
+                    FPS: <span id="fps-value" class="text-emerald-400 font-bold">0</span> | Skip: <span id="frame-skip-value">0</span>
+                </span>
+            </div>
         </div>
+    </header>
 
-        <button class="cam-switch-btn" id="switchCamBtn">🔄 Girar</button>
-      </div>
-    </div>
-
-    <div class="controls-container">
-      <div class="card">
-        <div class="action-buttons">
-          <button class="btn btn-record" id="recordBtn" disabled>Cargando IA...</button>
-          <button class="btn btn-stop" id="stopBtn">⏹ DETENER</button>
-        </div>
-      </div>
-
-      <div class="card" id="outputCard" style="display: none;">
-        <label>✅ ARCHIVOS GUARDADOS</label>
-        <div id="clipsList" class="clip-list"></div>
-      </div>
-
-      <div class="card">
-        <label>📡 LINK DEL MONITOR REMOTO (OPCIONAL)</label>
-        <div class="qr-row">
-          <div class="link-controls">
-            <input type="text" id="monitorLinkInput" readonly>
-            <button class="btn-sm" id="copyMonitorBtn" style="background: var(--border-color);">Copiar Link</button>
-          </div>
-        </div>
-        <div id="peerStatus" style="font-size: 0.75rem; color: var(--accent-yellow); text-align: center; margin-top: 5px;">
-          Iniciando red de monitor...
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- MODO VISOR REMOTO -->
-  <div id="viewer-app" class="app-layout" style="display: none; max-width: 800px;">
-    <div class="controls-container">
-      <div class="card" style="text-align: center; border-color: var(--accent-yellow);">
-        <label id="viewerStatus" style="color: var(--accent-yellow);">Conectando... 🟡</label>
-      </div>
-    </div>
-    <div class="camera-container">
-      <div class="camera-box">
-        <video id="viewerVideo" autoplay playsinline muted></video>
-        <div class="overlay-badge rec-indicator" id="vRecIndicator" style="top: 12px; left: 12px;">
-          <div class="dot"></div>
-          <span style="font-family: monospace;">GRABANDO</span>
-        </div>
-      </div>
-    </div>
-    <div class="controls-container">
-      <div class="card">
-        <div class="action-buttons">
-          <button class="btn btn-record" id="vRecordBtn" disabled>🔴 GRABAR</button>
-          <button class="btn btn-stop" id="vStopBtn">⏹ DETENER</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    if (window.location.protocol === 'file:' || (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
-      document.getElementById('errorBanner').style.display = 'block';
-    }
-
-    async function forceLandscapeScreen() {
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock('landscape');
-        }
-      } catch (e) {}
-    }
-    document.addEventListener('click', forceLandscapeScreen, { once: true });
-
-    const peerConfig = {
-      config: { iceServers: [ { urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:global.stun.twilio.com:3478' } ] }
-    };
-
-    function closePreview() {
-      const modal = document.getElementById('previewModal');
-      const player = document.getElementById('previewPlayer');
-      player.pause();
-      player.src = "";
-      modal.style.display = 'none';
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const hostPeerId = urlParams.get('view');
-
-    if (hostPeerId) {
-      document.getElementById('recorder-app').style.display = 'none';
-      document.getElementById('viewer-app').style.display = 'flex';
-      initViewerMode(hostPeerId);
-    } else {
-      initRecorderMode();
-    }
-
-    // ========================================================
-    // GRABADOR PRINCIPAL CON IA
-    // ========================================================
-    function initRecorderMode() {
-      let rawStream = null; // Lo que viene de la cámara
-      let processedStream = null; // Lo que sale del Canvas (IA)
-      let peer = null;
-      let activeConnections = new Map();
-      let isRecording = false;
-      let matchClips = [];
-      let facingMode = 'environment';
-      let wakeLock = null;
-
-      // Variables IA
-      let model;
-      let aiActive = false;
-      let currentX = 0;
-      let currentY = 0;
-      const zoomLevel = 0.5; // Zoom 2x (Muestra el 50% de la imagen original)
-      const smoothness = 0.05; // Velocidad de paneo
-      let animationFrameId;
-
-      const rawVideo = document.getElementById('rawVideo');
-      const canvas = document.getElementById('previewCanvas');
-      const ctx = canvas.getContext('2d');
-      const peerStatus = document.getElementById('peerStatus');
-      const recordBtn = document.getElementById('recordBtn');
-      const iaBanner = document.getElementById('iaStatusBanner');
-
-      // Cargar IA
-      cocoSsd.load().then(loadedModel => {
-        model = loadedModel;
-        recordBtn.disabled = false;
-        recordBtn.innerText = "🔴 GRABAR (Auto-Seguimiento)";
-        iaBanner.style.backgroundColor = "var(--accent-green)";
-        iaBanner.style.color = "white";
-        iaBanner.innerText = "🤖 IA Lista y esperando.";
-        setTimeout(() => { iaBanner.style.display = 'none'; }, 3000);
-      }).catch(err => {
-        iaBanner.style.backgroundColor = "var(--accent-red)";
-        iaBanner.style.color = "white";
-        iaBanner.innerText = "❌ Error cargando IA. Funcionará sin seguimiento automático.";
-        recordBtn.disabled = false;
-        recordBtn.innerText = "🔴 GRABAR (Fijo)";
-      });
-
-      async function solicitarWakeLock() {
-        try {
-          if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); }
-        } catch (err) {}
-      }
-      function liberarWakeLock() {
-        if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
-      }
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-          if (isRecording) solicitarWakeLock();
-        } else {
-          if (isRecording) {
-            document.getElementById('stopBtn').click();
-            alert("⚠️ Se detectó que bloqueaste la pantalla. La grabación fue detenida y guardada por seguridad.");
-          }
-        }
-      });
-
-      const myUniqueId = 'cam-' + Math.random().toString(36).substring(2, 9);
-      const generatedViewerUrl = window.location.origin + window.location.pathname + '?view=' + myUniqueId;
-      document.getElementById('monitorLinkInput').value = generatedViewerUrl;
-      
-      document.getElementById('copyMonitorBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(generatedViewerUrl).then(() => {
-          document.getElementById('copyMonitorBtn').innerText = "¡Copiado!";
-          setTimeout(() => { document.getElementById('copyMonitorBtn').innerText = "Copiar Link"; }, 2000);
-        });
-      });
-
-      peer = new Peer(myUniqueId, peerConfig); 
-      peer.on('open', () => { peerStatus.innerText = "Monitor remoto listo para conectar."; });
-      peer.on('disconnected', () => peer.reconnect());
-      
-      peer.on('connection', (conn) => {
-        conn.on('open', () => {
-          activeConnections.set(conn.peer, conn);
-          peerStatus.innerText = "👁️ Monitor visualizando";
-          conn.send({ type: 'STATE', isRecording: isRecording });
-        });
-        conn.on('data', (data) => {
-          if (data.type === 'VIEWER_READY' && processedStream) peer.call(conn.peer, processedStream);
-          else if (data.type === 'CMD_START_REC') recordBtn.click();
-          else if (data.type === 'CMD_STOP_REC') document.getElementById('stopBtn').click();
-        });
-        conn.on('close', () => activeConnections.delete(conn.peer));
-      });
-
-      function broadcastState() {
-        activeConnections.forEach(conn => { if(conn.open) conn.send({ type: 'STATE', isRecording: isRecording }); });
-      }
-
-      // Proceso de Inteligencia Artificial (Bucle)
-      async function runAITracking() {
-        if (rawVideo.paused || rawVideo.ended || !aiActive) return;
-
-        // Establecer tamaño del canvas una vez que el video cargue
-        if (canvas.width === 0 && rawVideo.videoWidth > 0) {
-            canvas.width = rawVideo.videoWidth * zoomLevel;
-            canvas.height = rawVideo.videoHeight * zoomLevel;
-            currentX = rawVideo.videoWidth / 4; // Empezar en el medio
-            currentY = rawVideo.videoHeight / 4;
-        }
-
-        if (model && canvas.width > 0) {
-            // Analizar imagen
-            const predictions = await model.detect(rawVideo);
+    <!-- ÁREA DE VIDEO Y CANVA SUPERPUESTO -->
+    <main class="flex-1 flex flex-col gap-3">
+        <div class="relative w-full aspect-[4/3] bg-black rounded-2xl overflow-hidden border border-gray-800 shadow-2xl group flex items-center justify-center">
             
-            let targetX = currentX;
-            let targetY = currentY;
-            let validTargets = 0;
-            let sumX = 0;
-            let sumY = 0;
+            <!-- Video de la cámara táctil -->
+            <video id="webcam" playsinline autoplay muted class="w-full h-full object-cover hidden"></video>
+            
+            <!-- Canvas superior para dibujo de IA y toques -->
+            <canvas id="tracker-canvas" class="canvas-overlay hidden"></canvas>
 
-            predictions.forEach(p => {
-                if (p.class === 'person' || p.class === 'sports ball') {
-                    sumX += p.bbox[0] + (p.bbox[2] / 2);
-                    sumY += p.bbox[1] + (p.bbox[3] / 2);
-                    validTargets++;
+            <!-- Pantalla de Bienvenida / Espera -->
+            <div id="placeholder-ui" class="flex flex-col items-center justify-center p-6 text-center z-10">
+                <div class="w-16 h-16 mb-3 rounded-full bg-gray-800/80 border border-gray-700 flex items-center justify-center text-3xl animate-bounce">
+                    📷
+                </div>
+                <h3 class="text-sm font-semibold text-gray-200 mb-1">Cámara Inactiva</h3>
+                <p class="text-xs text-gray-400 max-w-[220px]">Presiona "Iniciar Cámara" para comenzar el seguimiento con IA en tiempo real.</p>
+            </div>
+
+            <!-- Overlay de Carga del Modelo de IA -->
+            <div id="ai-loading-overlay" class="absolute inset-0 bg-gray-950/90 backdrop-blur flex flex-col items-center justify-center z-20 hidden">
+                <div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                <p class="text-xs font-medium text-emerald-400 font-mono-custom animate-pulse">Cargando modelo COCO-SSD...</p>
+                <p class="text-[10px] text-gray-400 mt-1">Procesando localmente en tu dispositivo</p>
+            </div>
+
+            <!-- Indicador Flotante de Toque para Selección -->
+            <div id="touch-hint" class="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/70 backdrop-blur rounded-full border border-gray-700/50 text-[11px] text-gray-300 pointer-events-none hidden">
+                👉 Toca una persona para fijar objetivo
+            </div>
+        </div>
+
+        <!-- BOTONES DE CONTROL DE CÁMARA Y SEGUIMIENTO -->
+        <div class="grid grid-cols-2 gap-2">
+            <button id="btn-toggle-cam" onclick="toggleCamera()" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                <span>▶️</span> <span id="btn-toggle-cam-text">INICIAR CÁMARA</span>
+            </button>
+            <button id="btn-switch-cam" onclick="switchCamera()" disabled class="w-full py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 disabled:opacity-40 font-semibold text-sm rounded-xl shadow transition-all flex items-center justify-center gap-2">
+                <span>🔄</span> <span>CAMBIAR CÁMARA</span>
+            </button>
+        </div>
+
+        <button id="btn-reset-track" onclick="resetTracking()" disabled class="w-full py-2.5 px-4 bg-gray-900 border border-gray-800 hover:bg-gray-800 text-gray-300 disabled:opacity-40 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2">
+            <span>🎯</span> REINICIAR SEGUIMIENTO
+        </button>
+
+        <!-- PANEL DE TELEMETRÍA Y COMANDOS DE SEGUIMIENTO -->
+        <div class="bg-gray-900/90 border border-gray-800 rounded-2xl p-3 flex flex-col gap-3 shadow-lg">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Modo Seguimiento</span>
+                <span id="target-id-badge" class="text-xs font-mono-custom font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-300">
+                    Ninguna persona
+                </span>
+            </div>
+
+            <!-- Indicadores de posición de centro -->
+            <div class="grid grid-cols-2 gap-2 text-center">
+                <div class="bg-gray-950/60 p-2 rounded-xl border border-gray-800/80">
+                    <div class="text-[10px] text-gray-400 uppercase font-semibold">Centro Persona</div>
+                    <div id="target-x-percent" class="text-base font-bold font-mono-custom text-emerald-400">-- %</div>
+                </div>
+                <div class="bg-gray-950/60 p-2 rounded-xl border border-gray-800/80">
+                    <div class="text-[10px] text-gray-400 uppercase font-semibold">Centro Pantalla</div>
+                    <div class="text-base font-bold font-mono-custom text-gray-300">50 %</div>
+                </div>
+            </div>
+
+            <!-- Dirección y Comando Virtual -->
+            <div class="bg-gray-950/80 rounded-xl p-3 border border-gray-800/80 flex items-center justify-between">
+                <div>
+                    <div class="text-[10px] text-gray-400 uppercase font-semibold">Estado Acción</div>
+                    <div id="action-status-text" class="text-sm font-extrabold text-white">● MANTENER</div>
+                    <div class="text-[10px] text-gray-500 font-mono-custom mt-0.5">
+                        Cmd: <span id="virtual-command-text" class="text-emerald-400 font-bold">PAN_STOP</span>
+                    </div>
+                </div>
+                <!-- Flecha Direccional Prominente -->
+                <div id="direction-arrow-icon" class="w-12 h-12 rounded-xl bg-gray-800/80 border border-gray-700 flex items-center justify-center text-2xl text-emerald-400 font-bold">
+                    ●
+                </div>
+            </div>
+
+            <!-- Barra de Velocidad Proporcional -->
+            <div>
+                <div class="flex justify-between text-[11px] font-semibold text-gray-400 mb-1">
+                    <span>Velocidad Giro Recomendada:</span>
+                    <span id="speed-percent-text" class="font-mono-custom text-emerald-400">0%</span>
+                </div>
+                <div class="w-full h-2.5 bg-gray-950 rounded-full overflow-hidden p-0.5 border border-gray-800">
+                    <div id="speed-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-100" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TERMINAL SIMULADORA DE COMANDOS ESP32 -->
+        <div class="bg-gray-950 border border-gray-800 rounded-2xl p-3 flex flex-col gap-2 shadow-inner">
+            <div class="flex items-center justify-between border-b border-gray-800/80 pb-1.5">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs font-bold text-gray-300 font-mono-custom">Consola ESP32 (Virtual)</span>
+                </div>
+                <button onclick="clearConsoleLog()" class="text-[10px] text-gray-500 hover:text-gray-300 transition-colors">
+                    Limpiar
+                </button>
+            </div>
+            <!-- Caja de logs con barra de desplazamiento oculta -->
+            <div id="console-logs" class="h-24 overflow-y-auto font-mono-custom text-[11px] text-emerald-400/90 flex flex-col gap-1 no-scrollbar pt-1">
+                <div class="text-gray-600 font-mono-custom">[SISTEMA] Listo. Esperando inicio de cámara...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER INFORMATIVO -->
+    <footer class="mt-4 text-center text-[10px] text-gray-500">
+        AI Mobile Tracker • Diseñado para GitHub Pages & ESP32 BLE
+    </footer>
+
+    <script>
+        /**
+         * ====================================================================
+         * VARIABLES GLOBALES Y ESTADO DE LA APLICACIÓN
+         * ====================================================================
+         */
+        let cocoModel = null;             // Instancia del modelo COCO-SSD
+        let isCameraActive = false;       // Estado de ejecución de la cámara
+        let currentFacingMode = 'environment'; // 'environment' (trasera) o 'user' (frontal)
+        let videoStream = null;           // Objeto MediaStream de la cámara
+        let animationFrameId = null;      // ID del requestAnimationFrame
+        
+        // Elementos DOM
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('tracker-canvas');
+        const ctx = canvas.getContext('2d');
+        const placeholderUI = document.getElementById('placeholder-ui');
+        const aiLoadingOverlay = document.getElementById('ai-loading-overlay');
+        const consoleLogs = document.getElementById('console-logs');
+
+        // Estado del Target / Persona Seguida
+        let trackedTarget = null;         // { id, cx, cy, width, height, bbox }
+        let targetCounter = 0;            // Contador para asignar IDs a personas
+        let consecutiveLostFrames = 0;    // Marcos consecutivos sin detectar al target actual
+        const MAX_LOST_FRAMES = 15;       // Si pasa 15 marcos sin verse, se libera la selección
+
+        // Control de Rendimiento (FPS y Frame-Throttling)
+        let lastFrameTime = performance.now();
+        let fps = 0;
+        let frameCount = 0;
+        let frameSkipCounter = 0;
+        let dynamicFrameSkip = 0;         // Si el cel va lento, salta N marcos de inferencia de IA
+
+        // Último comando enviado para evitar saturación de logs
+        let lastSentCommand = "";
+        let lastSentSpeed = -1;
+
+        /**
+         * Inicialización general al cargar la ventana
+         */
+        window.addEventListener('load', async () => {
+            logConsole("Cargando modelo de Inteligencia Artificial COCO-SSD...");
+            aiLoadingOverlay.classList.remove('hidden');
+            
+            try {
+                // Carga del modelo TensorFlow.js
+                cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+                logConsole("✅ Modelo COCO-SSD cargado exitosamente.");
+            } catch (err) {
+                logConsole("❌ Error al cargar modelo de IA: " + err.message);
+                alert("No se pudo cargar el modelo de visión artificial. Verifica tu conexión.");
+            } finally {
+                aiLoadingOverlay.classList.add('hidden');
+            }
+
+            // Event listener para permitir selección por toque/clic
+            canvas.addEventListener('click', handleCanvasTouch);
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 0) {
+                    const touch = e.touches[0];
+                    handleCanvasTouch(touch);
+                }
+            }, { passive: true });
+        });
+
+        /**
+         * Alterna entre Iniciar y Detener la cámara
+         */
+        async function toggleCamera() {
+            if (isCameraActive) {
+                stopCamera();
+            } else {
+                await startCamera();
+            }
+        }
+
+        /**
+         * STREAMING_CHUNK:Implementando el encendido de la cámara web/móvil...
+         * Inicia el flujo de la cámara con restricciones aptas para iOS Safari
+         */
+        async function startCamera() {
+            if (!cocoModel) {
+                alert("El modelo de IA aún se está cargando. Espera un momento.");
+                return;
+            }
+
+            const constraints = {
+                video: {
+                    facingMode: currentFacingMode,
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+                audio: false
+            };
+
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = videoStream;
+                
+                // Atributos clave requeridos para reproducción fluida en iOS Safari
+                video.setAttribute('playsinline', 'true');
+                video.setAttribute('muted', 'true');
+                video.muted = true;
+
+                await video.play();
+
+                isCameraActive = true;
+                
+                // Ajustar resolución interna del canvas para coincidir con el video
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+
+                // Actualizar interfaz gráfica
+                placeholderUI.classList.add('hidden');
+                video.classList.remove('hidden');
+                canvas.classList.remove('hidden');
+                document.getElementById('touch-hint').classList.remove('hidden');
+
+                document.getElementById('btn-toggle-cam-text').innerText = "DETENER CÁMARA";
+                document.getElementById('btn-toggle-cam').classList.replace('bg-emerald-600', 'bg-red-600');
+                document.getElementById('btn-toggle-cam').classList.replace('hover:bg-emerald-500', 'hover:bg-red-500');
+                document.getElementById('btn-switch-cam').disabled = false;
+                document.getElementById('btn-reset-track').disabled = false;
+
+                // Actualizar badges
+                document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse-fast";
+                document.getElementById('status-text').innerText = "🟢 Cámara activa";
+                document.getElementById('camera-status-badge').className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/50";
+                document.getElementById('fps-badge').classList.remove('hidden');
+
+                logConsole("📷 Cámara iniciada (" + currentFacingMode + ")");
+
+                // Iniciar el ciclo de detección continua
+                requestAnimationFrame(processingLoop);
+
+            } catch (err) {
+                logConsole("❌ Error de acceso a cámara: " + err.message);
+                alert("No se pudo acceder a la cámara. Asegúrate de otorgar permisos en tu navegador.");
+            }
+        }
+
+        /**
+         * Detiene el flujo de la cámara
+         */
+        function stopCamera() {
+            isCameraActive = false;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+
+            video.classList.add('hidden');
+            canvas.classList.add('hidden');
+            placeholderUI.classList.remove('hidden');
+            document.getElementById('touch-hint').classList.add('hidden');
+
+            document.getElementById('btn-toggle-cam-text').innerText = "INICIAR CÁMARA";
+            document.getElementById('btn-toggle-cam').classList.replace('bg-red-600', 'bg-emerald-600');
+            document.getElementById('btn-toggle-cam').classList.replace('hover:bg-red-500', 'hover:bg-emerald-500');
+            document.getElementById('btn-switch-cam').disabled = true;
+            document.getElementById('btn-reset-track').disabled = true;
+
+            // Actualizar Badges
+            document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-red-500";
+            document.getElementById('status-text').innerText = "🔴 Cámara detenida";
+            document.getElementById('camera-status-badge').className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-950/80 text-red-400 border border-red-800/50";
+            document.getElementById('fps-badge').classList.add('hidden');
+
+            resetTrackingState();
+            sendMotorCommand("PAN_STOP", 0);
+            logConsole("⏹️ Cámara detenida.");
+        }
+
+        /**
+         * Alterna entre cámara trasera y frontal (facingMode)
+         */
+        async function switchCamera() {
+            currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+            logConsole("Cambiando cámara a: " + currentFacingMode);
+            stopCamera();
+            await startCamera();
+        }
+
+        /**
+         * ====================================================================
+         * BUCLE PRINCIPAL DE PROCESAMIENTO E INFERENCIA DE IA
+         * ====================================================================
+         */
+        async function processingLoop(timestamp) {
+            if (!isCameraActive) return;
+
+            // Cálculo de FPS e indicadores de rendimiento
+            frameCount++;
+            if (timestamp - lastFrameTime >= 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                lastFrameTime = timestamp;
+                document.getElementById('fps-value').innerText = fps;
+                
+                // Lógica de throttling dinámico según rendimiento del teléfono
+                if (fps < 10) {
+                    dynamicFrameSkip = 2; // Omitir 2 marcos de IA si la CPU va lenta
+                } else if (fps < 18) {
+                    dynamicFrameSkip = 1; // Omitir 1 marco
+                } else {
+                    dynamicFrameSkip = 0; // Inferencia a máxima velocidad
+                }
+                document.getElementById('frame-skip-value').innerText = dynamicFrameSkip;
+            }
+
+            // Control de salto de marcos (Throttling)
+            if (frameSkipCounter < dynamicFrameSkip) {
+                frameSkipCounter++;
+                animationFrameId = requestAnimationFrame(processingLoop);
+                return;
+            }
+            frameSkipCounter = 0;
+
+            // Detección de objetos con TensorFlow.js
+            try {
+                const predictions = await cocoModel.detect(video, 6, 0.35);
+                
+                // FILTRAR ÚNICAMENTE LA CLASE 'person'
+                const personDetections = predictions.filter(pred => pred.class === 'person');
+
+                // Procesar la lógica de seguimiento de la persona seleccionada
+                processTrackingLogic(personDetections);
+
+                // Dibujar overlays en el Canvas
+                drawCanvasOverlays(personDetections);
+
+            } catch (err) {
+                console.error("Error en detección:", err);
+            }
+
+            // Siguiente cuadro
+            animationFrameId = requestAnimationFrame(processingLoop);
+        }
+
+        /**
+         * ====================================================================
+         * ALGORITMO DE SEGUIMIENTO Y PERSISTENCIA DE OBJETIVO (TRACKING)
+         * ====================================================================
+         * Permite mantener identificada a la MISMA persona entre fotogramas
+         * calculando la cercanía del centroide.
+         */
+        function processTrackingLogic(detections) {
+            if (detections.length === 0) {
+                consecutiveLostFrames++;
+                if (consecutiveLostFrames > MAX_LOST_FRAMES && trackedTarget) {
+                    logConsole("⚠️ Persona #" + trackedTarget.id + " perdida.");
+                    resetTrackingState();
+                }
+                updateUIAndCommands();
+                return;
+            }
+
+            // Si aún no tenemos un target fijado, seleccionamos automáticamente la persona más cercana al centro
+            if (!trackedTarget) {
+                autoSelectTargetClosestToCenter(detections);
+            } else {
+                // Si ya tenemos un target, buscamos en el nuevo marco a la persona más cercana a su posición anterior
+                let bestMatch = null;
+                let minDistance = Infinity;
+
+                detections.forEach(det => {
+                    const cx = det.bbox[0] + det.bbox[2] / 2;
+                    const cy = det.bbox[1] + det.bbox[3] / 2;
+
+                    // Distancia Euclidiana entre centroide anterior y el nuevo
+                    const dist = Math.hypot(cx - trackedTarget.cx, cy - trackedTarget.cy);
+
+                    // Umbral máximo de salto de movimiento (35% del ancho del canvas)
+                    if (dist < minDistance && dist < (canvas.width * 0.35)) {
+                        minDistance = dist;
+                        bestMatch = { det, cx, cy };
+                    }
+                });
+
+                if (bestMatch) {
+                    // Actualizar posición del target mantenido
+                    trackedTarget.cx = bestMatch.cx;
+                    trackedTarget.cy = bestMatch.cy;
+                    trackedTarget.bbox = bestMatch.det.bbox;
+                    consecutiveLostFrames = 0;
+                } else {
+                    consecutiveLostFrames++;
+                    if (consecutiveLostFrames > MAX_LOST_FRAMES) {
+                        logConsole("⚠️ Objetivo #" + trackedTarget.id + " se alejó demasiado.");
+                        resetTrackingState();
+                    }
+                }
+            }
+
+            // Calcular desvío y enviar comandos de control a los motores
+            updateUIAndCommands();
+        }
+
+        /**
+         * Auto-selecciona la persona cuyo centroide esté más próximo al 50% del ancho
+         */
+        function autoSelectTargetClosestToCenter(detections) {
+            const screenCenterX = canvas.width / 2;
+            let closestPerson = null;
+            let minCenterXDiff = Infinity;
+
+            detections.forEach(det => {
+                const cx = det.bbox[0] + det.bbox[2] / 2;
+                const diff = Math.abs(cx - screenCenterX);
+                if (diff < minCenterXDiff) {
+                    minCenterXDiff = diff;
+                    closestPerson = det;
                 }
             });
 
-            if (validTargets > 0) {
-                const centerX = sumX / validTargets;
-                const centerY = sumY / validTargets;
-                targetX = centerX - (canvas.width / 2);
-                targetY = centerY - (canvas.height / 2);
+            if (closestPerson) {
+                targetCounter++;
+                const cx = closestPerson.bbox[0] + closestPerson.bbox[2] / 2;
+                const cy = closestPerson.bbox[1] + closestPerson.bbox[3] / 2;
+                trackedTarget = {
+                    id: targetCounter,
+                    cx: cx,
+                    cy: cy,
+                    bbox: closestPerson.bbox
+                };
+                consecutiveLostFrames = 0;
+                logConsole("🎯 Seleccionado automáticamente: Persona #" + trackedTarget.id);
             }
-
-            // Límites
-            targetX = Math.max(0, Math.min(targetX, rawVideo.videoWidth - canvas.width));
-            targetY = Math.max(0, Math.min(targetY, rawVideo.videoHeight - canvas.height));
-
-            // Lerp (Movimiento Suave)
-            currentX += (targetX - currentX) * smoothness;
-            currentY += (targetY - currentY) * smoothness;
-
-            // Dibujar recorte en canvas
-            ctx.drawImage(rawVideo, 
-                currentX, currentY, canvas.width, canvas.height,
-                0, 0, canvas.width, canvas.height
-            );
-        } else if (canvas.width > 0) {
-             // Si no hay modelo, dibujamos fijo sin seguimiento
-             ctx.drawImage(rawVideo, 
-                currentX, currentY, canvas.width, canvas.height,
-                0, 0, canvas.width, canvas.height
-            );
         }
 
-        animationFrameId = requestAnimationFrame(runAITracking);
-      }
+        /**
+         * Permite al usuario tocar la pantalla para seleccionar manualmente una persona
+         */
+        function handleCanvasTouch(e) {
+            if (!isCameraActive) return;
 
-      async function startCamera() {
-        if (rawStream) rawStream.getTracks().forEach(t => t.stop());
-        try {
-          let constraints = { 
-            video: { 
-              facingMode: { ideal: facingMode }, 
-              width: { ideal: 1920 }, 
-              height: { ideal: 1080 },
-              aspectRatio: { exact: 16/9 } 
-            }, 
-            audio: false 
-          };
-          
-          try {
-            rawStream = await navigator.mediaDevices.getUserMedia(constraints);
-          } catch(e) {
-            constraints.video.aspectRatio = { ideal: 16/9 };
-            rawStream = await navigator.mediaDevices.getUserMedia(constraints);
-          }
-          
-          rawVideo.srcObject = rawStream;
-          
-          // Capturar el stream procesado del Canvas a 30fps
-          processedStream = canvas.captureStream(30);
+            const rect = canvas.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
 
-          // Actualizar llamadas peer
-          activeConnections.forEach((conn, peerId) => peer.call(peerId, processedStream));
-          
-          // Iniciar dibujado estático (antes de grabar)
-          rawVideo.onloadeddata = () => {
-              aiActive = true; 
-              runAITracking();
-          }
+            // Se busca si el clic cayó dentro de la bounding box de alguna persona
+            cocoModel.detect(video, 6, 0.25).then(predictions => {
+                const persons = predictions.filter(p => p.class === 'person');
+                let clickedPerson = null;
 
-        } catch (err) {
-          alert("Error de cámara. Asegúrate de dar permisos.");
-        }
-      }
-      startCamera();
+                persons.forEach(p => {
+                    const [x, y, w, h] = p.bbox;
+                    if (clickX >= x && clickX <= x + w && clickY >= y && clickY <= y + h) {
+                        clickedPerson = p;
+                    }
+                });
 
-      document.getElementById('switchCamBtn').addEventListener('click', () => {
-        facingMode = facingMode === 'environment' ? 'user' : 'environment';
-        startCamera();
-      });
-
-      let mediaRecorder, recordedChunks = [], startTime, timerInterval; 
-      const stopBtn = document.getElementById('stopBtn');
-      
-      recordBtn.addEventListener('click', () => {
-        if(!processedStream) return;
-        
-        forceLandscapeScreen(); 
-        solicitarWakeLock(); 
-        
-        recordedChunks = [];
-        let options = { mimeType: MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' : 'video/webm' };
-        
-        // GRABAMOS EL PROCESADO (Canvas), NO EL CRUDO
-        try { mediaRecorder = new MediaRecorder(processedStream, options); } 
-        catch (e) { mediaRecorder = new MediaRecorder(processedStream); }
-
-        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
-        
-        mediaRecorder.onstop = () => {
-          const finalExt = mediaRecorder.mimeType.includes('mp4') ? 'mp4' : 'webm';
-          const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'video/mp4' });
-          const clipIndex = matchClips.length + 1; 
-          const fileName = `Transmision_IA_${clipIndex}.${finalExt}`;
-
-          matchClips.push({ blob, fileName });
-          renderClipItem(blob, fileName, clipIndex);
-        };
-
-        mediaRecorder.start(1000); 
-        isRecording = true;
-        
-        // La IA ya está activa dibujando en el canvas desde que se abrió la cámara
-        
-        recordBtn.style.display = 'none'; stopBtn.style.display = 'flex';
-        document.getElementById('recIndicator').classList.add('recording');
-        
-        startTime = Date.now();
-        timerInterval = setInterval(() => {
-          const elapsed = Math.floor((Date.now() - startTime) / 1000);
-          document.getElementById('timerDisplay').innerText = new Date(elapsed * 1000).toISOString().substr(11, 8);
-        }, 1000);
-
-        broadcastState(); 
-      });
-
-      stopBtn.addEventListener('click', () => {
-        if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-        liberarWakeLock();
-        isRecording = false;
-        
-        recordBtn.style.display = 'flex'; stopBtn.style.display = 'none';
-        document.getElementById('recIndicator').classList.remove('recording');
-        clearInterval(timerInterval);
-        broadcastState(); 
-      });
-
-      function renderClipItem(blob, fileName, index) {
-        document.getElementById('outputCard').style.display = 'flex';
-        const clipsList = document.getElementById('clipsList');
-        
-        const clipDiv = document.createElement('div');
-        clipDiv.className = 'clip-item';
-        
-        const blobUrl = URL.createObjectURL(blob);
-
-        clipDiv.innerHTML = `
-          <div class="clip-header">🎬 Transmisión Inteligente #${index}</div>
-          <div class="clip-actions">
-            <button class="clip-btn btn-preview" id="prev-${index}">👁️ Ver</button>
-            <button class="clip-btn btn-download" id="down-${index}">⬇️ Descargar</button>
-          </div>
-          <div id="cloud-container-${index}" style="margin-top: 5px;">
-            <button class="clip-btn btn-upload" id="upload-${index}" style="width: 100%;">☁️ Generar Link de Gofile</button>
-          </div>
-        `;
-        clipsList.prepend(clipDiv); 
-
-        // VER PREVIEW
-        document.getElementById(`prev-${index}`).onclick = () => {
-          const modal = document.getElementById('previewModal');
-          const player = document.getElementById('previewPlayer');
-          player.src = blobUrl;
-          modal.style.display = 'flex';
-          player.play();
-        };
-
-        // DESCARGAR LOCALMENTE
-        document.getElementById(`down-${index}`).onclick = () => {
-          const a = document.createElement('a');
-          a.href = blobUrl;
-          a.download = fileName;
-          a.click();
-        };
-
-        // SUBIR A GOFILE
-        document.getElementById(`upload-${index}`).onclick = async function() {
-          const container = document.getElementById(`cloud-container-${index}`);
-          this.innerText = "⏳ Conectando con Gofile...";
-          this.disabled = true;
-
-          try {
-            const serverResponse = await fetch('https://api.gofile.io/servers');
-            const serverData = await serverResponse.json();
-            
-            if (serverData.status !== 'ok' || !serverData.data || serverData.data.servers.length === 0) {
-                throw new Error('Error obteniendo servidor Gofile');
-            }
-            const server = serverData.data.servers[0].name;
-
-            this.innerText = "⏳ Subiendo video (espera por favor)...";
-
-            const formData = new FormData();
-            formData.append('file', blob, fileName);
-
-            const uploadResponse = await fetch(`https://${server}.gofile.io/contents/uploadfile`, {
-              method: 'POST',
-              body: formData
+                if (clickedPerson) {
+                    targetCounter++;
+                    const cx = clickedPerson.bbox[0] + clickedPerson.bbox[2] / 2;
+                    const cy = clickedPerson.bbox[1] + clickedPerson.bbox[3] / 2;
+                    trackedTarget = {
+                        id: targetCounter,
+                        cx: cx,
+                        cy: cy,
+                        bbox: clickedPerson.bbox
+                    };
+                    consecutiveLostFrames = 0;
+                    logConsole("👉 Fijado manualmente por toque: Persona #" + trackedTarget.id);
+                }
             });
-            const uploadResult = await uploadResponse.json();
+        }
 
-            if(uploadResult.status === 'ok' && uploadResult.data && uploadResult.data.downloadPage) {
-              const fileUrl = uploadResult.data.downloadPage;
-              
-              container.innerHTML = `
-                <div style="background: var(--bg-color); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
-                  <label style="color: #48bb78; font-size: 0.8rem;">✅ Link de Gofile generado</label>
-                  <input type="text" value="${fileUrl}" readonly style="background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 6px;">
-                  <div class="clip-actions">
-                    <button class="clip-btn btn-whatsapp" style="width:100%; font-size: 0.9rem;" onclick="window.open('https://wa.me/?text=' + encodeURIComponent('¡Hola! Aquí tienes la grabación del práctico de fútbol (Grabado con IA) ⚽ para ver o descargar: \\n\\n${fileUrl}'), '_blank')">📲 Compartir Link por WhatsApp</button>
-                  </div>
-                </div>
-              `;
-            } else {
-              throw new Error('Error al subir a Gofile');
+        /**
+         * Reinicia el objetivo seguido
+         */
+        function resetTracking() {
+            resetTrackingState();
+            logConsole("🔄 Seguimiento reiniciado manualmente.");
+        }
+
+        function resetTrackingState() {
+            trackedTarget = null;
+            consecutiveLostFrames = 0;
+            updateUIAndCommands();
+        }
+
+        /**
+         * ====================================================================
+         * CÁLCULO DE COMANDOS MATEMÁTICOS Y MATRIZ DE DECISIÓN
+         * ====================================================================
+         */
+        function updateUIAndCommands() {
+            const targetBadge = document.getElementById('target-id-badge');
+            const targetXPercentEl = document.getElementById('target-x-percent');
+            const actionStatusText = document.getElementById('action-status-text');
+            const virtualCommandText = document.getElementById('virtual-command-text');
+            const directionArrowIcon = document.getElementById('direction-arrow-icon');
+            const speedPercentText = document.getElementById('speed-percent-text');
+            const speedBar = document.getElementById('speed-bar');
+
+            if (!trackedTarget) {
+                targetBadge.innerText = "Ninguna persona";
+                targetBadge.className = "text-xs font-mono-custom font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400";
+                targetXPercentEl.innerText = "-- %";
+                actionStatusText.innerText = "● MANTENER";
+                virtualCommandText.innerText = "PAN_STOP";
+                directionArrowIcon.innerText = "●";
+                directionArrowIcon.className = "w-12 h-12 rounded-xl bg-gray-800/80 border border-gray-700 flex items-center justify-center text-2xl text-gray-500 font-bold";
+                speedPercentText.innerText = "0%";
+                speedBar.style.width = "0%";
+
+                sendMotorCommand("PAN_STOP", 0);
+                return;
             }
-          } catch (err) {
-            console.error(err);
-            this.innerText = "❌ Falló la subida. Reintentar";
-            this.disabled = false;
-            alert("No se pudo conectar con Gofile. Asegúrate de tener buena señal de internet (los videos de fútbol pesan bastante).");
-          }
-        };
-      }
-    }
 
-    // ========================================================
-    // VISOR REMOTO
-    // ========================================================
-    function initViewerMode(targetId) {
-      const viewerVideo = document.getElementById('viewerVideo');
-      const viewerStatus = document.getElementById('viewerStatus');
-      const vRecordBtn = document.getElementById('vRecordBtn');
-      const vStopBtn = document.getElementById('vStopBtn');
-      
-      let viewerConn = null;
-      const viewerPeer = new Peer(peerConfig); 
+            // Actualizar etiqueta del target
+            targetBadge.innerText = "Persona #" + trackedTarget.id;
+            targetBadge.className = "text-xs font-mono-custom font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60";
 
-      viewerPeer.on('open', () => { connectToHost(); });
-      viewerPeer.on('disconnected', () => { viewerPeer.reconnect(); });
+            // Posición X en porcentaje (0% a 100%)
+            const xPercent = (trackedTarget.cx / canvas.width) * 100;
+            targetXPercentEl.innerText = xPercent.toFixed(1) + " %";
 
-      function connectToHost() {
-        viewerConn = viewerPeer.connect(targetId, { reliable: true });
+            let command = "PAN_STOP";
+            let speed = 0;
+            let statusText = "● MANTENER";
+            let arrowSymbol = "●";
+            let arrowStyle = "bg-emerald-950/80 border-emerald-700 text-emerald-400";
 
-        viewerConn.on('open', () => {
-          viewerStatus.innerText = "Conectado. Solicitando video... 🟡";
-          viewerConn.send({ type: 'VIEWER_READY' }); 
-          vRecordBtn.disabled = false;
-        });
-
-        viewerConn.on('data', (data) => {
-          if (data.type === 'STATE') {
-            if (data.isRecording) {
-              vRecordBtn.style.display = 'none'; vStopBtn.style.display = 'flex';
-              document.getElementById('vRecIndicator').classList.add('visible', 'recording');
-            } else {
-              vRecordBtn.style.display = 'flex'; vStopBtn.style.display = 'none';
-              document.getElementById('vRecIndicator').classList.remove('visible', 'recording');
+            // ZONA MUERTA (DEAD ZONE): entre 45% y 55%
+            if (xPercent >= 45 && xPercent <= 55) {
+                command = "PAN_STOP";
+                speed = 0;
+                statusText = "● MANTENER";
+                arrowSymbol = "●";
+                arrowStyle = "bg-emerald-950/80 border-emerald-700 text-emerald-400";
+            } 
+            // GIRAR IZQUIERDA: x < 45%
+            else if (xPercent < 45) {
+                command = "PAN_LEFT";
+                // Cálculo proporcional: desvío máximo es (45 - 0) = 45 -> Multiplicador = 100 / 45 ≈ 2.222
+                const delta = 45 - xPercent;
+                speed = Math.min(100, Math.round(delta * 2.222));
+                statusText = "← GIRAR IZQUIERDA";
+                arrowSymbol = "←";
+                arrowStyle = "bg-amber-950/80 border-amber-700 text-amber-400 animate-pulse";
+            } 
+            // GIRAR DERECHA: x > 55%
+            else if (xPercent > 55) {
+                command = "PAN_RIGHT";
+                // Cálculo proporcional: desvío máximo es (100 - 55) = 45 -> Multiplicador ≈ 2.222
+                const delta = xPercent - 55;
+                speed = Math.min(100, Math.round(delta * 2.222));
+                statusText = "GIRAR DERECHA →";
+                arrowSymbol = "→";
+                arrowStyle = "bg-amber-950/80 border-amber-700 text-amber-400 animate-pulse";
             }
-          }
-        });
 
-        viewerConn.on('close', () => {
-          viewerStatus.innerText = "Desconectado. Reconectando... 🔴";
-          setTimeout(connectToHost, 3000);
-        });
-      }
+            // Actualizar elementos visuales del dashboard
+            actionStatusText.innerText = statusText;
+            virtualCommandText.innerText = command + (speed > 0 ? " " + speed : "");
+            directionArrowIcon.innerText = arrowSymbol;
+            directionArrowIcon.className = `w-12 h-12 rounded-xl border flex items-center justify-center text-2xl font-bold ${arrowStyle}`;
+            speedPercentText.innerText = speed + "%";
+            speedBar.style.width = speed + "%";
 
-      viewerPeer.on('call', (call) => {
-        call.answer(); 
-        call.on('stream', (remoteStream) => {
-          viewerVideo.srcObject = remoteStream;
-          viewerStatus.innerText = "EN VIVO (Transmisión IA) 🟢";
-          viewerStatus.style.color = "var(--accent-green)";
-        });
-      });
+            // Enviar comando simulado al motor/ESP32
+            sendMotorCommand(command, speed);
+        }
 
-      vRecordBtn.addEventListener('click', () => { if(viewerConn && viewerConn.open) viewerConn.send({ type: 'CMD_START_REC' }); });
-      vStopBtn.addEventListener('click', () => { if(viewerConn && viewerConn.open) viewerConn.send({ type: 'CMD_STOP_REC' }); });
-    }
-  </script>
+        /**
+         * ====================================================================
+         * DIBUJO GRAFICO EN CANVAS (OVERLAYS, LÍNEA GUÍA Y OBJETIVOS)
+         * ====================================================================
+         */
+        function drawCanvasOverlays(allDetections) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Dibujar línea vertical central de la pantalla (50%)
+            const centerX = canvas.width / 2;
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([6, 6]);
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+
+            // 2. Dibujar líneas de Zona Muerta (45% y 55%)
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.25)';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.45, 0);
+            ctx.lineTo(canvas.width * 0.45, canvas.height);
+            ctx.moveTo(canvas.width * 0.55, 0);
+            ctx.lineTo(canvas.width * 0.55, canvas.height);
+            ctx.stroke();
+            ctx.restore();
+
+            // 3. Dibujar todas las personas detectadas
+            allDetections.forEach(det => {
+                const [x, y, w, h] = det.bbox;
+                const cx = x + w / 2;
+                const cy = y + h / 2;
+
+                const isTracked = trackedTarget && Math.abs(cx - trackedTarget.cx) < 5 && Math.abs(cy - trackedTarget.cy) < 5;
+
+                if (isTracked) {
+                    // DIBUJAR PERSONA SELECCIONADA (Verde Neón Fosforescente)
+                    ctx.strokeStyle = '#10b981'; // Tailwind Emerald 500
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(x, y, w, h);
+
+                    // Fondo semitransparente dentro del rectángulo
+                    ctx.fillStyle = 'rgba(16, 185, 129, 0.12)';
+                    ctx.fillRect(x, y, w, h);
+
+                    // Indicador Crosshair (Mira de objetivo) en el centro de la persona
+                    drawCrosshair(cx, cy, '#10b981');
+
+                    // Vector conector desde el centro de la pantalla al centro de la persona
+                    ctx.save();
+                    ctx.strokeStyle = '#f59e0b'; // Ámbar
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, cy);
+                    ctx.lineTo(cx, cy);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Etiqueta superior de la persona elegida
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillRect(x, y - 22, 110, 22);
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 12px "JetBrains Mono", monospace';
+                    ctx.fillText(`TARGET #${trackedTarget.id}`, x + 6, y - 6);
+
+                } else {
+                    // DIBUJAR PERSONA NO SELECCIONADA (Azul / Gris tenue)
+                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+                    ctx.lineWidth = 1.5;
+                    ctx.save();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeRect(x, y, w, h);
+                    ctx.restore();
+
+                    // Etiqueta secundaria
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+                    ctx.fillRect(x, y - 18, 70, 18);
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.font = '10px "JetBrains Mono", monospace';
+                    ctx.fillText('Persona', x + 4, y - 5);
+                }
+            });
+        }
+
+        /**
+         * Dibuja una mira táctica (Crosshair) sobre la posición central del objetivo
+         */
+        function drawCrosshair(x, y, color) {
+            const size = 12;
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            
+            // Círculo central
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            // Líneas de mira
+            ctx.beginPath();
+            ctx.moveTo(x - size, y);
+            ctx.lineTo(x + size, y);
+            ctx.moveTo(x, y - size);
+            ctx.lineTo(x, y + size);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        /**
+         * ====================================================================
+         * SIMULADOR ESP32 Y COMUNICACIÓN MODULAR DE MOTORES
+         * ====================================================================
+         * 
+         * Esta función es la pasarela modular para enviar comandos al hardware.
+         * En esta fase solo muestra los comandos en la consola virtual.
+         * 
+         * FUTURA INTEGRACIÓN CON BLUETOOTH (ESP32):
+         * --------------------------------------------------------------------
+         * Para conectar con tu ESP32 por Web Bluetooth BLE en el futuro,
+         * reemplaza esta función por:
+         * 
+         * async function sendMotorCommand(command, speed) {
+         *     if (!bleCharacteristic) return;
+         *     const payload = `${command}:${speed}\n`;
+         *     const encoder = new TextEncoder();
+         *     await bleCharacteristic.writeValue(encoder.encode(payload));
+         * }
+         * ====================================================================
+         */
+        function sendMotorCommand(command, speed) {
+            // Evitar spam continuo del mismo comando exacto
+            if (command === lastSentCommand && speed === lastSentSpeed) {
+                return;
+            }
+
+            lastSentCommand = command;
+            lastSentSpeed = speed;
+
+            // Formato de comando para el motor
+            const fullCommand = command === "PAN_STOP" ? "PAN_STOP" : `${command} ${speed}`;
+            
+            // Imprimir en la consola virtual en pantalla
+            logConsole(`SEND -> ${fullCommand}`, true);
+        }
+
+        /**
+         * Agrega un mensaje con marca de tiempo a la consola virtual en pantalla
+         */
+        function logConsole(msg, isCommand = false) {
+            const time = new Date().toLocaleTimeString('es-ES', { hour12: false });
+            const logItem = document.createElement('div');
+            
+            if (isCommand) {
+                logItem.className = "text-emerald-400 font-bold font-mono-custom flex items-center justify-between";
+                logItem.innerHTML = `<span>[${time}] ${msg}</span><span class="text-[9px] text-emerald-600 bg-emerald-950 px-1.5 py-0.2 rounded">ESP32</span>`;
+            } else {
+                logItem.className = "text-gray-400 font-mono-custom";
+                logItem.innerText = `[${time}] ${msg}`;
+            }
+
+            consoleLogs.appendChild(logItem);
+            
+            // Mantener scroll al final
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+
+            // Mantener un límite de 30 líneas en el log para optimizar memoria
+            if (consoleLogs.children.length > 30) {
+                consoleLogs.removeChild(consoleLogs.firstChild);
+            }
+        }
+
+        function clearConsoleLog() {
+            consoleLogs.innerHTML = '<div class="text-gray-600 font-mono-custom">[SISTEMA] Consola limpiada.</div>';
+        }
+
+        /**
+         * ====================================================================
+         * ESTRUCTURA MODULAR PARA FUTURAS FASES: MODO FÚTBOL / CANCHA COMPLETA
+         * ====================================================================
+         * 
+         * Para convertir esta web en un seguidor de partidos de fútbol en lugar
+         * de una persona individual, el diseño modular te permite reemplazar
+         * la función `processTrackingLogic()` por una función de Mapa de Calor
+         * (Game Center of Mass / Dense Grouping Algorithm):
+         * 
+         * Ejemplo de concepto futuro:
+         * 
+         * function processSoccerLogic(allDetections) {
+         *     // 1. Filtrar jugadores (clase 'person') y pelota (clase 'sports ball')
+         *     const players = allDetections.filter(d => d.class === 'person');
+         *     const ball = allDetections.find(d => d.class === 'sports ball');
+         * 
+         *     if (ball) {
+         *         // Si la pelota es visible, la cámara le da máxima prioridad
+         *         trackedTarget = { cx: ball.bbox[0] + ball.bbox[2]/2, cy: ball.bbox[1] };
+         *     } else if (players.length > 0) {
+         *         // Si no se ve el balón, calcular el Centro de Masa Promedio
+         *         // de donde están la mayoría de jugadores (centro de la jugada)
+         *         let sumX = 0;
+         *         players.forEach(p => sumX += (p.bbox[0] + p.bbox[2]/2));
+         *         const averagePlayX = sumX / players.length;
+         *         trackedTarget = { cx: averagePlayX, cy: canvas.height / 2 };
+         *     }
+         *     updateUIAndCommands();
+         * }
+         * ====================================================================
+         */
+    </script>
 </body>
 </html>
