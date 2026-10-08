@@ -2,873 +2,436 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Auto-Tracker Prototipo ESP32</title>
-    <!-- Tailwind CSS desde CDN para estilos responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller El Yama</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- TensorFlow.js Core -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
-    <!-- Modelo COCO-SSD para Detección de Objetos y Personas -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
-    <!-- Fuentes e Iconos -->
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0b0f19;
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark gray/black theme */
             color: #f3f4f6;
-            touch-action: manipulation;
         }
-        .font-mono-custom {
-            font-family: 'JetBrains Mono', monospace;
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ea580c; }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
         }
-        .canvas-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: auto;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        /* Ocultar barra de desplazamiento en consola virtual */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+
+        /* Card Hover Effects */
+        .car-card {
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
         }
-        /* Efecto de pulso en barra de estado */
-        @keyframes pulse-fast {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+        .car-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.15);
+            border-color: #f97316;
         }
-        .animate-pulse-fast {
-            animation: pulse-fast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        /* Big Button Effects */
+        .big-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .big-btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+        .big-btn:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between p-2 sm:p-4 max-w-lg mx-auto selection:bg-emerald-500 selection:text-black">
+<body class="min-h-screen flex flex-col">
 
-    <!-- CABECERA DE LA APLICACIÓN -->
-    <header class="bg-gray-900/90 backdrop-blur border border-gray-800 rounded-2xl p-3 mb-3 shadow-xl">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 font-bold">
-                    🎯
-                </div>
-                <div>
-                    <h1 class="text-base font-bold leading-tight text-white">AI Cam Tracker</h1>
-                    <p class="text-xs text-gray-400">Simulador ESP32 v1.0</p>
+    <header class="bg-gray-900 border-b-4 border-orange-500 shadow-xl sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showView('home')">
+                <!-- SVG Logo: Crossed Pistons -->
+                <svg viewBox="0 0 100 100" class="w-12 h-12 sm:w-16 sm:h-16 text-orange-500" fill="currentColor">
+                    <!-- Piston 1 -->
+                    <g transform="translate(50,50) rotate(45) translate(-50,-50)">
+                        <path d="M35 15 h30 v25 h-30 z" stroke="currentColor" stroke-width="4" fill="none" stroke-linejoin="round"/>
+                        <line x1="35" y1="23" x2="65" y2="23" stroke="currentColor" stroke-width="3"/>
+                        <line x1="35" y1="31" x2="65" y2="31" stroke="currentColor" stroke-width="3"/>
+                        <line x1="50" y1="40" x2="50" y2="85" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+                        <circle cx="50" cy="85" r="7" fill="#111827" stroke="currentColor" stroke-width="4"/>
+                    </g>
+                    <!-- Piston 2 -->
+                    <g transform="translate(50,50) rotate(-45) translate(-50,-50)">
+                        <path d="M35 15 h30 v25 h-30 z" stroke="currentColor" stroke-width="4" fill="#111827" stroke-linejoin="round"/>
+                        <line x1="35" y1="23" x2="65" y2="23" stroke="currentColor" stroke-width="3"/>
+                        <line x1="35" y1="31" x2="65" y2="31" stroke="currentColor" stroke-width="3"/>
+                        <line x1="50" y1="40" x2="50" y2="85" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+                        <circle cx="50" cy="85" r="7" fill="#111827" stroke="currentColor" stroke-width="4"/>
+                    </g>
+                </svg>
+                <div class="flex flex-col">
+                    <h1 class="text-2xl sm:text-4xl font-black tracking-wider text-white uppercase italic leading-none">
+                        Taller <span class="text-orange-500">El Yama</span>
+                    </h1>
+                    <span class="text-xs sm:text-sm text-gray-400 font-semibold tracking-widest mt-1">MECÁNICA GENERAL</span>
                 </div>
             </div>
-            <!-- Estado de la Cámara e IA -->
-            <div class="flex flex-col items-end gap-1">
-                <span id="camera-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-950/80 text-red-400 border border-red-800/50">
-                    <span id="status-dot" class="w-2 h-2 rounded-full bg-red-500"></span>
-                    <span id="status-text">🔴 Cámara detenida</span>
-                </span>
-                <span id="fps-badge" class="text-[10px] text-gray-400 font-mono-custom hidden">
-                    FPS: <span id="fps-value" class="text-emerald-400 font-bold">0</span> | Skip: <span id="frame-skip-value">0</span>
-                </span>
+            
+            <!-- Navigation Breadcrumbs (Hidden on home) -->
+            <div id="nav-actions" class="hidden">
+                <button onclick="showView('home')" class="text-gray-400 hover:text-white flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg border border-gray-700 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <span class="hidden sm:inline">Volver al Inicio</span>
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- ÁREA DE VIDEO Y CANVA SUPERPUESTO -->
-    <main class="flex-1 flex flex-col gap-3">
-        <div class="relative w-full aspect-[4/3] bg-black rounded-2xl overflow-hidden border border-gray-800 shadow-2xl group flex items-center justify-center">
+    <main class="flex-grow w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col relative">
+        
+        <div id="view-home" class="flex-grow flex flex-col items-center justify-center gap-8 fade-in">
+            <h2 class="text-3xl sm:text-4xl font-bold text-center text-gray-200 mb-4">¿Cómo deseas ingresar?</h2>
             
-            <!-- Video de la cámara táctil -->
-            <video id="webcam" playsinline autoplay muted class="w-full h-full object-cover hidden"></video>
-            
-            <!-- Canvas superior para dibujo de IA y toques -->
-            <canvas id="tracker-canvas" class="canvas-overlay hidden"></canvas>
-
-            <!-- Pantalla de Bienvenida / Espera -->
-            <div id="placeholder-ui" class="flex flex-col items-center justify-center p-6 text-center z-10">
-                <div class="w-16 h-16 mb-3 rounded-full bg-gray-800/80 border border-gray-700 flex items-center justify-center text-3xl animate-bounce">
-                    📷
-                </div>
-                <h3 class="text-sm font-semibold text-gray-200 mb-1">Cámara Inactiva</h3>
-                <p class="text-xs text-gray-400 max-w-[220px]">Presiona "Iniciar Cámara" para comenzar el seguimiento con IA en tiempo real.</p>
-            </div>
-
-            <!-- Overlay de Carga del Modelo de IA -->
-            <div id="ai-loading-overlay" class="absolute inset-0 bg-gray-950/90 backdrop-blur flex flex-col items-center justify-center z-20 hidden">
-                <div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                <p class="text-xs font-medium text-emerald-400 font-mono-custom animate-pulse">Cargando modelo COCO-SSD...</p>
-                <p class="text-[10px] text-gray-400 mt-1">Procesando localmente en tu dispositivo</p>
-            </div>
-
-            <!-- Indicador Flotante de Toque para Selección -->
-            <div id="touch-hint" class="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/70 backdrop-blur rounded-full border border-gray-700/50 text-[11px] text-gray-300 pointer-events-none hidden">
-                👉 Toca una persona para fijar objetivo
-            </div>
-        </div>
-
-        <!-- BOTONES DE CONTROL DE CÁMARA Y SEGUIMIENTO -->
-        <div class="grid grid-cols-2 gap-2">
-            <button id="btn-toggle-cam" onclick="toggleCamera()" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                <span>▶️</span> <span id="btn-toggle-cam-text">INICIAR CÁMARA</span>
-            </button>
-            <button id="btn-switch-cam" onclick="switchCamera()" disabled class="w-full py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 disabled:opacity-40 font-semibold text-sm rounded-xl shadow transition-all flex items-center justify-center gap-2">
-                <span>🔄</span> <span>CAMBIAR CÁMARA</span>
-            </button>
-        </div>
-
-        <button id="btn-reset-track" onclick="resetTracking()" disabled class="w-full py-2.5 px-4 bg-gray-900 border border-gray-800 hover:bg-gray-800 text-gray-300 disabled:opacity-40 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2">
-            <span>🎯</span> REINICIAR SEGUIMIENTO
-        </button>
-
-        <!-- PANEL DE TELEMETRÍA Y COMANDOS DE SEGUIMIENTO -->
-        <div class="bg-gray-900/90 border border-gray-800 rounded-2xl p-3 flex flex-col gap-3 shadow-lg">
-            <div class="flex items-center justify-between border-b border-gray-800 pb-2">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Modo Seguimiento</span>
-                <span id="target-id-badge" class="text-xs font-mono-custom font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-300">
-                    Ninguna persona
-                </span>
-            </div>
-
-            <!-- Indicadores de posición de centro -->
-            <div class="grid grid-cols-2 gap-2 text-center">
-                <div class="bg-gray-950/60 p-2 rounded-xl border border-gray-800/80">
-                    <div class="text-[10px] text-gray-400 uppercase font-semibold">Centro Persona</div>
-                    <div id="target-x-percent" class="text-base font-bold font-mono-custom text-emerald-400">-- %</div>
-                </div>
-                <div class="bg-gray-950/60 p-2 rounded-xl border border-gray-800/80">
-                    <div class="text-[10px] text-gray-400 uppercase font-semibold">Centro Pantalla</div>
-                    <div class="text-base font-bold font-mono-custom text-gray-300">50 %</div>
-                </div>
-            </div>
-
-            <!-- Dirección y Comando Virtual -->
-            <div class="bg-gray-950/80 rounded-xl p-3 border border-gray-800/80 flex items-center justify-between">
-                <div>
-                    <div class="text-[10px] text-gray-400 uppercase font-semibold">Estado Acción</div>
-                    <div id="action-status-text" class="text-sm font-extrabold text-white">● MANTENER</div>
-                    <div class="text-[10px] text-gray-500 font-mono-custom mt-0.5">
-                        Cmd: <span id="virtual-command-text" class="text-emerald-400 font-bold">PAN_STOP</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+                <!-- Client Button -->
+                <button onclick="showView('client')" class="big-btn bg-gradient-to-br from-blue-700 to-blue-900 border-2 border-blue-500 rounded-2xl p-10 flex flex-col items-center justify-center gap-6 shadow-[0_0_30px_rgba(37,99,235,0.3)]">
+                    <svg class="w-24 h-24 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <div class="text-center">
+                        <span class="block text-4xl font-black text-white uppercase tracking-wide">Soy Cliente</span>
+                        <span class="block text-blue-200 mt-2 text-lg">Ver estado de mi vehículo</span>
                     </div>
-                </div>
-                <!-- Flecha Direccional Prominente -->
-                <div id="direction-arrow-icon" class="w-12 h-12 rounded-xl bg-gray-800/80 border border-gray-700 flex items-center justify-center text-2xl text-emerald-400 font-bold">
-                    ●
-                </div>
-            </div>
+                </button>
 
-            <!-- Barra de Velocidad Proporcional -->
-            <div>
-                <div class="flex justify-between text-[11px] font-semibold text-gray-400 mb-1">
-                    <span>Velocidad Giro Recomendada:</span>
-                    <span id="speed-percent-text" class="font-mono-custom text-emerald-400">0%</span>
-                </div>
-                <div class="w-full h-2.5 bg-gray-950 rounded-full overflow-hidden p-0.5 border border-gray-800">
-                    <div id="speed-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-100" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TERMINAL SIMULADORA DE COMANDOS ESP32 -->
-        <div class="bg-gray-950 border border-gray-800 rounded-2xl p-3 flex flex-col gap-2 shadow-inner">
-            <div class="flex items-center justify-between border-b border-gray-800/80 pb-1.5">
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-xs font-bold text-gray-300 font-mono-custom">Consola ESP32 (Virtual)</span>
-                </div>
-                <button onclick="clearConsoleLog()" class="text-[10px] text-gray-500 hover:text-gray-300 transition-colors">
-                    Limpiar
+                <!-- Mechanic Button -->
+                <button onclick="promptMechanicLogin()" class="big-btn bg-gradient-to-br from-orange-600 to-red-900 border-2 border-orange-500 rounded-2xl p-10 flex flex-col items-center justify-center gap-6 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+                    <svg class="w-24 h-24 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <div class="text-center">
+                        <span class="block text-4xl font-black text-white uppercase tracking-wide">Dueño / Trabajador</span>
+                        <span class="block text-orange-200 mt-2 text-lg">Ingresar y gestionar autos</span>
+                    </div>
                 </button>
             </div>
-            <!-- Caja de logs con barra de desplazamiento oculta -->
-            <div id="console-logs" class="h-24 overflow-y-auto font-mono-custom text-[11px] text-emerald-400/90 flex flex-col gap-1 no-scrollbar pt-1">
-                <div class="text-gray-600 font-mono-custom">[SISTEMA] Listo. Esperando inicio de cámara...</div>
+        </div>
+
+        <div id="view-client" class="hidden flex-grow flex flex-col fade-in">
+            <div class="mb-8 border-l-4 border-blue-500 pl-4">
+                <h2 class="text-3xl font-bold text-white">Vehículos en Reparación</h2>
+                <p class="text-gray-400 mt-1">Lista pública de los autos que están siendo atendidos actualmente en el taller.</p>
+            </div>
+            
+            <!-- Client Cars Grid -->
+            <div id="client-cars-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cars will be injected here via JS -->
+            </div>
+            <div id="client-empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
+                <svg class="w-20 h-20 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                <p class="text-xl">No hay vehículos en reparación en este momento.</p>
             </div>
         </div>
+
+        <div id="view-mechanic" class="hidden flex-grow flex flex-col fade-in">
+            <div class="mb-8 border-l-4 border-orange-500 pl-4 flex justify-between items-end flex-wrap gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Panel de Administración</h2>
+                    <p class="text-gray-400 mt-1">Ingresa nuevos vehículos y gestiona los trabajos.</p>
+                </div>
+            </div>
+
+            <!-- Add Car Form -->
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8 shadow-lg">
+                <h3 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    Ingresar Nuevo Vehículo
+                </h3>
+                <form id="add-car-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Nombre del Cliente / Auto</label>
+                        <input type="text" id="car-name" required placeholder="Ej: Auto de Correa" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Kilometraje Actual (Km)</label>
+                        <input type="number" id="car-mileage" required min="0" placeholder="Ej: 62000" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md border border-orange-700 hover:border-orange-400 flex items-center justify-center gap-2">
+                            Analizar y Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Mechanic Cars Grid -->
+            <h3 class="text-xl font-bold text-gray-300 mb-4">Vehículos Actuales</h3>
+            <div id="mechanic-cars-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cars will be injected here via JS -->
+            </div>
+            <div id="mechanic-empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
+                <svg class="w-20 h-20 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <p class="text-xl">El taller está vacío. ¡Ingresa un vehículo arriba!</p>
+            </div>
+        </div>
+
     </main>
 
-    <!-- FOOTER INFORMATIVO -->
-    <footer class="mt-4 text-center text-[10px] text-gray-500">
-        AI Mobile Tracker • Diseñado para GitHub Pages & ESP32 BLE
-    </footer>
+    <div id="modal-login" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4 fade-in">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 max-w-sm w-full shadow-2xl relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h3 class="text-2xl font-bold text-white mb-2">Acceso Restringido</h3>
+            <p class="text-sm text-gray-400 mb-6">Ingresa la contraseña para acceder al panel del taller.</p>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <input type="password" id="password-input" required placeholder="Contraseña..." class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors">
+                    <p id="login-error" class="text-red-500 text-sm mt-2 hidden">Contraseña incorrecta.</p>
+                </div>
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                    Entrar
+                </button>
+            </form>
+        </div>
+    </div>
 
     <script>
-        /**
-         * ====================================================================
-         * VARIABLES GLOBALES Y ESTADO DE LA APLICACIÓN
-         * ====================================================================
-         */
-        let cocoModel = null;             // Instancia del modelo COCO-SSD
-        let isCameraActive = false;       // Estado de ejecución de la cámara
-        let currentFacingMode = 'environment'; // 'environment' (trasera) o 'user' (frontal)
-        let videoStream = null;           // Objeto MediaStream de la cámara
-        let animationFrameId = null;      // ID del requestAnimationFrame
-        
-        // Elementos DOM
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('tracker-canvas');
-        const ctx = canvas.getContext('2d');
-        const placeholderUI = document.getElementById('placeholder-ui');
-        const aiLoadingOverlay = document.getElementById('ai-loading-overlay');
-        const consoleLogs = document.getElementById('console-logs');
+        // Data Structure & LocalStorage Management
+        const STORAGE_KEY = 'tallerElYama_cars_v1';
+        let carsData = [];
 
-        // Estado del Target / Persona Seguida
-        let trackedTarget = null;         // { id, cx, cy, width, height, bbox }
-        let targetCounter = 0;            // Contador para asignar IDs a personas
-        let consecutiveLostFrames = 0;    // Marcos consecutivos sin detectar al target actual
-        const MAX_LOST_FRAMES = 15;       // Si pasa 15 marcos sin verse, se libera la selección
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    carsData = JSON.parse(stored);
+                } catch (e) {
+                    carsData = [];
+                }
+            } else {
+                // Initial dummy data to demonstrate functionality if empty
+                carsData = [
+                    { id: Date.now(), name: "Auto de Correa", mileage: 45000, tasks: getMaintenanceTasks(45000), date: new Date().toLocaleDateString() },
+                    { id: Date.now() + 1, name: "Camioneta de Martinez", mileage: 62000, tasks: getMaintenanceTasks(62000), date: new Date().toLocaleDateString() }
+                ];
+                saveData();
+            }
+        }
 
-        // Control de Rendimiento (FPS y Frame-Throttling)
-        let lastFrameTime = performance.now();
-        let fps = 0;
-        let frameCount = 0;
-        let frameSkipCounter = 0;
-        let dynamicFrameSkip = 0;         // Si el cel va lento, salta N marcos de inferencia de IA
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(carsData));
+        }
 
-        // Último comando enviado para evitar saturación de logs
-        let lastSentCommand = "";
-        let lastSentSpeed = -1;
-
-        /**
-         * Inicialización general al cargar la ventana
-         */
-        window.addEventListener('load', async () => {
-            logConsole("Cargando modelo de Inteligencia Artificial COCO-SSD...");
-            aiLoadingOverlay.classList.remove('hidden');
+        // Maintenance Logic Calculator
+        function getMaintenanceTasks(km) {
+            let tasks = ["Revisión general de niveles y luces"];
             
-            try {
-                // Carga del modelo TensorFlow.js
-                cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
-                logConsole("✅ Modelo COCO-SSD cargado exitosamente.");
-            } catch (err) {
-                logConsole("❌ Error al cargar modelo de IA: " + err.message);
-                alert("No se pudo cargar el modelo de visión artificial. Verifica tu conexión.");
-            } finally {
-                aiLoadingOverlay.classList.add('hidden');
+            // Base maintenance rules based on mileage
+            
+            // Oil and filters every 10,000 km
+            if (km >= 10000) {
+                tasks.push("Cambio de Aceite y Filtros (Rutina 10k)");
+            }
+            
+            // Spark plugs every 40,000 km (Notify if within 5k margin of the multiple)
+            if (km >= 35000 && (km % 40000 <= 5000 || km % 40000 >= 35000)) {
+                tasks.push("Revisión/Cambio de Bujías (Mantenimiento 40k)");
             }
 
-            // Event listener para permitir selección por toque/clic
-            canvas.addEventListener('click', handleCanvasTouch);
-            canvas.addEventListener('touchstart', (e) => {
-                if (e.touches.length > 0) {
-                    const touch = e.touches[0];
-                    handleCanvasTouch(touch);
-                }
-            }, { passive: true });
+            // Timing belt every 60,000 km (Notify if within 5k margin of the multiple)
+            if (km >= 55000 && (km % 60000 <= 5000 || km % 60000 >= 55000)) {
+                tasks.push("⚠️ Cambio de Correa de Distribución (Crítico 60k)");
+            }
+
+            // Brake fluid / coolant every 80,000 km
+            if (km >= 75000 && (km % 80000 <= 5000 || km % 80000 >= 75000)) {
+                tasks.push("Cambio de Líquido de Frenos y Refrigerante (80k)");
+            }
+
+            return tasks;
+        }
+
+        // View Routing Logic
+        function hideAllViews() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-client').classList.add('hidden');
+            document.getElementById('view-mechanic').classList.add('hidden');
+            document.getElementById('nav-actions').classList.add('hidden');
+        }
+
+        function showView(viewName) {
+            hideAllViews();
+            if (viewName === 'home') {
+                document.getElementById('view-home').classList.remove('hidden');
+            } else if (viewName === 'client') {
+                document.getElementById('view-client').classList.remove('hidden');
+                document.getElementById('nav-actions').classList.remove('hidden');
+                renderClientCars();
+            } else if (viewName === 'mechanic') {
+                document.getElementById('view-mechanic').classList.remove('hidden');
+                document.getElementById('nav-actions').classList.remove('hidden');
+                renderMechanicCars();
+            }
+        }
+
+        // Login Modal Logic
+        function promptMechanicLogin() {
+            document.getElementById('modal-login').classList.remove('hidden');
+            document.getElementById('password-input').value = '';
+            document.getElementById('password-input').focus();
+            document.getElementById('login-error').classList.add('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('modal-login').classList.add('hidden');
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pass = document.getElementById('password-input').value;
+            if (pass === 'Yamandu') {
+                closeLoginModal();
+                showView('mechanic');
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
         });
 
-        /**
-         * Alterna entre Iniciar y Detener la cámara
-         */
-        async function toggleCamera() {
-            if (isCameraActive) {
-                stopCamera();
+        // DOM Rendering: Card Generator
+        function generateCarCardHTML(car, isMechanic) {
+            let tasksHTML = car.tasks.map(task => {
+                const isWarning = task.includes('⚠️');
+                return `<li class="flex items-start gap-2 text-sm ${isWarning ? 'text-red-400 font-bold' : 'text-gray-300'}">
+                            <span class="text-orange-500 mt-0.5">•</span>
+                            <span>${task}</span>
+                        </li>`;
+            }).join('');
+
+            let deleteBtn = '';
+            if (isMechanic) {
+                deleteBtn = `
+                <div class="mt-5 pt-4 border-t border-gray-700">
+                    <button onclick="deleteCar(${car.id})" class="w-full bg-gray-700 hover:bg-red-600/80 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border border-gray-600 hover:border-red-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Marcar como Entregado
+                    </button>
+                </div>`;
+            }
+
+            return `
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 car-card flex flex-col h-full">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-gray-900 p-2 rounded-lg border border-gray-700 text-orange-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white leading-tight">${car.name}</h4>
+                            <span class="text-xs text-gray-500">Ingreso: ${car.date}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-900 rounded-lg p-3 mb-4 inline-flex items-center gap-2 w-max border border-gray-700">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-orange-400 font-mono font-bold">${car.mileage.toLocaleString('es-UY')} Km</span>
+                </div>
+
+                <div class="flex-grow">
+                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tareas a realizar:</h5>
+                    <ul class="space-y-1.5">
+                        ${tasksHTML}
+                    </ul>
+                </div>
+
+                ${deleteBtn}
+            </div>
+            `;
+        }
+
+        // DOM Rendering: Client
+        function renderClientCars() {
+            const container = document.getElementById('client-cars-container');
+            const emptyState = document.getElementById('client-empty-state');
+            
+            if (carsData.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
             } else {
-                await startCamera();
+                emptyState.classList.add('hidden');
+                container.innerHTML = carsData.map(car => generateCarCardHTML(car, false)).join('');
             }
         }
 
-        /**
-         * STREAMING_CHUNK:Implementando el encendido de la cámara web/móvil...
-         * Inicia el flujo de la cámara con restricciones aptas para iOS Safari
-         */
-        async function startCamera() {
-            if (!cocoModel) {
-                alert("El modelo de IA aún se está cargando. Espera un momento.");
-                return;
-            }
-
-            const constraints = {
-                video: {
-                    facingMode: currentFacingMode,
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
-                },
-                audio: false
-            };
-
-            try {
-                videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = videoStream;
-                
-                // Atributos clave requeridos para reproducción fluida en iOS Safari
-                video.setAttribute('playsinline', 'true');
-                video.setAttribute('muted', 'true');
-                video.muted = true;
-
-                await video.play();
-
-                isCameraActive = true;
-                
-                // Ajustar resolución interna del canvas para coincidir con el video
-                canvas.width = video.videoWidth || 640;
-                canvas.height = video.videoHeight || 480;
-
-                // Actualizar interfaz gráfica
-                placeholderUI.classList.add('hidden');
-                video.classList.remove('hidden');
-                canvas.classList.remove('hidden');
-                document.getElementById('touch-hint').classList.remove('hidden');
-
-                document.getElementById('btn-toggle-cam-text').innerText = "DETENER CÁMARA";
-                document.getElementById('btn-toggle-cam').classList.replace('bg-emerald-600', 'bg-red-600');
-                document.getElementById('btn-toggle-cam').classList.replace('hover:bg-emerald-500', 'hover:bg-red-500');
-                document.getElementById('btn-switch-cam').disabled = false;
-                document.getElementById('btn-reset-track').disabled = false;
-
-                // Actualizar badges
-                document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse-fast";
-                document.getElementById('status-text').innerText = "🟢 Cámara activa";
-                document.getElementById('camera-status-badge').className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/50";
-                document.getElementById('fps-badge').classList.remove('hidden');
-
-                logConsole("📷 Cámara iniciada (" + currentFacingMode + ")");
-
-                // Iniciar el ciclo de detección continua
-                requestAnimationFrame(processingLoop);
-
-            } catch (err) {
-                logConsole("❌ Error de acceso a cámara: " + err.message);
-                alert("No se pudo acceder a la cámara. Asegúrate de otorgar permisos en tu navegador.");
-            }
-        }
-
-        /**
-         * Detiene el flujo de la cámara
-         */
-        function stopCamera() {
-            isCameraActive = false;
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
-            }
-
-            video.classList.add('hidden');
-            canvas.classList.add('hidden');
-            placeholderUI.classList.remove('hidden');
-            document.getElementById('touch-hint').classList.add('hidden');
-
-            document.getElementById('btn-toggle-cam-text').innerText = "INICIAR CÁMARA";
-            document.getElementById('btn-toggle-cam').classList.replace('bg-red-600', 'bg-emerald-600');
-            document.getElementById('btn-toggle-cam').classList.replace('hover:bg-red-500', 'hover:bg-emerald-500');
-            document.getElementById('btn-switch-cam').disabled = true;
-            document.getElementById('btn-reset-track').disabled = true;
-
-            // Actualizar Badges
-            document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-red-500";
-            document.getElementById('status-text').innerText = "🔴 Cámara detenida";
-            document.getElementById('camera-status-badge').className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-950/80 text-red-400 border border-red-800/50";
-            document.getElementById('fps-badge').classList.add('hidden');
-
-            resetTrackingState();
-            sendMotorCommand("PAN_STOP", 0);
-            logConsole("⏹️ Cámara detenida.");
-        }
-
-        /**
-         * Alterna entre cámara trasera y frontal (facingMode)
-         */
-        async function switchCamera() {
-            currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
-            logConsole("Cambiando cámara a: " + currentFacingMode);
-            stopCamera();
-            await startCamera();
-        }
-
-        /**
-         * ====================================================================
-         * BUCLE PRINCIPAL DE PROCESAMIENTO E INFERENCIA DE IA
-         * ====================================================================
-         */
-        async function processingLoop(timestamp) {
-            if (!isCameraActive) return;
-
-            // Cálculo de FPS e indicadores de rendimiento
-            frameCount++;
-            if (timestamp - lastFrameTime >= 1000) {
-                fps = frameCount;
-                frameCount = 0;
-                lastFrameTime = timestamp;
-                document.getElementById('fps-value').innerText = fps;
-                
-                // Lógica de throttling dinámico según rendimiento del teléfono
-                if (fps < 10) {
-                    dynamicFrameSkip = 2; // Omitir 2 marcos de IA si la CPU va lenta
-                } else if (fps < 18) {
-                    dynamicFrameSkip = 1; // Omitir 1 marco
-                } else {
-                    dynamicFrameSkip = 0; // Inferencia a máxima velocidad
-                }
-                document.getElementById('frame-skip-value').innerText = dynamicFrameSkip;
-            }
-
-            // Control de salto de marcos (Throttling)
-            if (frameSkipCounter < dynamicFrameSkip) {
-                frameSkipCounter++;
-                animationFrameId = requestAnimationFrame(processingLoop);
-                return;
-            }
-            frameSkipCounter = 0;
-
-            // Detección de objetos con TensorFlow.js
-            try {
-                const predictions = await cocoModel.detect(video, 6, 0.35);
-                
-                // FILTRAR ÚNICAMENTE LA CLASE 'person'
-                const personDetections = predictions.filter(pred => pred.class === 'person');
-
-                // Procesar la lógica de seguimiento de la persona seleccionada
-                processTrackingLogic(personDetections);
-
-                // Dibujar overlays en el Canvas
-                drawCanvasOverlays(personDetections);
-
-            } catch (err) {
-                console.error("Error en detección:", err);
-            }
-
-            // Siguiente cuadro
-            animationFrameId = requestAnimationFrame(processingLoop);
-        }
-
-        /**
-         * ====================================================================
-         * ALGORITMO DE SEGUIMIENTO Y PERSISTENCIA DE OBJETIVO (TRACKING)
-         * ====================================================================
-         * Permite mantener identificada a la MISMA persona entre fotogramas
-         * calculando la cercanía del centroide.
-         */
-        function processTrackingLogic(detections) {
-            if (detections.length === 0) {
-                consecutiveLostFrames++;
-                if (consecutiveLostFrames > MAX_LOST_FRAMES && trackedTarget) {
-                    logConsole("⚠️ Persona #" + trackedTarget.id + " perdida.");
-                    resetTrackingState();
-                }
-                updateUIAndCommands();
-                return;
-            }
-
-            // Si aún no tenemos un target fijado, seleccionamos automáticamente la persona más cercana al centro
-            if (!trackedTarget) {
-                autoSelectTargetClosestToCenter(detections);
+        // DOM Rendering: Mechanic
+        function renderMechanicCars() {
+            const container = document.getElementById('mechanic-cars-container');
+            const emptyState = document.getElementById('mechanic-empty-state');
+            
+            if (carsData.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
             } else {
-                // Si ya tenemos un target, buscamos en el nuevo marco a la persona más cercana a su posición anterior
-                let bestMatch = null;
-                let minDistance = Infinity;
-
-                detections.forEach(det => {
-                    const cx = det.bbox[0] + det.bbox[2] / 2;
-                    const cy = det.bbox[1] + det.bbox[3] / 2;
-
-                    // Distancia Euclidiana entre centroide anterior y el nuevo
-                    const dist = Math.hypot(cx - trackedTarget.cx, cy - trackedTarget.cy);
-
-                    // Umbral máximo de salto de movimiento (35% del ancho del canvas)
-                    if (dist < minDistance && dist < (canvas.width * 0.35)) {
-                        minDistance = dist;
-                        bestMatch = { det, cx, cy };
-                    }
-                });
-
-                if (bestMatch) {
-                    // Actualizar posición del target mantenido
-                    trackedTarget.cx = bestMatch.cx;
-                    trackedTarget.cy = bestMatch.cy;
-                    trackedTarget.bbox = bestMatch.det.bbox;
-                    consecutiveLostFrames = 0;
-                } else {
-                    consecutiveLostFrames++;
-                    if (consecutiveLostFrames > MAX_LOST_FRAMES) {
-                        logConsole("⚠️ Objetivo #" + trackedTarget.id + " se alejó demasiado.");
-                        resetTrackingState();
-                    }
-                }
+                emptyState.classList.add('hidden');
+                container.innerHTML = carsData.map(car => generateCarCardHTML(car, true)).join('');
             }
-
-            // Calcular desvío y enviar comandos de control a los motores
-            updateUIAndCommands();
         }
 
-        /**
-         * Auto-selecciona la persona cuyo centroide esté más próximo al 50% del ancho
-         */
-        function autoSelectTargetClosestToCenter(detections) {
-            const screenCenterX = canvas.width / 2;
-            let closestPerson = null;
-            let minCenterXDiff = Infinity;
-
-            detections.forEach(det => {
-                const cx = det.bbox[0] + det.bbox[2] / 2;
-                const diff = Math.abs(cx - screenCenterX);
-                if (diff < minCenterXDiff) {
-                    minCenterXDiff = diff;
-                    closestPerson = det;
-                }
-            });
-
-            if (closestPerson) {
-                targetCounter++;
-                const cx = closestPerson.bbox[0] + closestPerson.bbox[2] / 2;
-                const cy = closestPerson.bbox[1] + closestPerson.bbox[3] / 2;
-                trackedTarget = {
-                    id: targetCounter,
-                    cx: cx,
-                    cy: cy,
-                    bbox: closestPerson.bbox
+        // Add Car Logic
+        document.getElementById('add-car-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nameInput = document.getElementById('car-name');
+            const mileageInput = document.getElementById('car-mileage');
+            
+            const name = nameInput.value.trim();
+            const mileage = parseInt(mileageInput.value, 10);
+            
+            if (name && !isNaN(mileage)) {
+                const newCar = {
+                    id: Date.now(),
+                    name: name,
+                    mileage: mileage,
+                    tasks: getMaintenanceTasks(mileage),
+                    date: new Date().toLocaleDateString()
                 };
-                consecutiveLostFrames = 0;
-                logConsole("🎯 Seleccionado automáticamente: Persona #" + trackedTarget.id);
+                
+                carsData.unshift(newCar); // Add to beginning of array
+                saveData();
+                renderMechanicCars();
+                
+                // Reset form
+                nameInput.value = '';
+                mileageInput.value = '';
+                nameInput.focus();
             }
+        });
+
+        // Delete Car Logic (Mark as delivered)
+        function deleteCar(id) {
+            // Using a custom modal is better, but since native confirm is banned and building another modal 
+            // adds bulk, a simple delete works fine for a mechanic fast workflow.
+            carsData = carsData.filter(car => car.id !== id);
+            saveData();
+            renderMechanicCars();
         }
 
-        /**
-         * Permite al usuario tocar la pantalla para seleccionar manualmente una persona
-         */
-        function handleCanvasTouch(e) {
-            if (!isCameraActive) return;
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            showView('home');
+        });
 
-            const rect = canvas.getBoundingClientRect();
-            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
-
-            // Se busca si el clic cayó dentro de la bounding box de alguna persona
-            cocoModel.detect(video, 6, 0.25).then(predictions => {
-                const persons = predictions.filter(p => p.class === 'person');
-                let clickedPerson = null;
-
-                persons.forEach(p => {
-                    const [x, y, w, h] = p.bbox;
-                    if (clickX >= x && clickX <= x + w && clickY >= y && clickY <= y + h) {
-                        clickedPerson = p;
-                    }
-                });
-
-                if (clickedPerson) {
-                    targetCounter++;
-                    const cx = clickedPerson.bbox[0] + clickedPerson.bbox[2] / 2;
-                    const cy = clickedPerson.bbox[1] + clickedPerson.bbox[3] / 2;
-                    trackedTarget = {
-                        id: targetCounter,
-                        cx: cx,
-                        cy: cy,
-                        bbox: clickedPerson.bbox
-                    };
-                    consecutiveLostFrames = 0;
-                    logConsole("👉 Fijado manualmente por toque: Persona #" + trackedTarget.id);
-                }
-            });
-        }
-
-        /**
-         * Reinicia el objetivo seguido
-         */
-        function resetTracking() {
-            resetTrackingState();
-            logConsole("🔄 Seguimiento reiniciado manualmente.");
-        }
-
-        function resetTrackingState() {
-            trackedTarget = null;
-            consecutiveLostFrames = 0;
-            updateUIAndCommands();
-        }
-
-        /**
-         * ====================================================================
-         * CÁLCULO DE COMANDOS MATEMÁTICOS Y MATRIZ DE DECISIÓN
-         * ====================================================================
-         */
-        function updateUIAndCommands() {
-            const targetBadge = document.getElementById('target-id-badge');
-            const targetXPercentEl = document.getElementById('target-x-percent');
-            const actionStatusText = document.getElementById('action-status-text');
-            const virtualCommandText = document.getElementById('virtual-command-text');
-            const directionArrowIcon = document.getElementById('direction-arrow-icon');
-            const speedPercentText = document.getElementById('speed-percent-text');
-            const speedBar = document.getElementById('speed-bar');
-
-            if (!trackedTarget) {
-                targetBadge.innerText = "Ninguna persona";
-                targetBadge.className = "text-xs font-mono-custom font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400";
-                targetXPercentEl.innerText = "-- %";
-                actionStatusText.innerText = "● MANTENER";
-                virtualCommandText.innerText = "PAN_STOP";
-                directionArrowIcon.innerText = "●";
-                directionArrowIcon.className = "w-12 h-12 rounded-xl bg-gray-800/80 border border-gray-700 flex items-center justify-center text-2xl text-gray-500 font-bold";
-                speedPercentText.innerText = "0%";
-                speedBar.style.width = "0%";
-
-                sendMotorCommand("PAN_STOP", 0);
-                return;
-            }
-
-            // Actualizar etiqueta del target
-            targetBadge.innerText = "Persona #" + trackedTarget.id;
-            targetBadge.className = "text-xs font-mono-custom font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60";
-
-            // Posición X en porcentaje (0% a 100%)
-            const xPercent = (trackedTarget.cx / canvas.width) * 100;
-            targetXPercentEl.innerText = xPercent.toFixed(1) + " %";
-
-            let command = "PAN_STOP";
-            let speed = 0;
-            let statusText = "● MANTENER";
-            let arrowSymbol = "●";
-            let arrowStyle = "bg-emerald-950/80 border-emerald-700 text-emerald-400";
-
-            // ZONA MUERTA (DEAD ZONE): entre 45% y 55%
-            if (xPercent >= 45 && xPercent <= 55) {
-                command = "PAN_STOP";
-                speed = 0;
-                statusText = "● MANTENER";
-                arrowSymbol = "●";
-                arrowStyle = "bg-emerald-950/80 border-emerald-700 text-emerald-400";
-            } 
-            // GIRAR IZQUIERDA: x < 45%
-            else if (xPercent < 45) {
-                command = "PAN_LEFT";
-                // Cálculo proporcional: desvío máximo es (45 - 0) = 45 -> Multiplicador = 100 / 45 ≈ 2.222
-                const delta = 45 - xPercent;
-                speed = Math.min(100, Math.round(delta * 2.222));
-                statusText = "← GIRAR IZQUIERDA";
-                arrowSymbol = "←";
-                arrowStyle = "bg-amber-950/80 border-amber-700 text-amber-400 animate-pulse";
-            } 
-            // GIRAR DERECHA: x > 55%
-            else if (xPercent > 55) {
-                command = "PAN_RIGHT";
-                // Cálculo proporcional: desvío máximo es (100 - 55) = 45 -> Multiplicador ≈ 2.222
-                const delta = xPercent - 55;
-                speed = Math.min(100, Math.round(delta * 2.222));
-                statusText = "GIRAR DERECHA →";
-                arrowSymbol = "→";
-                arrowStyle = "bg-amber-950/80 border-amber-700 text-amber-400 animate-pulse";
-            }
-
-            // Actualizar elementos visuales del dashboard
-            actionStatusText.innerText = statusText;
-            virtualCommandText.innerText = command + (speed > 0 ? " " + speed : "");
-            directionArrowIcon.innerText = arrowSymbol;
-            directionArrowIcon.className = `w-12 h-12 rounded-xl border flex items-center justify-center text-2xl font-bold ${arrowStyle}`;
-            speedPercentText.innerText = speed + "%";
-            speedBar.style.width = speed + "%";
-
-            // Enviar comando simulado al motor/ESP32
-            sendMotorCommand(command, speed);
-        }
-
-        /**
-         * ====================================================================
-         * DIBUJO GRAFICO EN CANVAS (OVERLAYS, LÍNEA GUÍA Y OBJETIVOS)
-         * ====================================================================
-         */
-        function drawCanvasOverlays(allDetections) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 1. Dibujar línea vertical central de la pantalla (50%)
-            const centerX = canvas.width / 2;
-            ctx.save();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([6, 6]);
-            ctx.beginPath();
-            ctx.moveTo(centerX, 0);
-            ctx.lineTo(centerX, canvas.height);
-            ctx.stroke();
-
-            // 2. Dibujar líneas de Zona Muerta (45% y 55%)
-            ctx.strokeStyle = 'rgba(16, 185, 129, 0.25)';
-            ctx.beginPath();
-            ctx.moveTo(canvas.width * 0.45, 0);
-            ctx.lineTo(canvas.width * 0.45, canvas.height);
-            ctx.moveTo(canvas.width * 0.55, 0);
-            ctx.lineTo(canvas.width * 0.55, canvas.height);
-            ctx.stroke();
-            ctx.restore();
-
-            // 3. Dibujar todas las personas detectadas
-            allDetections.forEach(det => {
-                const [x, y, w, h] = det.bbox;
-                const cx = x + w / 2;
-                const cy = y + h / 2;
-
-                const isTracked = trackedTarget && Math.abs(cx - trackedTarget.cx) < 5 && Math.abs(cy - trackedTarget.cy) < 5;
-
-                if (isTracked) {
-                    // DIBUJAR PERSONA SELECCIONADA (Verde Neón Fosforescente)
-                    ctx.strokeStyle = '#10b981'; // Tailwind Emerald 500
-                    ctx.lineWidth = 4;
-                    ctx.strokeRect(x, y, w, h);
-
-                    // Fondo semitransparente dentro del rectángulo
-                    ctx.fillStyle = 'rgba(16, 185, 129, 0.12)';
-                    ctx.fillRect(x, y, w, h);
-
-                    // Indicador Crosshair (Mira de objetivo) en el centro de la persona
-                    drawCrosshair(cx, cy, '#10b981');
-
-                    // Vector conector desde el centro de la pantalla al centro de la persona
-                    ctx.save();
-                    ctx.strokeStyle = '#f59e0b'; // Ámbar
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(centerX, cy);
-                    ctx.lineTo(cx, cy);
-                    ctx.stroke();
-                    ctx.restore();
-
-                    // Etiqueta superior de la persona elegida
-                    ctx.fillStyle = '#10b981';
-                    ctx.fillRect(x, y - 22, 110, 22);
-                    ctx.fillStyle = '#000000';
-                    ctx.font = 'bold 12px "JetBrains Mono", monospace';
-                    ctx.fillText(`TARGET #${trackedTarget.id}`, x + 6, y - 6);
-
-                } else {
-                    // DIBUJAR PERSONA NO SELECCIONADA (Azul / Gris tenue)
-                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
-                    ctx.lineWidth = 1.5;
-                    ctx.save();
-                    ctx.setLineDash([4, 4]);
-                    ctx.strokeRect(x, y, w, h);
-                    ctx.restore();
-
-                    // Etiqueta secundaria
-                    ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
-                    ctx.fillRect(x, y - 18, 70, 18);
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.font = '10px "JetBrains Mono", monospace';
-                    ctx.fillText('Persona', x + 4, y - 5);
-                }
-            });
-        }
-
-        /**
-         * Dibuja una mira táctica (Crosshair) sobre la posición central del objetivo
-         */
-        function drawCrosshair(x, y, color) {
-            const size = 12;
-            ctx.save();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
-            
-            // Círculo central
-            ctx.beginPath();
-            ctx.arc(x, y, 6, 0, 2 * Math.PI);
-            ctx.stroke();
-
-            // Líneas de mira
-            ctx.beginPath();
-            ctx.moveTo(x - size, y);
-            ctx.lineTo(x + size, y);
-            ctx.moveTo(x, y - size);
-            ctx.lineTo(x, y + size);
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        /**
-         * ====================================================================
-         * SIMULADOR ESP32 Y COMUNICACIÓN MODULAR DE MOTORES
-         * ====================================================================
-         * 
-         * Esta función es la pasarela modular para enviar comandos al hardware.
-         * En esta fase solo muestra los comandos en la consola virtual.
-         * 
-         * FUTURA INTEGRACIÓN CON BLUETOOTH (ESP32):
-         * --------------------------------------------------------------------
-         * Para conectar con tu ESP32 por Web Bluetooth BLE en el futuro,
-         * reemplaza esta función por:
-         * 
-         * async function sendMotorCommand(command, speed) {
-         *     if (!bleCharacteristic) return;
-         *     const payload = `${command}:${speed}\n`;
-         *     const encoder = new TextEncoder();
-         *     await bleCharacteristic.writeValue(encoder.encode(payload));
-         * }
-         * ====================================================================
-         */
-        function sendMotorCommand(command, speed) {
-            // Evitar spam continuo del mismo comando exacto
-            if (command === lastSentCommand && speed === lastSentSpeed) {
-                return;
-            }
-
-            lastSentCommand = command;
-            lastSentSpeed = speed;
-
-            // Formato de comando para el motor
-            const fullCommand = command === "PAN_STOP" ? "PAN_STOP" : `${command} ${speed}`;
-            
-            // Imprimir en la consola virtual en pantalla
-            logConsole(`SEND -> ${fullCommand}`, true);
-        }
-
-        /**
-         * Agrega un mensaje con marca de tiempo a la consola virtual en pantalla
-         */
-        function logConsole(msg, isCommand = false) {
-            const time = new Date().toLocaleTimeString('es-ES', { hour12: false });
-            const logItem = document.createElement('div');
-            
-            if (isCommand) {
-                logItem.className = "text-emerald-400 font-bold font-mono-custom flex items-center justify-between";
-                logItem.innerHTML = `<span>[${time}] ${msg}</span><span class="text-[9px] text-emerald-600 bg-emerald-950 px-1.5 py-0.2 rounded">ESP32</span>`;
-            } else {
-                logItem.className = "text-gray-400 font-mono-custom";
-                logItem.innerText = `[${time}] ${msg}`;
-            }
-
-            consoleLogs.appendChild(logItem);
-            
-            // Mantener scroll al final
-            consoleLogs.scrollTop = consoleLogs.scrollHeight;
-
-            // Mantener un límite de 30 líneas en el log para optimizar memoria
-            if (consoleLogs.children.length > 30) {
-                consoleLogs.removeChild(consoleLogs.firstChild);
-            }
-        }
-
-        function clearConsoleLog() {
-            consoleLogs.innerHTML = '<div class="text-gray-600 font-mono-custom">[SISTEMA] Consola limpiada.</div>';
-        }
-
-        /**
-         * ====================================================================
-         * ESTRUCTURA MODULAR PARA FUTURAS FASES: MODO FÚTBOL / CANCHA COMPLETA
-         * ====================================================================
-         * 
-         * Para convertir esta web en un seguidor de partidos de fútbol en lugar
-         * de una persona individual, el diseño modular te permite reemplazar
-         * la función `processTrackingLogic()` por una función de Mapa de Calor
-         * (Game Center of Mass / Dense Grouping Algorithm):
-         * 
-         * Ejemplo de concepto futuro:
-         * 
-         * function processSoccerLogic(allDetections) {
-         *     // 1. Filtrar jugadores (clase 'person') y pelota (clase 'sports ball')
-         *     const players = allDetections.filter(d => d.class === 'person');
-         *     const ball = allDetections.find(d => d.class === 'sports ball');
-         * 
-         *     if (ball) {
-         *         // Si la pelota es visible, la cámara le da máxima prioridad
-         *         trackedTarget = { cx: ball.bbox[0] + ball.bbox[2]/2, cy: ball.bbox[1] };
-         *     } else if (players.length > 0) {
-         *         // Si no se ve el balón, calcular el Centro de Masa Promedio
-         *         // de donde están la mayoría de jugadores (centro de la jugada)
-         *         let sumX = 0;
-         *         players.forEach(p => sumX += (p.bbox[0] + p.bbox[2]/2));
-         *         const averagePlayX = sumX / players.length;
-         *         trackedTarget = { cx: averagePlayX, cy: canvas.height / 2 };
-         *     }
-         *     updateUIAndCommands();
-         * }
-         * ====================================================================
-         */
     </script>
 </body>
 </html>
