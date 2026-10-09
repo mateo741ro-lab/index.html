@@ -403,10 +403,9 @@
             measurementId: "G-RJX4LHMYVT"
         }; 
         
-        // 2. Configuración de Gemini AI
-        // La clave se configura aquí para que el chatbot no la solicite al usuario.
-        // ADVERTENCIA: en GitHub Pages esta clave queda visible en el código público.
-        window.TALLER_GEMINI_API_KEY = "AQ.Ab8RN6KXj8xAhyxy3mZeHdRzQ3DAVCJXGSD_aQzyKMUTVWMxbg";
+        // 2. Chatbot con endpoint público de texto de Pollinations.
+        // No requiere que el visitante configure una API key. Al ser un servicio
+        // público gratuito, puede tener límites, cambios o interrupciones.
 
         /* ==================================================================== */
 
@@ -887,79 +886,60 @@
                 const inputEl = document.getElementById('chat-input');
                 const prompt = inputEl.value.trim();
                 const btn = document.getElementById('chat-submit-btn');
-                
-                if (!prompt) return;
+                if (!prompt || btn.disabled) return;
 
-                // Add User Message to UI
                 this.addChatMessage(prompt, 'user');
                 inputEl.value = '';
-                
-                // Show Loading state
                 btn.innerHTML = `<div class="spinner border-slate-900 border-t-transparent w-4 h-4 border-2"></div>`;
                 btn.disabled = true;
 
-                // La clave se toma de la configuración puesta arriba; no se solicita al usuario.
-                const apiKey = String(window.TALLER_GEMINI_API_KEY || "").trim();
-                if (!apiKey) {
-                    this.addChatMessage("Falta la configuración de Gemini en este archivo. Reemplazá el index.html publicado por esta versión.", 'ai');
-                    this.resetChatBtn(btn);
-                    return;
-                }
+                // Guardar historial en un formato sencillo y conservar solo los últimos turnos.
+                if (!Array.isArray(this.state.chatHistory)) this.state.chatHistory = [];
+                this.state.chatHistory.push({ role: 'user', text: prompt });
+                this.state.chatHistory = this.state.chatHistory.slice(-8);
 
-                // Prepare History for context
-                this.state.chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                
-                const systemPrompt = "Eres un asistente experto en mecánica automotriz y plataformas web trabajando para 'Taller El Yama'. Eres amable, profesional y tus respuestas deben ser breves (1-2 párrafos máximo). Ayudas a los mecánicos con dudas sobre autos, fallas, repuestos o cómo usar esta interfaz de gestión de taller.";
+                const systemPrompt = "Sos el asistente virtual de Taller El Yama, un taller mecánico. Respondé en español rioplatense, de forma amable, clara y breve. Ayudá con dudas generales de mecánica, mantenimiento, fallas comunes, repuestos y uso de esta aplicación. Si falta información, preguntá marca, modelo, año y motor. No inventes precios, stock, diagnósticos definitivos ni datos del taller. Para frenos, dirección, combustible, airbags o fallas que puedan ser peligrosas, recomendá revisar el vehículo con un mecánico y no circular si no es seguro. No afirmes que reservaste turnos ni que guardaste datos. Máximo unos 2 párrafos.";
+                const historyText = this.state.chatHistory
+                    .map(item => `${item.role === 'user' ? 'Cliente' : 'Asistente'}: ${item.text}`)
+                    .join('\n');
+                const fullPrompt = `${systemPrompt}\n\nConversación reciente:\n${historyText}\n\nRespondé únicamente el último mensaje del cliente.`;
 
-                const payload = {
-                    contents: this.state.chatHistory,
-                    systemInstruction: { parts: [{ text: systemPrompt }] }
-                };
-
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 45000);
                 try {
-                    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'x-goog-api-key': apiKey
-                        },
-                        body: JSON.stringify(payload)
+                    // Endpoint público sin clave para probar generación de texto desde GitHub Pages.
+                    const url = 'https://text.pollinations.ai/' + encodeURIComponent(fullPrompt) + '?model=openai&private=true';
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: { 'Accept': 'text/plain' },
+                        signal: controller.signal
                     });
-
-                    let result;
-                    try {
-                        result = await response.json();
-                    } catch (_) {
-                        throw new Error(`Gemini devolvió una respuesta que no es JSON (HTTP ${response.status}).`);
-                    }
-
+                    const reply = (await response.text()).trim();
                     if (!response.ok) {
-                        const apiMessage = result?.error?.message || `HTTP ${response.status}`;
-                        const apiStatus = result?.error?.status || '';
-                        let advice = '';
-                        if (response.status === 400 || apiStatus === 'INVALID_ARGUMENT') {
-                            advice = ' Revisá que la clave sea válida y que el modelo esté disponible para tu proyecto.';
-                        } else if (response.status === 401 || response.status === 403 || apiStatus === 'PERMISSION_DENIED') {
-                            advice = ' Google está rechazando la clave o el acceso del proyecto. Verificá la clave y los permisos en Google AI Studio.';
-                        } else if (response.status === 404) {
-                            advice = ' El modelo solicitado no está disponible para esta clave o versión de API.';
-                        } else if (response.status === 429) {
-                            advice = ' Se alcanzó el límite de solicitudes o la cuota del proyecto.';
-                        }
-                        throw new Error(`Gemini rechazó la solicitud (HTTP ${response.status}${apiStatus ? ' · ' + apiStatus : ''}): ${apiMessage}.${advice}`);
+                        throw new Error(`El servicio de IA respondió HTTP ${response.status}.`);
                     }
+                    if (!reply) throw new Error('El servicio de IA devolvió una respuesta vacía.');
 
-                    const reply = result?.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('').trim();
-                    if (reply) {
-                        this.addChatMessage(reply, 'ai');
-                        this.state.chatHistory.push({ role: "model", parts: [{ text: reply }] });
-                    } else {
-                        throw new Error("Gemini respondió, pero no devolvió texto. Puede haber un bloqueo o una respuesta vacía.");
-                    }
+                    this.addChatMessage(reply, 'ai');
+                    this.state.chatHistory.push({ role: 'assistant', text: reply });
+                    this.state.chatHistory = this.state.chatHistory.slice(-8);
                 } catch (error) {
-                    console.error("Gemini API Error:", error);
-                    this.addChatMessage(`No pude obtener respuesta de Gemini: ${error.message || "error de conexión"}.`, 'ai');
+                    console.error('Chatbot error:', error);
+                    let message = 'Ahora no pude conectar con la IA gratuita. Probá de nuevo en unos segundos.';
+                    if (error && error.name === 'AbortError') {
+                        message = 'La IA está tardando demasiado en responder. Probá de nuevo en unos segundos.';
+                    } else if (error && /Failed to fetch|NetworkError|Load failed/i.test(error.message || '')) {
+                        message = 'No se pudo conectar con el servicio de IA. Puede estar temporalmente fuera de línea o bloqueado por la conexión.';
+                    } else if (error && error.message) {
+                        message = `${message} Detalle: ${error.message}`;
+                    }
+                    // Quitar el mensaje fallido del historial para no confundir la conversación.
+                    if (this.state.chatHistory[this.state.chatHistory.length - 1]?.role === 'user') {
+                        this.state.chatHistory.pop();
+                    }
+                    this.addChatMessage(message, 'ai');
                 } finally {
+                    clearTimeout(timeoutId);
                     this.resetChatBtn(btn);
                 }
             }
@@ -975,15 +955,10 @@
                     ? 'bg-amber-500 text-slate-950 rounded-2xl rounded-tr-sm' 
                     : 'bg-slate-700 text-white rounded-2xl rounded-tl-sm';
 
-                // Simple markdown formatting for bold text (asterisks)
-                const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-                wrap.innerHTML = `
-                    <div class="px-4 py-2 max-w-[85%] text-sm ${bubbleClass} whitespace-pre-wrap">
-                        ${formattedText}
-                    </div>
-                `;
-                
+                const bubble = document.createElement('div');
+                bubble.className = `px-4 py-2 max-w-[85%] text-sm ${bubbleClass} whitespace-pre-wrap break-words`;
+                bubble.textContent = String(text ?? '');
+                wrap.appendChild(bubble);
                 chatContainer.appendChild(wrap);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
