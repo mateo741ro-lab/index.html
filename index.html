@@ -108,6 +108,68 @@
         .premium-border {
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
+        /* Evita que textos y controles se salgan de sus tarjetas, especialmente en móvil. */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { overflow-x: hidden; }
+        button, input, select, textarea { min-width: 0; max-width: 100%; }
+        h1, h2, h3, h4, h5, p, label, span, strong, code, button, option {
+            overflow-wrap: anywhere;
+        }
+        .mechanic-action-btn {
+            white-space: normal !important;
+            text-align: center;
+            line-height: 1.3;
+            overflow-wrap: anywhere;
+            min-width: 0;
+        }
+        .mechanic-guide-step { min-width: 0; }
+        .mechanic-guide-step p { overflow-wrap: anywhere; }
+        #car-modal-content, #ficha-modal-body, #ficha-modal, #ficha-tecnica-card { min-width: 0; }
+        #ficha-modal-body { overflow-x: hidden; }
+        /* La vista previa también es monocromática; la imagen final se genera en canvas. */
+        #ficha-tecnica-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            background: #fff !important;
+            color: #111 !important;
+            border: 2px solid #111 !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+        }
+        #ficha-tecnica-card * {
+            color: #111 !important;
+            border-color: #444 !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+            letter-spacing: normal !important;
+            overflow-wrap: anywhere !important;
+            word-break: normal !important;
+            white-space: normal !important;
+            line-height: 1.35 !important;
+            background-color: transparent !important;
+        }
+        #ficha-tecnica-card .grid.grid-cols-3 {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+        #ficha-tecnica-card h2 { font-size: 22px !important; }
+        #ficha-tecnica-card h4 { font-size: 13px !important; }
+        #ficha-tecnica-card .text-xs { font-size: 12px !important; }
+        #ficha-tecnica-card .text-\[11px\] { font-size: 11px !important; }
+        #ficha-tecnica-card .text-\[10px\] { font-size: 11px !important; }
+        @media (max-width: 640px) {
+            #ficha-modal .p-6 { padding: 12px !important; }
+            #ficha-tecnica-card { padding: 14px !important; }
+            #ficha-tecnica-card .grid.grid-cols-3 { grid-template-columns: 1fr !important; }
+            #ficha-modal .p-4 { padding: 10px !important; }
+            #car-modal-content .p-6 { padding: 14px !important; }
+            #car-modal-content .p-5 { padding: 14px !important; }
+            #toast-container { left: 12px; right: 12px; bottom: 12px; }
+            .toast { padding: 10px 12px; }
+        }
+
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
@@ -167,7 +229,7 @@
 
             <div class="p-6 overflow-y-auto flex-grow custom-scrollbar" id="ficha-modal-body">
                 <!-- Tarjeta Visual de Ficha Técnica que se convertirá en Imagen -->
-                <div id="ficha-tecnica-card" class="bg-slate-900 p-6 rounded-2xl border-2 border-amber-500/40 text-white space-y-6 shadow-2xl">
+                <div id="ficha-tecnica-card" class="bg-white p-6 rounded-xl border-2 border-black text-black space-y-5">
                     <div class="flex justify-between items-start border-b border-slate-700 pb-4">
                         <div class="flex items-center gap-3">
                             <div class="w-12 h-12 bg-amber-500/20 border border-amber-500/50 rounded-xl flex items-center justify-center text-amber-500 font-bold text-2xl">
@@ -197,6 +259,10 @@
                         <div>
                             <span class="text-xs text-slate-400 block font-medium">Kilometraje</span>
                             <strong id="ft-km" class="text-white text-base font-semibold">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block font-medium">Estado actual</span>
+                            <strong id="ft-status" class="text-white text-base font-semibold">-</strong>
                         </div>
                     </div>
 
@@ -372,14 +438,34 @@
                 <div>
                     <h2 class="text-2xl font-bold text-white"><i class="fas fa-cogs text-amber-500 mr-3"></i>Panel de Gestión</h2>
                     <p class="text-slate-400 mt-1">Administra vehículos, registra servis, reparaciones y genera fichas técnicas en imagen.</p>
-                    <div class="mt-3 text-xs text-slate-400 break-all">UID Firebase de este navegador para configurar las reglas: <code id="owner-firebase-uid" class="text-amber-400">Cargando...</code>
-                        <button type="button" onclick="app.copyOwnerUid()" class="ml-2 underline text-amber-400 hover:text-amber-300">Copiar UID</button>
-                    </div>
+                    <details class="mt-3 text-xs text-slate-400">
+                        <summary class="cursor-pointer select-none hover:text-white">Configuración técnica de Firebase (solo si se necesita)</summary>
+                        <div class="mt-2 rounded-lg border border-slate-700 bg-slate-900 p-3">
+                            <p class="mb-2">Este código se usa únicamente para configurar los permisos de la base de datos.</p>
+                            <code id="owner-firebase-uid" class="block text-amber-400 break-all">Conectando...</code>
+                            <button type="button" onclick="app.copyOwnerUid()" class="mt-2 rounded border border-slate-600 px-3 py-1.5 text-amber-300 hover:bg-slate-800">Copiar código de Firebase</button>
+                        </div>
+                    </details>
                 </div>
                 <button type="button" onclick="app.toggleCarModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-5 py-2.5 rounded-lg transition-colors flex items-center gap-2">
-                    <i class="fas fa-plus"></i> Nuevo Ingreso
+                    <i class="fas fa-plus"></i> Registrar vehículo
                 </button>
             </div>
+
+            <section class="rounded-2xl border border-slate-700 bg-slate-900/70 p-4 sm:p-5">
+                <h3 class="mb-3 flex items-center gap-2 font-bold text-white"><i class="fas fa-circle-info text-amber-400"></i> Cómo usar el panel</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="mechanic-guide-step rounded-xl border border-slate-700 bg-slate-800 p-3">
+                        <p class="font-semibold text-amber-300">1. Registrar</p><p class="mt-1 text-sm text-slate-300">Tocá <b>Registrar vehículo</b> y completá los datos del vehículo y del cliente.</p>
+                    </div>
+                    <div class="mechanic-guide-step rounded-xl border border-slate-700 bg-slate-800 p-3">
+                        <p class="font-semibold text-amber-300">2. Anotar los trabajos</p><p class="mt-1 text-sm text-slate-300">Marcá las tareas que querés mostrar y elegí si están pendientes o completas. Agregá notas si hace falta.</p>
+                    </div>
+                    <div class="mechanic-guide-step rounded-xl border border-slate-700 bg-slate-800 p-3">
+                        <p class="font-semibold text-amber-300">3. Guardar y compartir</p><p class="mt-1 text-sm text-slate-300">Guardá el vehículo. Después usá <b>Enviar seguimiento por WhatsApp</b> para compartir el enlace privado o <b>Crear ficha técnica</b> para generar una imagen.</p>
+                    </div>
+                </div>
+            </section>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-grow min-h-0">
                 <!-- Cars List -->
@@ -399,14 +485,14 @@
                 <!-- AI Assistant Section -->
                 <div class="bg-slate-800 rounded-2xl premium-border premium-shadow flex flex-col h-[550px] lg:h-auto overflow-hidden border-t-4 border-t-amber-500">
                     <div class="p-4 border-b border-slate-700 bg-slate-850">
-                        <h3 class="font-semibold text-lg flex items-center"><i class="fas fa-robot text-amber-500 mr-2"></i>Asistente IA (Gemini)</h3>
-                        <p class="text-xs text-slate-400 mt-1">Pregúntale sobre fallas, repuestos o mantenimiento recomendado.</p>
+                        <h3 class="font-semibold text-lg flex items-center"><i class="fas fa-robot text-amber-500 mr-2"></i>Asistente IA del taller</h3>
+                        <p class="text-xs text-slate-400 mt-1">Consultá posibles causas de fallas, repuestos y mantenimiento. Verificá las recomendaciones antes de aplicarlas.</p>
                     </div>
                     
                     <div class="flex-grow overflow-y-auto p-4 space-y-4 flex flex-col custom-scrollbar" id="chat-messages">
                         <div class="flex flex-col items-start">
                             <div class="bg-slate-700 text-white rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] text-sm">
-                                ¡Hola Yama! 👋 Soy tu asistente inteligente. ¿En qué te ayudo hoy con las reparaciones o datos del taller?
+                                ¡Hola! Te puedo orientar sobre fallas, repuestos y mantenimiento. Contame qué problema tiene el vehículo.
                             </div>
                         </div>
                     </div>
@@ -463,7 +549,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-1">Estado General del Vehículo *</label>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Estado actual del vehículo *</label>
                             <select id="car-status" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-amber-500 outline-none appearance-none">
                                 <option value="En espera">En espera</option>
                                 <option value="En proceso">En proceso</option>
@@ -473,10 +559,10 @@
 
                         <!-- Motor de Sugerencias Result -->
                         <div id="suggestions-box" class="hidden bg-slate-900/50 border border-amber-500/30 rounded-lg p-4">
-                            <h4 class="text-amber-400 font-semibold mb-2 flex items-center text-sm"><i class="fas fa-clipboard-check mr-2"></i>Mantenimientos Sugeridos (Basado en Km)</h4>
+                            <h4 class="text-amber-400 font-semibold mb-2 flex items-center text-sm"><i class="fas fa-clipboard-check mr-2"></i>Sugerencias de mantenimiento según kilometraje</h4>
                             <ul id="suggestions-list" class="list-disc list-inside text-sm text-slate-300 space-y-1"></ul>
                             <div class="mt-3">
-                                <button type="button" onclick="app.addSuggestionsToNotes()" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded border border-slate-600 transition-colors">Añadir a Notas</button>
+                                <button type="button" onclick="app.addSuggestionsToNotes()" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded border border-slate-600 transition-colors">Copiar sugerencias a observaciones</button>
                             </div>
                         </div>
 
@@ -484,19 +570,20 @@
                         <div class="border-t border-slate-700 pt-5 space-y-4">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <h4 class="text-base font-bold text-amber-400 flex items-center gap-2">
-                                    <i class="fas fa-list-check"></i> Hoja de Servis y Reparaciones
+                                    <i class="fas fa-list-check"></i> Lista de mantenimiento y reparaciones
                                 </h4>
-                                <span class="text-xs text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-700">Estas tareas serán visibles para el cliente</span>
+                                <span class="text-xs text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-700">Solo se muestran las tareas marcadas</span>
                             </div>
 
                             <!-- Formulario para agregar tarea personalizada -->
-                            <div class="flex gap-2">
-                                <input type="text" id="custom-task-input" placeholder="Agregar tarea / selección propia..." class="flex-grow bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-500 outline-none">
-                                <select id="custom-task-cat" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-amber-500 outline-none">
+                            <p class="text-sm leading-relaxed text-slate-400">Marcá la casilla de una tarea para incluirla en el seguimiento del cliente. A la derecha elegí <b class="text-slate-200">Pendiente</b> o <b class="text-slate-200">Completa</b>. Las tareas desmarcadas no aparecerán en la ficha.</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_150px_auto] gap-2">
+                                <input type="text" id="custom-task-input" placeholder="Escribí una tarea nueva..." class="w-full min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-500 outline-none">
+                                <select id="custom-task-cat" aria-label="Tipo de tarea" class="w-full min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-500 outline-none">
                                     <option value="servis">Servis</option>
                                     <option value="reparaciones">Reparación</option>
                                 </select>
-                                <button type="button" onclick="app.addCustomChecklistItem()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm transition-colors whitespace-nowrap">
+                                <button type="button" onclick="app.addCustomChecklistItem()" class="mechanic-action-btn bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm transition-colors">
                                     <i class="fas fa-plus"></i> Añadir
                                 </button>
                             </div>
@@ -523,10 +610,10 @@
 
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <label class="block text-sm font-medium text-slate-300">Notas, Fallas o Reportes del Mecánico</label>
+                                <label class="block text-sm font-medium text-slate-300">Observaciones para el cliente</label>
                                 <span class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700">Visible para el cliente</span>
                             </div>
-                            <textarea id="car-notes" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-amber-500 outline-none resize-none" placeholder="Detalla fallas encontradas, reportes para el cliente, repuestos necesarios..."></textarea>
+                            <textarea id="car-notes" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-amber-500 outline-none resize-none" placeholder="Explicá qué se encontró, qué falta reparar o qué repuesto se necesita..."></textarea>
                         </div>
                     </form>
                 </div>
@@ -966,61 +1053,63 @@
                 if (!listEl) return;
                 const uidEl = document.getElementById('owner-firebase-uid');
                 if (uidEl) uidEl.textContent = this.state.auth?.currentUser?.uid || 'Conectando...';
-                
+
                 listEl.innerHTML = '';
-                
                 if (this.state.cars.length === 0) {
                     emptyEl.classList.remove('hidden');
                     emptyEl.classList.add('flex');
                     return;
                 }
-                
                 emptyEl.classList.add('hidden');
 
                 this.state.cars.forEach(car => {
                     const statusColor = this.getStatusColor(car.status);
-                    
-                    const item = document.createElement('div');
-                    item.className = "bg-slate-900 border border-slate-700 rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden group";
-                    
+                    const item = document.createElement('article');
+                    item.className = 'bg-slate-900 border border-slate-700 rounded-xl p-4 sm:p-5 flex flex-col gap-4 relative min-w-0';
                     item.innerHTML = `
-                        <div class="absolute left-0 top-0 bottom-0 w-1 ${statusColor.bg}"></div>
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 ml-2">
-                            <div>
-                                <h4 class="font-bold text-white text-lg">${car.brand} ${car.model}</h4>
-                                <div class="flex items-center gap-3 text-xs mt-1 text-slate-400">
-                                    <span class="bg-slate-800 px-2 py-0.5 rounded border border-slate-700 text-amber-400 font-bold tracking-wide"><i class="fas fa-user text-slate-500 mr-1 text-[10px]"></i> ${car.plate}</span>
-                                    ${car.km ? `<span><i class="fas fa-tachometer-alt mr-1"></i>${car.km} km</span>` : ''}
-                                </div>
+                        <div class="absolute left-0 top-0 bottom-0 w-1 ${statusColor.bg} rounded-l-xl"></div>
+                        <div class="ml-2 min-w-0">
+                            <h4 class="font-bold text-white text-lg leading-snug">${this.escapeHtml(`${car.brand || ''} ${car.model || ''}`.trim() || 'Vehículo sin nombre')}</h4>
+                            <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-300">
+                                <span class="rounded border border-slate-700 bg-slate-800 px-2 py-1 break-words"><i class="fas fa-user mr-1.5 text-slate-400"></i>${this.escapeHtml(car.plate || 'Cliente sin nombre')}</span>
+                                ${car.km ? `<span class="rounded bg-slate-800 px-2 py-1"><i class="fas fa-gauge mr-1 text-slate-400"></i>${this.escapeHtml(String(car.km))} km</span>` : ''}
+                                <span class="rounded-full border border-slate-600 px-3 py-1 text-xs font-semibold ${statusColor.badgeText}">${this.escapeHtml(car.status || 'En espera')}</span>
                             </div>
-                            <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-                                <button type="button" onclick="app.shareCarLinkWhatsApp('${car.id}')" class="px-3 py-1.5 bg-green-600/20 text-green-400 hover:bg-green-600/30 rounded-lg border border-green-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                                    <i class="fab fa-whatsapp"></i> Enlace WhatsApp
-                                </button>
-                                <button type="button" onclick="app.openFichaModal('${car.id}')" class="px-3 py-1.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                                    <i class="fas fa-file-invoice"></i> Ficha Técnica
-                                </button>
-                                <select onchange="app.updateCarStatus('${car.id}', this.value)" class="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-amber-500 cursor-pointer">
+                        </div>
+                        <div class="ml-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button type="button" onclick="app.shareCarLinkWhatsApp('${car.id}')" class="mechanic-action-btn flex items-center justify-center gap-2 rounded-lg border border-green-500/40 bg-green-600/15 px-3 py-2.5 text-sm font-semibold text-green-300 hover:bg-green-600/25">
+                                <i class="fab fa-whatsapp text-lg"></i><span>Enviar seguimiento por WhatsApp</span>
+                            </button>
+                            <button type="button" onclick="app.openFichaModal('${car.id}')" class="mechanic-action-btn flex items-center justify-center gap-2 rounded-lg border border-slate-500 bg-slate-800 px-3 py-2.5 text-sm font-semibold text-white hover:bg-slate-700">
+                                <i class="fas fa-file-lines"></i><span>Crear ficha técnica (imagen)</span>
+                            </button>
+                        </div>
+                        <div class="ml-2 grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto_auto] gap-2 items-center">
+                            <label class="flex min-w-0 flex-col gap-1 text-xs font-semibold text-slate-400">
+                                Estado del vehículo
+                                <select aria-label="Estado del vehículo" onchange="app.updateCarStatus('${car.id}', this.value)" class="w-full min-w-0 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium text-white focus:border-amber-500 focus:outline-none">
                                     <option value="En espera" ${car.status === 'En espera' ? 'selected' : ''}>En espera</option>
                                     <option value="En proceso" ${car.status === 'En proceso' ? 'selected' : ''}>En proceso</option>
                                     <option value="Terminado" ${car.status === 'Terminado' ? 'selected' : ''}>Terminado</option>
                                 </select>
-                                <button type="button" onclick="app.editCar('${car.id}')" class="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-slate-800 rounded" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button type="button" onclick="app.deleteCar('${car.id}')" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-slate-800 rounded" title="Eliminar">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
+                            </label>
+                            <button type="button" onclick="app.editCar('${car.id}')" class="mechanic-action-btn rounded-lg border border-blue-500/40 bg-blue-500/10 px-4 py-2.5 text-sm font-semibold text-blue-300 hover:bg-blue-500/20"><i class="fas fa-pen-to-square mr-1.5"></i>Editar datos</button>
+                            <button type="button" onclick="app.deleteCar('${car.id}')" class="mechanic-action-btn rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-300 hover:bg-red-500/20"><i class="fas fa-trash mr-1.5"></i>Eliminar</button>
                         </div>
                         ${car.notes ? `
-                        <div class="ml-2 bg-slate-850 rounded-lg p-3 text-xs text-slate-300 border border-slate-700">
-                            <span class="font-medium text-slate-400 block mb-1"><i class="fas fa-sticky-note mr-1 text-amber-500"></i>Notas (Visibles por cliente):</span>
-                            <div class="whitespace-pre-wrap leading-relaxed">${car.notes}</div>
+                        <div class="ml-2 min-w-0 rounded-lg border border-slate-700 bg-slate-850 p-3 text-sm text-slate-300">
+                            <span class="mb-1 block font-semibold text-slate-200"><i class="fas fa-note-sticky mr-1.5 text-amber-400"></i>Observaciones para el cliente</span>
+                            <div class="whitespace-pre-wrap break-words leading-relaxed">${this.escapeHtml(car.notes)}</div>
                         </div>` : ''}
                     `;
                     listEl.appendChild(item);
                 });
+            }
+
+            escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>"']/g, char => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                }[char]));
             }
 
             toggleCarModal() {
@@ -1065,18 +1154,19 @@
 
                 this.state.activeChecklist.forEach(item => {
                     const row = document.createElement('div');
-                    row.className = "flex items-start justify-between gap-3 bg-slate-800/80 p-2.5 rounded-lg border border-slate-700 text-sm";
+                    row.className = "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 bg-slate-800/80 p-3 rounded-lg border border-slate-700 text-sm min-w-0";
                     
                     const isSelected = item.selected;
                     const isPending = item.status === 'pendiente';
 
                     row.innerHTML = `
-                        <div class="flex items-start gap-3 flex-grow min-w-0 pt-1">
+                        <div class="flex items-start gap-3 flex-1 min-w-0 pt-1">
                             <input type="checkbox" id="chk-${item.id}" ${isSelected ? 'checked' : ''} onchange="app.toggleChecklistItem('${item.id}', this.checked)" class="w-4 h-4 mt-0.5 rounded accent-amber-500 cursor-pointer flex-shrink-0">
-                            <label for="chk-${item.id}" class="text-white cursor-pointer break-words whitespace-normal leading-snug w-full ${isSelected ? 'font-semibold' : 'text-slate-300'}">${item.text}</label>
+                            <label for="chk-${item.id}" class="text-white cursor-pointer min-w-0 break-words whitespace-normal leading-relaxed flex-1 ${isSelected ? 'font-semibold' : 'text-slate-300'}">${this.escapeHtml(item.text)}</label>
                         </div>
-                        <div class="flex items-center gap-2 flex-shrink-0">
-                            <select onchange="app.updateChecklistStatus('${item.id}', this.value)" class="bg-slate-900 border ${isPending ? 'border-amber-500/50 text-amber-400' : 'border-green-500/50 text-green-400'} rounded px-2 py-1 text-xs cursor-pointer font-medium">
+                        <div class="flex items-center justify-start sm:justify-end gap-2 flex-wrap min-w-0">
+                            <label class="text-xs text-slate-400">Estado de la tarea</label>
+                            <select aria-label="Estado de la tarea" onchange="app.updateChecklistStatus('${item.id}', this.value)" class="max-w-full bg-slate-900 border ${isPending ? 'border-amber-500/50 text-amber-400' : 'border-green-500/50 text-green-400'} rounded px-2 py-2 text-sm cursor-pointer font-medium">
                                 <option value="pendiente" ${item.status === 'pendiente' ? 'selected' : ''}>Pendiente</option>
                                 <option value="completa" ${item.status === 'completa' ? 'selected' : ''}>Completa</option>
                             </select>
@@ -1314,14 +1404,23 @@
             async shareCarLinkWhatsApp(carId) {
                 const car = this.state.cars.find(c => c.id === carId);
                 if (!car) {
-                    this.showToast('No encontré ese vehículo en el panel.', 'error');
+                    this.showToast('No encontré ese vehículo. Actualizá el panel e intentá de nuevo.', 'error');
+                    return;
+                }
+                const host = window.location.hostname;
+                const privateIpv4 = /^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host);
+                if (!/^https?:$/.test(window.location.protocol) || ['localhost', '127.0.0.1', ''].includes(host) || privateIpv4 || host.endsWith('.local')) {
+                    this.showToast('Primero publicá la web en GitHub Pages. Un enlace file:// o localhost no le sirve al cliente.', 'warning');
                     return;
                 }
                 if (!this.state.isOnline || !this.state.db || !this.state.auth?.currentUser) {
-                    this.showToast('Conectate a Firebase para generar el enlace privado.', 'warning');
+                    this.showToast('Firebase no está conectado. Revisá la conexión y volvé a intentar.', 'warning');
                     return;
                 }
 
+                // Abrimos la pestaña mientras el clic todavía es una acción directa del usuario.
+                // Así el navegador no bloquea WhatsApp después de esperar a Firebase.
+                const waTab = window.open('about:blank', '_blank');
                 const shareToken = car.shareToken || this.generateShareToken();
                 try {
                     if (!car.shareToken) {
@@ -1338,14 +1437,21 @@
                     shareUrl.search = '';
                     shareUrl.hash = '';
                     shareUrl.searchParams.set('cliente', shareToken);
-                    const message = `Hola ${car.plate || ''}. Te comparto el seguimiento de tu vehículo ${car.brand || ''} ${car.model || ''} en Taller El Yama. En este enlace podés ver únicamente la información de tu vehículo:
-${shareUrl.toString()}`;
+                    const message = `Hola ${car.plate || ''}. Te comparto el seguimiento de tu vehículo ${car.brand || ''} ${car.model || ''} en Taller El Yama. En este enlace podés consultar únicamente la información de tu vehículo:\n${shareUrl.toString()}`;
                     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-                    this.showToast('Enlace individual preparado para enviar por WhatsApp.', 'success');
+
+                    if (waTab && !waTab.closed) {
+                        waTab.opener = null;
+                        waTab.location.href = whatsappUrl;
+                    } else {
+                        // Si el navegador bloqueó la pestaña, navegamos en la misma para que el envío no falle silenciosamente.
+                        window.location.assign(whatsappUrl);
+                    }
+                    this.showToast('Enlace privado preparado. En WhatsApp elegí al cliente y enviá el mensaje.', 'success');
                 } catch (error) {
                     console.error('Share link error:', error);
-                    this.showToast('No se pudo preparar el enlace. Revisá las reglas de Firestore.', 'error');
+                    if (waTab && !waTab.closed) waTab.close();
+                    this.showToast('Firebase rechazó el enlace. Revisá las reglas de Firestore para cars y clientViews y que el UID del dueño sea el correcto.', 'error');
                 }
             }
 
@@ -1371,6 +1477,8 @@ ${shareUrl.toString()}`;
                 document.getElementById('ft-vehicle').textContent = `${car.brand} ${car.model}`;
                 document.getElementById('ft-plate').textContent = car.plate;
                 document.getElementById('ft-km').textContent = car.km ? `${car.km} km` : 'No especificado';
+                const statusEl = document.getElementById('ft-status');
+                if (statusEl) statusEl.textContent = car.status || 'En espera';
                 
                 const notesContainer = document.getElementById('ft-notes-container');
                 if (car.notes) {
@@ -1424,38 +1532,215 @@ ${shareUrl.toString()}`;
                 }
             }
 
-            async generateFichaImage() {
-                const card = document.getElementById('ficha-tecnica-card');
-                if (!card) return;
+            createFichaCanvas(car) {
+                const WIDTH = 1200;
+                const MARGIN = 56;
+                const CONTENT = WIDTH - MARGIN * 2;
+                const measureCanvas = document.createElement('canvas');
+                const measureCtx = measureCanvas.getContext('2d');
+                const ops = [];
+                let y = 42;
 
-                this.showToast("Generando imagen...", "info");
+                const wrapText = (value, font, maxWidth) => {
+                    measureCtx.font = font;
+                    const output = [];
+                    const paragraphs = String(value ?? '').replace(/\r/g, '').split('\n');
+                    for (let paragraphIndex = 0; paragraphIndex < paragraphs.length; paragraphIndex++) {
+                        const paragraph = paragraphs[paragraphIndex];
+                        if (!paragraph.trim()) {
+                            output.push('');
+                            continue;
+                        }
+                        let line = '';
+                        for (const word of paragraph.trim().split(/\s+/)) {
+                            if (measureCtx.measureText(word).width > maxWidth) {
+                                if (line) { output.push(line); line = ''; }
+                                let piece = '';
+                                for (const character of word) {
+                                    if (piece && measureCtx.measureText(piece + character).width > maxWidth) {
+                                        output.push(piece);
+                                        piece = character;
+                                    } else {
+                                        piece += character;
+                                    }
+                                }
+                                line = piece;
+                                continue;
+                            }
+                            const candidate = line ? `${line} ${word}` : word;
+                            if (measureCtx.measureText(candidate).width > maxWidth && line) {
+                                output.push(line);
+                                line = word;
+                            } else {
+                                line = candidate;
+                            }
+                        }
+                        if (line) output.push(line);
+                    }
+                    return output.length ? output : [''];
+                };
 
-                try {
-                    const canvas = await html2canvas(card, {
-                        backgroundColor: '#0f172a',
-                        scale: 2,
-                        useCORS: true
+                const addRect = (x, top, w, h, fill = '#ffffff', stroke = '#111111', lineWidth = 2) => {
+                    ops.push({ type: 'rect', x, top, w, h, fill, stroke, lineWidth });
+                };
+                const addLine = (x1, y1, x2, y2, color = '#111111', lineWidth = 2) => {
+                    ops.push({ type: 'line', x1, y1, x2, y2, color, lineWidth });
+                };
+                const addText = (value, x, top, font, color = '#111111', maxWidth = CONTENT, lineHeight = 30) => {
+                    const lines = wrapText(value, font, maxWidth);
+                    ops.push({ type: 'text', lines, x, top, font, color, lineHeight });
+                    return lines.length * lineHeight;
+                };
+                const sectionHeader = title => {
+                    y += 8;
+                    addText(title, MARGIN, y, '700 25px Arial, Helvetica, sans-serif', '#111111', CONTENT, 32);
+                    y += 38;
+                    addLine(MARGIN, y, WIDTH - MARGIN, y, '#111111', 2);
+                    y += 14;
+                };
+                const getLines = (value, font, maxWidth) => wrapText(value, font, maxWidth).length;
+                const fieldHeight = (value, w) => 16 + 23 + getLines(value, '700 26px Arial, Helvetica, sans-serif', w - 32) * 32 + 17;
+                const drawField = (x, top, w, h, label, value) => {
+                    addRect(x, top, w, h, '#ffffff', '#222222', 2);
+                    addText(label.toUpperCase(), x + 16, top + 12, '700 16px Arial, Helvetica, sans-serif', '#333333', w - 32, 21);
+                    addText(value || 'No especificado', x + 16, top + 40, '700 26px Arial, Helvetica, sans-serif', '#111111', w - 32, 32);
+                };
+                const safeCarName = `${car.brand || ''} ${car.model || ''}`.trim() || 'No especificado';
+                const today = new Date().toLocaleDateString('es-UY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const reference = document.getElementById('ft-ref')?.textContent || '0001';
+
+                // Encabezado limpio en blanco y negro.
+                addRect(MARGIN, y, CONTENT, 144, '#ffffff', '#111111', 3);
+                addText('TALLER EL YAMA', MARGIN + 24, y + 20, '700 43px Arial, Helvetica, sans-serif', '#111111', 620, 50);
+                addText('RESUMEN DE MANTENIMIENTO Y REPARACIONES', MARGIN + 26, y + 78, '600 20px Arial, Helvetica, sans-serif', '#222222', 660, 28);
+                addLine(760, y + 16, 760, y + 128, '#333333', 2);
+                addText(`Fecha: ${today}`, 786, y + 34, '600 20px Arial, Helvetica, sans-serif', '#111111', 330, 27);
+                addText(`Referencia: #YAMA-${reference}`, 786, y + 76, '600 20px Arial, Helvetica, sans-serif', '#111111', 330, 27);
+                y += 166;
+
+                sectionHeader('1. DATOS DEL VEHÍCULO');
+                const gap = 16;
+                const cellW = (CONTENT - gap) / 2;
+                const firstRow = [
+                    { label: 'Vehículo', value: safeCarName },
+                    { label: 'Cliente', value: car.plate || 'No especificado' }
+                ];
+                const firstH = Math.max(...firstRow.map(field => fieldHeight(field.value, cellW)));
+                drawField(MARGIN, y, cellW, firstH, firstRow[0].label, firstRow[0].value);
+                drawField(MARGIN + cellW + gap, y, cellW, firstH, firstRow[1].label, firstRow[1].value);
+                y += firstH + gap;
+                const secondRow = [
+                    { label: 'Kilometraje', value: car.km ? `${car.km} km` : 'No especificado' },
+                    { label: 'Estado actual', value: car.status || 'En espera' }
+                ];
+                const secondH = Math.max(...secondRow.map(field => fieldHeight(field.value, cellW)));
+                drawField(MARGIN, y, cellW, secondH, secondRow[0].label, secondRow[0].value);
+                drawField(MARGIN + cellW + gap, y, cellW, secondH, secondRow[1].label, secondRow[1].value);
+                y += secondH + 18;
+
+                const checklist = Array.isArray(car.checklist) && car.checklist.length ? car.checklist : DEFAULT_CHECKLIST;
+                const drawTaskSection = (title, category) => {
+                    sectionHeader(title);
+                    const tasks = checklist.filter(task => task.category === category && task.selected);
+                    if (!tasks.length) {
+                        const emptyText = 'No hay trabajos registrados en esta sección.';
+                        addRect(MARGIN, y, CONTENT, 64, '#ffffff', '#555555', 1.5);
+                        addText(emptyText, MARGIN + 18, y + 18, '400 21px Arial, Helvetica, sans-serif', '#333333', CONTENT - 36, 28);
+                        y += 76;
+                        return;
+                    }
+                    tasks.forEach(task => {
+                        const taskLabel = String(task.text || 'Tarea sin descripción');
+                        const taskFont = '400 22px Arial, Helvetica, sans-serif';
+                        const taskLines = getLines(taskLabel, taskFont, CONTENT - 330);
+                        const rowH = Math.max(72, 20 + taskLines * 29 + 18);
+                        addRect(MARGIN, y, CONTENT, rowH, '#ffffff', '#555555', 1.5);
+                        addText(taskLabel, MARGIN + 18, y + 17, taskFont, '#111111', CONTENT - 330, 29);
+                        const badgeW = 218;
+                        const badgeX = WIDTH - MARGIN - badgeW - 12;
+                        const badgeH = 40;
+                        const badgeY = y + Math.round((rowH - badgeH) / 2);
+                        addRect(badgeX, badgeY, badgeW, badgeH, '#ffffff', '#111111', 1.5);
+                        const isComplete = task.status === 'completa';
+                        addText(isComplete ? 'COMPLETADO' : 'PENDIENTE', badgeX + 12, badgeY + 10, '700 17px Arial, Helvetica, sans-serif', '#111111', badgeW - 24, 22);
+                        y += rowH + 8;
                     });
+                    y += 4;
+                };
 
+                drawTaskSection('2. MANTENIMIENTO / SERVIS', 'servis');
+                drawTaskSection('3. REPARACIONES Y TRABAJOS', 'reparaciones');
+
+                sectionHeader('4. OBSERVACIONES DEL TALLER');
+                const notes = String(car.notes || '').trim() || 'No hay observaciones registradas.';
+                const notesLines = wrapText(notes, '400 22px Arial, Helvetica, sans-serif', CONTENT - 36);
+                const notesH = Math.max(78, notesLines.length * 31 + 34);
+                addRect(MARGIN, y, CONTENT, notesH, '#ffffff', '#333333', 1.5);
+                addText(notes, MARGIN + 18, y + 17, '400 22px Arial, Helvetica, sans-serif', '#111111', CONTENT - 36, 31);
+                y += notesH + 26;
+
+                addLine(MARGIN, y, WIDTH - MARGIN, y, '#111111', 2);
+                y += 14;
+                addText('Taller El Yama  |  Seguimiento de mantenimiento y reparaciones', MARGIN, y, '600 17px Arial, Helvetica, sans-serif', '#333333', CONTENT, 24);
+                y += 38;
+
+                const output = document.createElement('canvas');
+                output.width = WIDTH;
+                output.height = y + 24;
+                const ctx = output.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, output.width, output.height);
+                ctx.textBaseline = 'top';
+                for (const op of ops) {
+                    if (op.type === 'rect') {
+                        ctx.fillStyle = op.fill;
+                        ctx.fillRect(op.x, op.top, op.w, op.h);
+                        ctx.strokeStyle = op.stroke;
+                        ctx.lineWidth = op.lineWidth;
+                        ctx.strokeRect(op.x, op.top, op.w, op.h);
+                    } else if (op.type === 'line') {
+                        ctx.beginPath();
+                        ctx.moveTo(op.x1, op.y1);
+                        ctx.lineTo(op.x2, op.y2);
+                        ctx.strokeStyle = op.color;
+                        ctx.lineWidth = op.lineWidth;
+                        ctx.stroke();
+                    } else if (op.type === 'text') {
+                        ctx.font = op.font;
+                        ctx.fillStyle = op.color;
+                        op.lines.forEach((line, index) => {
+                            ctx.fillText(line, op.x, op.top + index * op.lineHeight, Math.max(1, WIDTH - op.x - MARGIN));
+                        });
+                    }
+                }
+                return output;
+            }
+
+            async generateFichaImage() {
+                const car = this.state.activeFichaCar;
+                if (!car) {
+                    this.showToast('Primero elegí un vehículo en el panel.', 'warning');
+                    return;
+                }
+                this.showToast('Generando ficha en blanco y negro...', 'info');
+                try {
+                    const canvas = this.createFichaCanvas(car);
                     const dataUrl = canvas.toDataURL('image/png');
-                    const response = await fetch(dataUrl);
-                    const blob = await response.blob();
-                    
-                    const car = this.state.activeFichaCar || { plate: 'Cliente' };
-                    // Remueve espacios si los hay para el nombre del archivo
-                    const nombreArchivoSeguro = (car.plate || 'ElYama').replace(/\s+/g, '_');
-                    const fileName = `Ficha_Tecnica_${nombreArchivoSeguro}.png`;
+                    const blob = await new Promise((resolve, reject) => {
+                        canvas.toBlob(result => result ? resolve(result) : reject(new Error('No se pudo convertir la imagen')), 'image/png');
+                    });
+                    const safeName = String(car.plate || 'ElYama')
+                        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                        .replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '') || 'ElYama';
+                    const fileName = `Ficha_Tecnica_${safeName}.png`;
                     const file = new File([blob], fileName, { type: 'image/png' });
-
                     this.state.generatedImage = { dataUrl, blob, file, fileName };
-
-                    document.getElementById('btn-view-image').classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-                    document.getElementById('btn-share-whatsapp').classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-
-                    this.showToast("¡Imagen de Ficha Técnica generada!", "success");
+                    document.getElementById('btn-view-image')?.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                    document.getElementById('btn-share-whatsapp')?.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                    this.showToast('Ficha creada. El texto se ajustó para que no se corte.', 'success');
                 } catch (error) {
-                    console.error("Error al generar imagen:", error);
-                    this.showToast("No se pudo procesar la imagen de la ficha.", "error");
+                    console.error('Error al generar imagen:', error);
+                    this.showToast('No se pudo crear la imagen. Actualizá la página e intentá de nuevo.', 'error');
                 }
             }
 
@@ -1490,40 +1775,46 @@ ${shareUrl.toString()}`;
 
             async shareFichaImageWhatsApp() {
                 if (!this.state.generatedImage) {
-                    this.showToast("Primero hacé clic en 'Generar Imagen'", "warning");
+                    this.showToast("Primero hacé clic en 'Generar Imagen'.", "warning");
                     return;
                 }
-
                 const car = this.state.activeFichaCar || { brand: 'Vehículo', model: '', plate: '' };
                 const { file, dataUrl, fileName } = this.state.generatedImage;
+                const shareText = `Ficha técnica de ${car.brand || ''} ${car.model || ''} para ${car.plate || 'cliente'} - Taller El Yama.`;
 
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
                     try {
                         await navigator.share({
                             files: [file],
-                            title: `Ficha Técnica - ${car.brand} ${car.model}`,
-                            text: `Ficha Técnica del vehículo ${car.brand} ${car.model} (${car.plate}) - Taller El Yama`
+                            title: `Ficha técnica - ${car.brand || ''} ${car.model || ''}`,
+                            text: shareText
                         });
-                        this.showToast("Imagen compartida con éxito", "success");
+                        this.showToast('Ficha compartida. Si elegiste WhatsApp, confirmá el envío en esa aplicación.', 'success');
                         return;
                     } catch (shareError) {
-                        if (shareError.name !== 'AbortError') {
-                            console.warn("Share fallback:", shareError);
-                        } else {
-                            return;
-                        }
+                        if (shareError?.name === 'AbortError') return;
+                        console.warn('No se pudo abrir el menú nativo de compartir; se usará WhatsApp Web.', shareError);
                     }
                 }
 
+                // Abrir la pestaña de WhatsApp en el mismo gesto del botón, antes de descargar.
+                const waTab = window.open('about:blank', '_blank');
                 const link = document.createElement('a');
                 link.download = fileName;
                 link.href = dataUrl;
+                document.body.appendChild(link);
                 link.click();
-
-                const text = `*TALLER EL YAMA - FICHA TÉCNICA* 🛠️\n🚗 *Vehículo:* ${car.brand} ${car.model}\n👤 *Cliente:* ${car.plate}\n📌 _Te adjunto la imagen de la Ficha Técnica recién generada y descargada._`;
-                const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-                window.open(waUrl, '_blank');
-                this.showToast("Imagen descargada. Adjúntala en el chat de WhatsApp.", "info");
+                link.remove();
+                const text = `*TALLER EL YAMA - FICHA TÉCNICA*\nVehículo: ${car.brand || ''} ${car.model || ''}\nCliente: ${car.plate || ''}\nLa imagen de la ficha se descargó. Adjuntala a este chat antes de enviarla.`;
+                const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                if (waTab && !waTab.closed) {
+                    waTab.opener = null;
+                    waTab.location.href = waUrl;
+                } else {
+                    // Si el navegador bloquea la pestaña, llevar WhatsApp a la pestaña actual es el último recurso.
+                    window.location.assign(waUrl);
+                }
+                this.showToast('La ficha se descargó. Adjuntá el PNG en el chat de WhatsApp antes de enviarlo.', 'info');
             }
 
             closeFichaModal() {
