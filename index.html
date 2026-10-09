@@ -165,7 +165,7 @@
                 </button>
             </div>
 
-            <div class="p-6 overflow-y-auto flex-grow" id="ficha-modal-body">
+            <div class="p-6 overflow-y-auto flex-grow custom-scrollbar" id="ficha-modal-body">
                 <!-- Tarjeta Visual de Ficha Técnica que se convertirá en Imagen -->
                 <div id="ficha-tecnica-card" class="bg-slate-900 p-6 rounded-2xl border-2 border-amber-500/40 text-white space-y-6 shadow-2xl">
                     <div class="flex justify-between items-start border-b border-slate-700 pb-4">
@@ -188,11 +188,11 @@
                     <div class="grid grid-cols-3 gap-3 bg-slate-800/90 p-4 rounded-xl border border-slate-700 text-sm">
                         <div>
                             <span class="text-xs text-slate-400 block font-medium">Vehículo</span>
-                            <strong id="ft-vehicle" class="text-white text-base font-bold">-</strong>
+                            <strong id="ft-vehicle" class="text-white text-base font-bold whitespace-normal break-words">-</strong>
                         </div>
                         <div>
-                            <span class="text-xs text-slate-400 block font-medium">Matrícula</span>
-                            <strong id="ft-plate" class="text-amber-400 text-base font-mono font-bold">-</strong>
+                            <span class="text-xs text-slate-400 block font-medium">Cliente</span>
+                            <strong id="ft-plate" class="text-amber-400 text-base font-bold whitespace-normal break-words">-</strong>
                         </div>
                         <div>
                             <span class="text-xs text-slate-400 block font-medium">Kilometraje</span>
@@ -306,24 +306,24 @@
         </div>
     </template>
 
-    <!-- Template: Client View -->
+    <!-- Vista del cliente: se carga únicamente con un enlace personal ?cliente=TOKEN -->
     <template id="tpl-client">
         <div class="w-full animate-fade-in flex flex-col h-full">
             <div class="flex items-center justify-between mb-8">
                 <div>
-                    <h2 class="text-2xl font-bold text-white"><i class="fas fa-car-side text-amber-500 mr-3"></i>Vehículos en Taller</h2>
-                    <p class="text-slate-400 mt-1">Estado en tiempo real de las reparaciones y reportes del mecánico.</p>
+                    <h2 class="text-2xl font-bold text-white"><i class="fas fa-car-side text-amber-500 mr-3"></i>Estado de tu vehículo</h2>
+                    <p class="text-slate-400 mt-1">Consultá el estado de los trabajos de tu vehículo en Taller El Yama.</p>
                 </div>
                 <button type="button" onclick="app.navigate('home')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg premium-border transition-colors"><i class="fas fa-arrow-left mr-2"></i>Volver</button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="client-cars-list">
-                <!-- Tarjetas inyectadas por JS -->
+                <!-- Se inyecta únicamente el vehículo asociado al enlace privado -->
             </div>
             
-            <div id="client-empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-500">
-                <i class="fas fa-box-open text-6xl mb-4 opacity-50"></i>
-                <p class="text-lg">No hay vehículos en reparación actualmente.</p>
+            <div id="client-empty-state" class="hidden flex-col items-center justify-center py-20 px-5 text-slate-400 text-center">
+                <i class="fas fa-link text-5xl mb-4 text-amber-500 opacity-80"></i>
+                <p class="text-lg">Para consultar el estado de tu vehículo, pedile al Taller El Yama tu enlace privado de WhatsApp.</p>
             </div>
         </div>
     </template>
@@ -340,13 +340,19 @@
                     <p class="text-slate-400 mt-2">Ingresa la clave de acceso al panel de gestión.</p>
                 </div>
                 
-                <form id="login-form" onsubmit="app.handleLogin(event)" class="space-y-6">
+                <form id="login-form" onsubmit="app.handleLogin(event)" class="space-y-4">
                     <div>
                         <label for="password" class="block text-sm font-medium text-slate-300 mb-2">Contraseña</label>
                         <input type="password" id="password" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors" placeholder="••••••••">
                         <p id="login-error" class="text-red-400 text-sm mt-2 hidden"><i class="fas fa-exclamation-circle mr-1"></i> Contraseña incorrecta.</p>
                     </div>
-                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center">
+                    
+                    <div class="flex items-center">
+                        <input id="remember-me" type="checkbox" class="w-4 h-4 accent-amber-500 bg-slate-900 border-slate-700 rounded cursor-pointer">
+                        <label for="remember-me" class="ml-2 text-sm text-slate-300 cursor-pointer">Mantener sesión iniciada</label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center mt-2">
                         <span>Ingresar al Panel</span>
                     </button>
                     <button type="button" onclick="app.navigate('home')" class="w-full bg-transparent hover:bg-slate-700 text-slate-300 font-medium py-3 px-4 rounded-lg transition-colors border border-slate-600 mt-2">
@@ -366,6 +372,9 @@
                 <div>
                     <h2 class="text-2xl font-bold text-white"><i class="fas fa-cogs text-amber-500 mr-3"></i>Panel de Gestión</h2>
                     <p class="text-slate-400 mt-1">Administra vehículos, registra servis, reparaciones y genera fichas técnicas en imagen.</p>
+                    <div class="mt-3 text-xs text-slate-400 break-all">UID Firebase de este navegador para configurar las reglas: <code id="owner-firebase-uid" class="text-amber-400">Cargando...</code>
+                        <button type="button" onclick="app.copyOwnerUid()" class="ml-2 underline text-amber-400 hover:text-amber-300">Copiar UID</button>
+                    </div>
                 </div>
                 <button type="button" onclick="app.toggleCarModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-5 py-2.5 rounded-lg transition-colors flex items-center gap-2">
                     <i class="fas fa-plus"></i> Nuevo Ingreso
@@ -439,8 +448,8 @@
                                 <input type="text" id="car-model" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-amber-500 outline-none" placeholder="Ej: Corolla">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-1">Matrícula *</label>
-                                <input type="text" id="car-plate" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-amber-500 outline-none uppercase" placeholder="Ej: ABC 1234">
+                                <label class="block text-sm font-medium text-slate-300 mb-1">Nombre del Cliente *</label>
+                                <input type="text" id="car-plate" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-amber-500 outline-none" placeholder="Ej: Juan Pérez">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-300 mb-1">Kilometraje</label>
@@ -493,7 +502,7 @@
                             </div>
 
                             <!-- Lista de Opciones Servis & Reparaciones -->
-                            <div id="checklist-container" class="space-y-4 max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
+                            <div id="checklist-container" class="space-y-4 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                                 <!-- Servis Group -->
                                 <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-750">
                                     <h5 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
@@ -548,7 +557,7 @@
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Plantilla por defecto del Checklist según la hoja de taller
         const DEFAULT_CHECKLIST = [
@@ -570,6 +579,10 @@
                 this.state = {
                     currentView: 'home',
                     isLoggedIn: false,
+                    // Un enlace ?cliente=... activa la vista individual del cliente.
+                    clientToken: new URLSearchParams(window.location.search).get('cliente'),
+                    clientLoading: false,
+                    clientError: false,
                     cars: [],
                     isOnline: false,
                     db: null,
@@ -594,7 +607,7 @@
                 this.handleChat = this.handleChat.bind(this);
                 
                 this.initCloudServices();
-                this.navigate('home');
+                this.navigate(this.state.clientToken ? 'client' : 'home');
             }
 
             async initCloudServices() {
@@ -603,7 +616,12 @@
                     this.state.auth = getAuth(firebaseApp);
                     this.state.db = getFirestore(firebaseApp);
                     await signInAnonymously(this.state.auth);
-                    this.subscribeToCars();
+                    if (this.state.clientToken) {
+                        this.subscribeToClientView(this.state.clientToken);
+                    } else if (this.state.isLoggedIn && this.state.currentView === 'mechanic') {
+                        this.subscribeToCars();
+                        this.renderCurrentView();
+                    }
                 } catch (error) {
                     console.error("Firebase init error:", error);
                     this.fallbackToOffline("No se pudo iniciar sesión en Firebase.");
@@ -628,6 +646,58 @@
                 return collection(this.state.db, 'artifacts', appId, 'public', 'data', 'cars');
             }
 
+            getClientViewsCollectionRef() {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'taller-el-yama';
+                return collection(this.state.db, 'artifacts', appId, 'public', 'data', 'clientViews');
+            }
+
+            generateShareToken() {
+                // Token aleatorio de alta entropía: el enlace funciona como una llave privada.
+                const bytes = new Uint8Array(24);
+                crypto.getRandomValues(bytes);
+                return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+            }
+
+            async syncClientView(car) {
+                if (!this.state.db || !car || !car.shareToken) return;
+                const viewRef = doc(this.state.db, this.getClientViewsCollectionRef().path, car.shareToken);
+                // Solo copiamos los campos que el cliente necesita ver, nunca todo el documento interno.
+                const publicData = {
+                    brand: car.brand || '',
+                    model: car.model || '',
+                    plate: car.plate || '',
+                    km: car.km || '',
+                    status: car.status || 'En espera',
+                    notes: car.notes || '',
+                    checklist: Array.isArray(car.checklist) ? car.checklist : [],
+                    createdAt: car.createdAt || Date.now(),
+                    updatedAt: car.updatedAt || Date.now()
+                };
+                await setDoc(viewRef, publicData);
+            }
+
+            subscribeToClientView(token) {
+                if (!token || !this.state.db) return;
+                if (this.state.unsubscribe) this.state.unsubscribe();
+                this.state.clientLoading = true;
+                this.state.clientError = false;
+                this.state.cars = [];
+                const viewRef = doc(this.state.db, this.getClientViewsCollectionRef().path, token);
+                this.state.unsubscribe = onSnapshot(viewRef, (snapshot) => {
+                    this.state.clientLoading = false;
+                    this.state.isOnline = true;
+                    this.state.clientError = !snapshot.exists();
+                    this.state.cars = snapshot.exists() ? [{ id: token, ...snapshot.data() }] : [];
+                    if (this.state.currentView === 'client') this.renderCurrentView();
+                }, (error) => {
+                    console.error('Client view read error:', error);
+                    this.state.clientLoading = false;
+                    this.state.clientError = true;
+                    this.state.cars = [];
+                    if (this.state.currentView === 'client') this.renderCurrentView();
+                });
+            }
+
             subscribeToCars() {
                 if (!this.state.auth || !this.state.auth.currentUser || !this.state.db) return;
                 if (this.state.unsubscribe) this.state.unsubscribe();
@@ -644,17 +714,27 @@
                     if (!wasOnline) {
                         this.showToast("Conectado a Firebase correctamente", "success");
                     }
-                    if (this.state.currentView === 'client' || this.state.currentView === 'mechanic') {
+                    if (this.state.currentView === 'mechanic') {
                         this.renderCurrentView();
                     }
                 }, (error) => {
                     console.error("Firestore listener error:", error);
                     this.state.isOnline = false;
-                    this.showToast("Error de conexión con Firestore.", "error");
+                    this.showToast("No se pudo cargar el panel. Revisá las reglas de acceso de Firebase.", "error");
                 });
             }
 
             navigate(view) {
+                // Validación para auto-login si habilitó la opción de recordar
+                if (view === 'login' && localStorage.getItem('yama_logged_in') === 'true') {
+                    this.state.isLoggedIn = true;
+                    this.state.clientToken = null;
+                    const cleanUrl = new URL(window.location.href);
+                    cleanUrl.searchParams.delete('cliente');
+                    window.history.replaceState({}, '', cleanUrl.toString());
+                    view = 'mechanic';
+                }
+
                 if (view === 'mechanic' && !this.state.isLoggedIn) {
                     view = 'login';
                 }
@@ -662,6 +742,11 @@
                 this.state.currentView = view;
                 this.renderCurrentView();
                 
+                // Si la sesión recordada ya está activa, cargar el listado del dueño.
+                if (view === 'mechanic' && this.state.isLoggedIn && this.state.auth?.currentUser && !this.state.clientToken) {
+                    this.subscribeToCars();
+                }
+
                 const navBtnBack = document.getElementById('nav-btn-back');
                 const navBtnHome = document.getElementById('nav-btn-home');
                 const navBtnLogout = document.getElementById('nav-btn-logout');
@@ -687,6 +772,12 @@
 
             logout() {
                 this.state.isLoggedIn = false;
+                localStorage.removeItem('yama_logged_in'); // Quitar sesión guardada
+                if (this.state.unsubscribe) {
+                    this.state.unsubscribe();
+                    this.state.unsubscribe = null;
+                }
+                this.state.cars = [];
                 this.navigate('home');
                 this.showToast("Sesión cerrada", "success");
             }
@@ -708,25 +799,41 @@
                 }
             }
 
-            // MODIFICACIÓN PRINCIPAL: Vista Cliente mejorada
             renderClientCars() {
                 const listEl = document.getElementById('client-cars-list');
                 const emptyEl = document.getElementById('client-empty-state');
                 if (!listEl) return;
                 
                 listEl.innerHTML = '';
-                
-                if (this.state.cars.length === 0) {
+
+                // Nunca mostrar el listado general en la pantalla de cliente.
+                if (!this.state.clientToken) {
                     listEl.classList.add('hidden');
                     emptyEl.classList.remove('hidden');
                     emptyEl.classList.add('flex');
+                    emptyEl.innerHTML = '<i class="fas fa-link text-5xl mb-4 text-amber-500 opacity-80"></i><p class="text-lg">Para consultar el estado de tu vehículo, pedile al Taller El Yama tu enlace privado de WhatsApp.</p>';
                     return;
                 }
-                
+                if (this.state.clientLoading) {
+                    listEl.classList.add('hidden');
+                    emptyEl.classList.remove('hidden');
+                    emptyEl.classList.add('flex');
+                    emptyEl.innerHTML = '<div class="spinner mb-4"></div><p class="text-lg">Cargando el estado de tu vehículo...</p>';
+                    return;
+                }
+                if (this.state.clientError || this.state.cars.length === 0) {
+                    listEl.classList.add('hidden');
+                    emptyEl.classList.remove('hidden');
+                    emptyEl.classList.add('flex');
+                    emptyEl.innerHTML = '<i class="fas fa-circle-exclamation text-5xl mb-4 text-amber-500"></i><p class="text-lg">No pudimos encontrar este enlace. Pedile al taller que te envíe uno nuevo.</p>';
+                    return;
+                }
+
                 listEl.classList.remove('hidden');
                 emptyEl.classList.add('hidden');
 
-                this.state.cars.forEach(car => {
+                // subscribeToClientView carga un único documento asociado a este token.
+                this.state.cars.slice(0, 1).forEach(car => {
                     const statusColor = this.getStatusColor(car.status);
                     const statusIcon = this.getStatusIcon(car.status);
                     
@@ -748,9 +855,9 @@
                             selectedTasks.forEach(task => {
                                 const isComplete = task.status === 'completa';
                                 tasksHtml += `
-                                    <div class="flex justify-between items-center text-sm bg-slate-900/60 p-2.5 rounded border border-slate-700/50">
-                                        <span class="text-slate-200 text-xs">${task.text}</span>
-                                        <span class="text-[10px] font-bold px-2 py-1 rounded-md whitespace-nowrap ${isComplete ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
+                                    <div class="flex justify-between items-start text-sm bg-slate-900/60 p-2.5 rounded border border-slate-700/50 gap-2">
+                                        <span class="text-slate-200 text-xs break-words whitespace-normal leading-snug flex-grow">${task.text}</span>
+                                        <span class="text-[10px] font-bold px-2 py-1 rounded-md whitespace-nowrap flex-shrink-0 ${isComplete ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
                                             ${isComplete ? '✓ COMPLETA' : '⏳ PENDIENTE'}
                                         </span>
                                     </div>`;
@@ -774,17 +881,17 @@
                         <div class="absolute top-0 left-0 w-full h-1 ${statusColor.bg}"></div>
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h3 class="text-xl font-bold text-white">${car.brand} ${car.model}</h3>
-                                <div class="inline-block mt-2 bg-slate-900 border border-slate-700 px-3 py-1 rounded text-sm tracking-wider font-mono text-slate-300 shadow-inner">
-                                    ${car.plate}
+                                <h3 class="text-xl font-bold text-white leading-tight mb-2">${car.brand} ${car.model}</h3>
+                                <div class="inline-block bg-slate-900 border border-slate-700 px-3 py-1 rounded text-sm tracking-wide text-slate-300 shadow-inner">
+                                    <i class="fas fa-user text-slate-500 mr-1.5 text-xs"></i> ${car.plate}
                                 </div>
                             </div>
-                            <div class="w-12 h-12 rounded-full ${statusColor.bg} ${statusColor.text} bg-opacity-20 flex items-center justify-center text-xl shadow-sm">
+                            <div class="w-12 h-12 flex-shrink-0 rounded-full ${statusColor.bg} ${statusColor.text} bg-opacity-20 flex items-center justify-center text-xl shadow-sm ml-2">
                                 <i class="${statusIcon}"></i>
                             </div>
                         </div>
                         
-                        <div class="flex items-center justify-between mb-2 bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
+                        <div class="flex items-center justify-between mb-2 bg-slate-900/50 p-2 rounded-lg border border-slate-700/50 mt-2">
                             <span class="text-sm text-slate-400 font-medium">Estado del Vehículo:</span>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold shadow-sm ${statusColor.badgeBg} ${statusColor.badgeText}">
                                 ${car.status}
@@ -798,14 +905,50 @@
                 });
             }
 
+            copyOwnerUid() {
+                const uid = this.state.auth?.currentUser?.uid;
+                if (!uid) {
+                    this.showToast('Firebase todavía está conectando. Probá de nuevo en unos segundos.', 'warning');
+                    return;
+                }
+                const fallbackCopy = () => {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = uid;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                    this.showToast('UID copiado. Pegalo en las reglas de Firestore.', 'success');
+                };
+                if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(uid).then(
+                        () => this.showToast('UID copiado. Pegalo en las reglas de Firestore.', 'success'),
+                        fallbackCopy
+                    );
+                } else {
+                    fallbackCopy();
+                }
+            }
+
             handleLogin(e) {
                 e.preventDefault();
                 const passInput = document.getElementById('password');
+                const rememberMe = document.getElementById('remember-me');
                 const errText = document.getElementById('login-error');
                 
                 if (passInput.value === 'Yamandu') {
                     this.state.isLoggedIn = true;
+                    // Al entrar al panel, quitar el modo de cliente para no mezclar vistas.
+                    this.state.clientToken = null;
+                    const cleanUrl = new URL(window.location.href);
+                    cleanUrl.searchParams.delete('cliente');
+                    window.history.replaceState({}, '', cleanUrl.toString());
+                    // Guardar sesión si se marcó la casilla
+                    if (rememberMe && rememberMe.checked) {
+                        localStorage.setItem('yama_logged_in', 'true');
+                    }
                     this.navigate('mechanic');
+                    this.subscribeToCars();
                     this.showToast("Acceso concedido", "success");
                 } else {
                     errText.classList.remove('hidden');
@@ -821,6 +964,8 @@
                 const listEl = document.getElementById('mechanic-cars-list');
                 const emptyEl = document.getElementById('mechanic-empty-state');
                 if (!listEl) return;
+                const uidEl = document.getElementById('owner-firebase-uid');
+                if (uidEl) uidEl.textContent = this.state.auth?.currentUser?.uid || 'Conectando...';
                 
                 listEl.innerHTML = '';
                 
@@ -843,12 +988,15 @@
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 ml-2">
                             <div>
                                 <h4 class="font-bold text-white text-lg">${car.brand} ${car.model}</h4>
-                                <div class="flex items-center gap-3 text-xs mt-1 text-slate-400 font-mono">
-                                    <span class="bg-slate-800 px-2 py-0.5 rounded border border-slate-700 text-amber-400 font-bold">${car.plate}</span>
+                                <div class="flex items-center gap-3 text-xs mt-1 text-slate-400">
+                                    <span class="bg-slate-800 px-2 py-0.5 rounded border border-slate-700 text-amber-400 font-bold tracking-wide"><i class="fas fa-user text-slate-500 mr-1 text-[10px]"></i> ${car.plate}</span>
                                     ${car.km ? `<span><i class="fas fa-tachometer-alt mr-1"></i>${car.km} km</span>` : ''}
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+                            <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                                <button type="button" onclick="app.shareCarLinkWhatsApp('${car.id}')" class="px-3 py-1.5 bg-green-600/20 text-green-400 hover:bg-green-600/30 rounded-lg border border-green-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors">
+                                    <i class="fab fa-whatsapp"></i> Enlace WhatsApp
+                                </button>
                                 <button type="button" onclick="app.openFichaModal('${car.id}')" class="px-3 py-1.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors">
                                     <i class="fas fa-file-invoice"></i> Ficha Técnica
                                 </button>
@@ -868,7 +1016,7 @@
                         ${car.notes ? `
                         <div class="ml-2 bg-slate-850 rounded-lg p-3 text-xs text-slate-300 border border-slate-700">
                             <span class="font-medium text-slate-400 block mb-1"><i class="fas fa-sticky-note mr-1 text-amber-500"></i>Notas (Visibles por cliente):</span>
-                            <div class="whitespace-pre-wrap">${car.notes}</div>
+                            <div class="whitespace-pre-wrap leading-relaxed">${car.notes}</div>
                         </div>` : ''}
                     `;
                     listEl.appendChild(item);
@@ -917,17 +1065,17 @@
 
                 this.state.activeChecklist.forEach(item => {
                     const row = document.createElement('div');
-                    row.className = "flex items-center justify-between gap-3 bg-slate-800/80 p-2.5 rounded-lg border border-slate-700 text-sm";
+                    row.className = "flex items-start justify-between gap-3 bg-slate-800/80 p-2.5 rounded-lg border border-slate-700 text-sm";
                     
                     const isSelected = item.selected;
                     const isPending = item.status === 'pendiente';
 
                     row.innerHTML = `
-                        <div class="flex items-center gap-3 flex-grow min-w-0">
-                            <input type="checkbox" id="chk-${item.id}" ${isSelected ? 'checked' : ''} onchange="app.toggleChecklistItem('${item.id}', this.checked)" class="w-4 h-4 rounded accent-amber-500 cursor-pointer">
-                            <label for="chk-${item.id}" class="text-white cursor-pointer truncate ${isSelected ? 'font-semibold' : 'text-slate-300'}">${item.text}</label>
+                        <div class="flex items-start gap-3 flex-grow min-w-0 pt-1">
+                            <input type="checkbox" id="chk-${item.id}" ${isSelected ? 'checked' : ''} onchange="app.toggleChecklistItem('${item.id}', this.checked)" class="w-4 h-4 mt-0.5 rounded accent-amber-500 cursor-pointer flex-shrink-0">
+                            <label for="chk-${item.id}" class="text-white cursor-pointer break-words whitespace-normal leading-snug w-full ${isSelected ? 'font-semibold' : 'text-slate-300'}">${item.text}</label>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-shrink-0">
                             <select onchange="app.updateChecklistStatus('${item.id}', this.value)" class="bg-slate-900 border ${isPending ? 'border-amber-500/50 text-amber-400' : 'border-green-500/50 text-green-400'} rounded px-2 py-1 text-xs cursor-pointer font-medium">
                                 <option value="pendiente" ${item.status === 'pendiente' ? 'selected' : ''}>Pendiente</option>
                                 <option value="completa" ${item.status === 'completa' ? 'selected' : ''}>Completa</option>
@@ -996,10 +1144,13 @@
                 e.stopPropagation();
                 
                 const id = document.getElementById('car-id').value;
+                const existingCar = id ? this.state.cars.find(c => c.id === id) : null;
                 const carData = {
+                    shareToken: existingCar?.shareToken || this.generateShareToken(),
                     brand: document.getElementById('car-brand').value.trim(),
                     model: document.getElementById('car-model').value.trim(),
-                    plate: document.getElementById('car-plate').value.trim().toUpperCase(),
+                    // A nivel BD mantengo "plate" para no romper compatibilidad, aunque se lee como Nombre del Cliente
+                    plate: document.getElementById('car-plate').value.trim(), 
                     km: document.getElementById('car-km').value,
                     status: document.getElementById('car-status').value,
                     notes: document.getElementById('car-notes').value.trim(),
@@ -1007,21 +1158,29 @@
                     updatedAt: Date.now()
                 };
 
-                if (this.state.isOnline && this.state.auth.currentUser) {
+                if (this.state.isOnline && this.state.auth?.currentUser) {
                     try {
                         const colRef = this.getCollectionRef();
+                        let savedCarId = id;
                         if (id) {
                             const docRef = doc(this.state.db, colRef.path, id);
                             await updateDoc(docRef, carData);
                             this.showToast("Vehículo actualizado", "success");
                         } else {
                             carData.createdAt = Date.now();
-                            await addDoc(colRef, carData);
+                            const newCarRef = await addDoc(colRef, carData);
+                            savedCarId = newCarRef.id;
                             this.showToast("Vehículo registrado con éxito", "success");
+                        }
+                        try {
+                            await this.syncClientView({ ...existingCar, ...carData, id: savedCarId });
+                        } catch (syncError) {
+                            console.error('Client view sync error:', syncError);
+                            this.showToast('El vehículo se guardó, pero no se pudo actualizar su vista de cliente. Revisá las reglas de Firestore.', 'warning');
                         }
                     } catch (error) {
                         console.error("Save error:", error);
-                        this.showToast("No se pudo guardar en Firestore.", "error");
+                        this.showToast("No se pudo guardar en Firestore. Revisá las reglas de acceso.", "error");
                     }
                 } else {
                     if (id) {
@@ -1062,19 +1221,33 @@
                     : JSON.parse(JSON.stringify(DEFAULT_CHECKLIST));
                 
                 this.renderChecklistUI();
-                this.toggleCarModal();
+                // Abrir el modal sin resetear los campos que acabamos de cargar.
+                const modal = document.getElementById('car-modal');
+                const modalContent = document.getElementById('car-modal-content');
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    modalContent.classList.remove('scale-95');
+                    modalContent.classList.add('scale-100');
+                }, 10);
             }
 
             async deleteCar(id) {
+                const carToDelete = this.state.cars.find(c => c.id === id);
                 this.state.cars = this.state.cars.filter(c => c.id !== id);
-                if (this.state.isOnline && this.state.auth.currentUser) {
+                if (this.state.isOnline && this.state.auth?.currentUser) {
                     try {
                         const colRef = this.getCollectionRef();
                         const docRef = doc(this.state.db, colRef.path, id);
                         await deleteDoc(docRef);
+                        if (carToDelete?.shareToken) {
+                            const viewRef = doc(this.state.db, this.getClientViewsCollectionRef().path, carToDelete.shareToken);
+                            await deleteDoc(viewRef);
+                        }
                         this.showToast("Vehículo eliminado", "success");
                     } catch (error) {
                         console.error("Delete error:", error);
+                        this.showToast('No se pudo borrar el vehículo o su enlace privado.', 'error');
                     }
                 } else {
                     this.renderMechanicCars();
@@ -1090,7 +1263,9 @@
                     try {
                         const colRef = this.getCollectionRef();
                         const docRef = doc(this.state.db, colRef.path, id);
-                        await updateDoc(docRef, { status: newStatus, updatedAt: Date.now() });
+                        const updatedAt = Date.now();
+                        await updateDoc(docRef, { status: newStatus, updatedAt });
+                        if (car?.shareToken) await this.syncClientView({ ...car, status: newStatus, updatedAt });
                         this.showToast(`Estado cambiado a ${newStatus}`, "success");
                     } catch (error) {
                         console.error("Status update error:", error);
@@ -1136,7 +1311,45 @@
                 this.showToast("Sugerencias agregadas a notas", "success");
             }
 
-            // GESTIÓN DE FICHA TÉCNICA E IMÁGENES SOLICITADAS
+            async shareCarLinkWhatsApp(carId) {
+                const car = this.state.cars.find(c => c.id === carId);
+                if (!car) {
+                    this.showToast('No encontré ese vehículo en el panel.', 'error');
+                    return;
+                }
+                if (!this.state.isOnline || !this.state.db || !this.state.auth?.currentUser) {
+                    this.showToast('Conectate a Firebase para generar el enlace privado.', 'warning');
+                    return;
+                }
+
+                const shareToken = car.shareToken || this.generateShareToken();
+                try {
+                    if (!car.shareToken) {
+                        const colRef = this.getCollectionRef();
+                        await updateDoc(doc(this.state.db, colRef.path, carId), {
+                            shareToken,
+                            updatedAt: Date.now()
+                        });
+                        car.shareToken = shareToken;
+                    }
+                    await this.syncClientView({ ...car, shareToken });
+
+                    const shareUrl = new URL(window.location.href);
+                    shareUrl.search = '';
+                    shareUrl.hash = '';
+                    shareUrl.searchParams.set('cliente', shareToken);
+                    const message = `Hola ${car.plate || ''}. Te comparto el seguimiento de tu vehículo ${car.brand || ''} ${car.model || ''} en Taller El Yama. En este enlace podés ver únicamente la información de tu vehículo:
+${shareUrl.toString()}`;
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                    this.showToast('Enlace individual preparado para enviar por WhatsApp.', 'success');
+                } catch (error) {
+                    console.error('Share link error:', error);
+                    this.showToast('No se pudo preparar el enlace. Revisá las reglas de Firestore.', 'error');
+                }
+            }
+
+            // GESTIÓN DE FICHA TÉCNICA E IMÁGENES
             openFichaModal(carId) {
                 const car = this.state.cars.find(c => c.id === carId);
                 if (!car) return;
@@ -1192,10 +1405,10 @@
             createFichaItemBadge(item) {
                 const el = document.createElement('div');
                 const isComplete = item.status === 'completa';
-                el.className = "flex items-center justify-between bg-slate-800/90 p-2.5 rounded-lg border border-slate-700/80";
+                el.className = "flex items-start justify-between bg-slate-800/90 p-2.5 rounded-lg border border-slate-700/80 gap-2";
                 el.innerHTML = `
-                    <span class="text-slate-100 font-medium">${item.text}</span>
-                    <span class="px-2.5 py-0.5 rounded text-[11px] font-bold ${isComplete ? 'bg-green-500/20 text-green-400 border border-green-500/40' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">
+                    <span class="text-slate-100 font-medium break-words whitespace-normal flex-grow text-xs leading-snug">${item.text}</span>
+                    <span class="px-2.5 py-0.5 rounded text-[11px] font-bold flex-shrink-0 ${isComplete ? 'bg-green-500/20 text-green-400 border border-green-500/40' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'}">
                         ${isComplete ? '✓ COMPLETA' : '⏳ PENDIENTE'}
                     </span>
                 `;
@@ -1211,7 +1424,6 @@
                 }
             }
 
-            // BOTÓN 1: GENERAR IMAGEN DE LA FICHA
             async generateFichaImage() {
                 const card = document.getElementById('ficha-tecnica-card');
                 if (!card) return;
@@ -1229,13 +1441,14 @@
                     const response = await fetch(dataUrl);
                     const blob = await response.blob();
                     
-                    const car = this.state.activeFichaCar || { plate: 'YAMA' };
-                    const fileName = `Ficha_Tecnica_${car.plate || 'ElYama'}.png`;
+                    const car = this.state.activeFichaCar || { plate: 'Cliente' };
+                    // Remueve espacios si los hay para el nombre del archivo
+                    const nombreArchivoSeguro = (car.plate || 'ElYama').replace(/\s+/g, '_');
+                    const fileName = `Ficha_Tecnica_${nombreArchivoSeguro}.png`;
                     const file = new File([blob], fileName, { type: 'image/png' });
 
                     this.state.generatedImage = { dataUrl, blob, file, fileName };
 
-                    // Habilitar los otros dos botones
                     document.getElementById('btn-view-image').classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
                     document.getElementById('btn-share-whatsapp').classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
 
@@ -1246,7 +1459,6 @@
                 }
             }
 
-            // BOTÓN 2: VER IMAGEN GENERADA
             openImageViewer() {
                 if (!this.state.generatedImage) {
                     this.showToast("Primero hacé clic en 'Generar Imagen'", "warning");
@@ -1276,7 +1488,6 @@
                 this.showToast("Imagen descargada", "success");
             }
 
-            // BOTÓN 3: COMPARTIR IMAGEN GENERADA POR WHATSAPP
             async shareFichaImageWhatsApp() {
                 if (!this.state.generatedImage) {
                     this.showToast("Primero hacé clic en 'Generar Imagen'", "warning");
@@ -1286,7 +1497,6 @@
                 const car = this.state.activeFichaCar || { brand: 'Vehículo', model: '', plate: '' };
                 const { file, dataUrl, fileName } = this.state.generatedImage;
 
-                // Intentar Web Share API con soporte nativo de archivos (Celulares y navegadores modernos)
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
@@ -1305,13 +1515,12 @@
                     }
                 }
 
-                // Fallback para PC / Navegadores sin Web Share API directo
                 const link = document.createElement('a');
                 link.download = fileName;
                 link.href = dataUrl;
                 link.click();
 
-                const text = `*TALLER EL YAMA - FICHA TÉCNICA* 🛠️\n🚗 *Vehículo:* ${car.brand} ${car.model} (${car.plate})\n📌 _Te adjunto la imagen de la Ficha Técnica recién generada y descargada._`;
+                const text = `*TALLER EL YAMA - FICHA TÉCNICA* 🛠️\n🚗 *Vehículo:* ${car.brand} ${car.model}\n👤 *Cliente:* ${car.plate}\n📌 _Te adjunto la imagen de la Ficha Técnica recién generada y descargada._`;
                 const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
                 window.open(waUrl, '_blank');
                 this.showToast("Imagen descargada. Adjúntala en el chat de WhatsApp.", "info");
