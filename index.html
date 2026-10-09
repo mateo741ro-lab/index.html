@@ -151,8 +151,11 @@
             </svg>
             <h1 class="text-2xl font-bold tracking-tight text-white">Taller <span class="text-amber-500">El Yama</span></h1>
         </div>
-        <div>
-            <button id="nav-btn-home" onclick="app.navigate('home')" class="text-slate-400 hover:text-white transition-colors hidden sm:inline-block mr-4">Inicio</button>
+        <div class="flex items-center gap-3">
+            <button id="nav-btn-back" onclick="app.goBack()" aria-label="Volver atrás" title="Volver atrás" class="hidden bg-slate-800 hover:bg-slate-700 text-white w-10 h-10 rounded-lg border border-slate-700 transition-colors">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <button id="nav-btn-home" onclick="app.navigate('home')" class="text-slate-300 hover:text-white transition-colors hidden mr-1">Inicio</button>
             <button id="nav-btn-logout" onclick="app.logout()" class="text-red-400 hover:text-red-300 transition-colors hidden"><i class="fas fa-sign-out-alt mr-2"></i>Salir</button>
         </div>
     </header>
@@ -172,7 +175,7 @@
         <div class="flex-grow flex flex-col items-center justify-center animate-fade-in">
             <div class="text-center mb-12">
                 <h2 class="text-3xl sm:text-5xl font-bold mb-4">Bienvenido a <span class="text-amber-500">El Yama</span></h2>
-                <p class="text-slate-400 text-lg max-w-xl mx-auto">Excelencia mecánica y servicio premium. Selecciona tu perfil para continuar.</p>
+                <p class="text-slate-400 text-lg max-w-xl mx-auto">Seguimiento de vehículos y reparaciones. Seleccioná una opción para continuar.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
                 <!-- Botón Cliente -->
@@ -230,20 +233,15 @@
                     <p class="text-slate-400 mt-2">Ingresa la clave de acceso al panel de gestión.</p>
                 </div>
                 
-                <form id="login-form" onsubmit="app.handleLogin(event)" class="space-y-5">
-                    <div>
-                        <label for="admin-email" class="block text-sm font-medium text-slate-300 mb-2">Correo del administrador</label>
-                        <input type="email" id="admin-email" autocomplete="username" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors" placeholder="tu-correo@ejemplo.com">
-                    </div>
+                <form id="login-form" onsubmit="app.handleLogin(event)" class="space-y-6">
                     <div>
                         <label for="password" class="block text-sm font-medium text-slate-300 mb-2">Contraseña</label>
-                        <input type="password" id="password" autocomplete="current-password" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors" placeholder="Tu contraseña de Firebase">
-                        <p id="login-error" role="alert" class="text-red-400 text-sm mt-2 hidden"></p>
+                        <input type="password" id="password" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors" placeholder="••••••••">
+                        <p id="login-error" class="text-red-400 text-sm mt-2 hidden"><i class="fas fa-exclamation-circle mr-1"></i> Contraseña incorrecta.</p>
                     </div>
                     <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center">
                         <span id="login-btn-text">Ingresar al Panel</span>
                     </button>
-                    <p class="text-xs text-slate-400">El administrador debe existir en Firebase Authentication y verificar su correo antes de gestionar vehículos.</p>
                     <button type="button" onclick="app.navigate('home')" class="w-full bg-transparent hover:bg-slate-700 text-slate-300 font-medium py-3 px-4 rounded-lg transition-colors border border-slate-600 mt-2">
                         Cancelar
                     </button>
@@ -390,12 +388,11 @@
          ====================================================================
          CONFIGURACIÓN DE NUBE (FIREBASE & GEMINI AI)
          ====================================================================
-         REEMPLACE LAS SIGUIENTES VARIABLES CON SUS CREDENCIALES REALES
-         La lectura pública usa sesión anónima; la gestión requiere correo y contraseña verificados en Firebase.
+         Configuración de Firebase del proyecto Taller El Yama.
         */
         
         // 1. Configuración de Firebase (Firestore)
-        // Sustituya el objeto vacío con el contenido de su firebaseConfig
+        // Configuración web del proyecto Firebase
         const userFirebaseConfig = {
             apiKey: "AIzaSyB4rgiSCDlaqmt26zTwXLzwDtMCQJvtJC4",
             authDomain: "taller-8f0fc.firebaseapp.com",
@@ -414,7 +411,7 @@
 
         // Imports nativos ESM para Firebase v11.6.1
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithEmailAndPassword, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Main Application Controller
@@ -450,56 +447,25 @@
 
             async initCloudServices() {
                 try {
-                    // Try to initialize Firebase if config is present and not empty
-                    if (Object.keys(userFirebaseConfig).length > 0) {
-                        const app = initializeApp(userFirebaseConfig);
-                        this.state.auth = getAuth(app);
-                        this.state.db = getFirestore(app);
-                        
-                        await signInAnonymously(this.state.auth);
-                        this.state.isOnline = true;
-                        this.showToast("Conectado a la nube exitosamente", "success");
-                        this.subscribeToCars();
-                    } else {
-                        // Attempt fallback to provided environment variables if running in Canvas
-                        let configToUse = null;
-                        if (typeof __firebase_config !== 'undefined') {
-                            configToUse = JSON.parse(__firebase_config);
-                        }
-
-                        if(configToUse) {
-                            const app = initializeApp(configToUse);
-                            this.state.auth = getAuth(app);
-                            this.state.db = getFirestore(app);
-                            
-                            if (typeof __initial_auth_token !== 'undefined') {
-                                // For stricter environments, though we'll use anonymous for simplicity here if not provided
-                                import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js").then(module => {
-                                    module.signInWithCustomToken(this.state.auth, __initial_auth_token).then(()=> {
-                                        this.state.isOnline = true;
-                                        this.subscribeToCars();
-                                    }).catch(() => this.fallbackToOffline());
-                                });
-                            } else {
-                                await signInAnonymously(this.state.auth);
-                                this.state.isOnline = true;
-                                this.subscribeToCars();
-                            }
-                        } else {
-                           this.fallbackToOffline();
-                        }
-                    }
+                    const firebaseApp = initializeApp(userFirebaseConfig);
+                    this.state.auth = getAuth(firebaseApp);
+                    this.state.db = getFirestore(firebaseApp);
+                    await signInAnonymously(this.state.auth);
+                    this.subscribeToCars();
                 } catch (error) {
                     console.error("Firebase init error:", error);
-                    this.fallbackToOffline();
+                    this.fallbackToOffline("No se pudo iniciar sesión en Firebase. Revisá Authentication y la conexión.");
                 }
             }
 
-            fallbackToOffline() {
+            fallbackToOffline(message = "No se pudo conectar a Firebase. Revisá la conexión y la configuración.") {
                 this.state.isOnline = false;
-                this.showToast("Configura tus credenciales para conectar a la red. Usando modo offline.", "warning");
-                // Load local dummy data
-                this.state.cars = []; // Sin datos ficticios: los vehículos reales se guardan en Firestore.
+                this.state.cars = [];
+                if (this.state.unsubscribe) {
+                    this.state.unsubscribe();
+                    this.state.unsubscribe = null;
+                }
+                this.showToast(message, "error");
                 if (this.state.currentView === 'client' || this.state.currentView === 'mechanic') {
                     this.renderCurrentView();
                 }
@@ -512,25 +478,36 @@
             }
 
             subscribeToCars() {
-                if (!this.state.isOnline || !this.state.auth.currentUser) return;
-                
+                if (!this.state.auth || !this.state.auth.currentUser || !this.state.db) return;
                 if (this.state.unsubscribe) this.state.unsubscribe();
-                
+
                 const colRef = this.getCollectionRef();
-                // Simple query to avoid index requirements
                 this.state.unsubscribe = onSnapshot(colRef, (snapshot) => {
-                    this.state.cars = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); // Sort in JS memory
-                    
+                    const wasOnline = this.state.isOnline;
+                    this.state.isOnline = true;
+                    this.state.cars = snapshot.docs.map(document => ({
+                        id: document.id,
+                        ...document.data()
+                    })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                    if (!wasOnline) {
+                        this.showToast("Conectado a Firebase correctamente", "success");
+                    }
                     if (this.state.currentView === 'client' || this.state.currentView === 'mechanic') {
                         this.renderCurrentView();
                     }
                 }, (error) => {
-                    console.error("Firestore listen error:", error);
-                    this.showToast("Error de permisos en la nube. Cambiando a offline.", "error");
-                    this.fallbackToOffline();
+                    console.error("Firestore listener error:", error);
+                    this.state.isOnline = false;
+                    this.state.cars = [];
+                    let message = "Firebase inició, pero Firestore rechazó el acceso. Revisá las reglas de la base de datos.";
+                    if (error.code === "unavailable") {
+                        message = "No se pudo contactar con Firestore. Revisá tu conexión a internet.";
+                    }
+                    this.showToast(message, "error");
+                    if (this.state.currentView === 'client' || this.state.currentView === 'mechanic') {
+                        this.renderCurrentView();
+                    }
                 });
             }
 
@@ -542,16 +519,19 @@
                 this.state.currentView = view;
                 this.renderCurrentView();
                 
-                // Update Nav UI
+                // Controles de navegación visibles arriba a la derecha.
+                const navBtnBack = document.getElementById('nav-btn-back');
                 const navBtnHome = document.getElementById('nav-btn-home');
                 const navBtnLogout = document.getElementById('nav-btn-logout');
-                
+
                 if (view === 'home') {
+                    navBtnBack.classList.add('hidden');
                     navBtnHome.classList.add('hidden');
                     navBtnLogout.classList.add('hidden');
                 } else {
+                    navBtnBack.classList.remove('hidden');
                     navBtnHome.classList.remove('hidden');
-                    if (this.state.isLoggedIn) {
+                    if (this.state.isLoggedIn && view === 'mechanic') {
                         navBtnLogout.classList.remove('hidden');
                     } else {
                         navBtnLogout.classList.add('hidden');
@@ -559,20 +539,12 @@
                 }
             }
 
-            async logout() {
+            goBack() {
+                this.navigate('home');
+            }
+
+            logout() {
                 this.state.isLoggedIn = false;
-                try {
-                    if (this.state.auth) {
-                        await signOut(this.state.auth);
-                        // Renovar sesión anónima para que el público siga consultando los vehículos.
-                        await signInAnonymously(this.state.auth);
-                        this.state.isOnline = true;
-                        this.subscribeToCars();
-                    }
-                } catch (error) {
-                    console.error("Logout error:", error);
-                    this.showToast("No se pudo renovar la sesión pública. Recargá la página.", "warning");
-                }
                 this.navigate('home');
                 this.showToast("Sesión cerrada", "success");
             }
@@ -647,60 +619,22 @@
                 });
             }
 
-            async handleLogin(e) {
+            handleLogin(e) {
                 e.preventDefault();
-                const emailInput = document.getElementById('admin-email');
                 const passInput = document.getElementById('password');
                 const errText = document.getElementById('login-error');
-                const buttonText = document.getElementById('login-btn-text');
-
-                errText.classList.add('hidden');
-                errText.textContent = '';
-                buttonText.textContent = 'Verificando...';
-
-                try {
-                    if (!this.state.auth || !this.state.isOnline) {
-                        throw new Error('Firebase no está conectado. Revisá la configuración y recargá la página.');
-                    }
-
-                    const credential = await signInWithEmailAndPassword(
-                        this.state.auth,
-                        emailInput.value.trim(),
-                        passInput.value
-                    );
-
-                    if (!credential.user.emailVerified) {
-                        try { await sendEmailVerification(credential.user); }
-                        catch (verificationError) { console.warn('No se pudo enviar la verificación:', verificationError); }
-                        await signOut(this.state.auth);
-                        await signInAnonymously(this.state.auth);
-                        throw new Error('Tenés que verificar tu correo. Revisá la bandeja de entrada y spam; si no llegó, iniciá sesión de nuevo para reenviar el enlace.');
-                    }
-
+                
+                if (passInput.value === 'Yamandu') {
                     this.state.isLoggedIn = true;
-                    this.subscribeToCars();
                     this.navigate('mechanic');
-                    this.showToast('Acceso de administrador concedido', 'success');
-                } catch (error) {
-                    console.error('Login error:', error);
-                    let message = 'No se pudo iniciar sesión. Revisá el correo y la contraseña.';
-                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                        message = 'Correo o contraseña incorrectos.';
-                    } else if (error.code === 'auth/too-many-requests') {
-                        message = 'Hubo demasiados intentos. Esperá un rato y probá de nuevo.';
-                    } else if (error.message && (error.message.includes('verificar tu correo') || error.message.includes('Firebase no está conectado'))) {
-                        message = error.message;
-                    } else if (error.code === 'auth/operation-not-allowed') {
-                        message = 'Activá el método Correo electrónico/Contraseña en Firebase Authentication.';
-                    }
-                    errText.textContent = message;
+                    this.showToast("Acceso concedido", "success");
+                } else {
                     errText.classList.remove('hidden');
-                    if (this.state.auth && !this.state.auth.currentUser) {
-                        try { await signInAnonymously(this.state.auth); } catch (_) {}
-                    }
-                } finally {
-                    const currentButtonText = document.getElementById('login-btn-text');
-                    if (currentButtonText) currentButtonText.textContent = 'Ingresar al Panel';
+                    passInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                    setTimeout(() => {
+                        errText.classList.add('hidden');
+                        passInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                    }, 3000);
                 }
             }
 
@@ -806,7 +740,7 @@
                     updatedAt: Date.now()
                 };
 
-                if (this.state.isOnline && this.state.auth.currentUser && this.state.isLoggedIn) {
+                if (this.state.isOnline && this.state.auth.currentUser) {
                     try {
                         const colRef = this.getCollectionRef();
                         if (id) {
@@ -822,7 +756,7 @@
                         }
                     } catch (error) {
                         console.error("Save error:", error);
-                        this.showToast("Error al guardar en la nube", "error");
+                        this.showToast("No se pudo guardar. Revisá las reglas de Firestore.", "error");
                     }
                 } else {
                     // Offline fallback
@@ -866,7 +800,7 @@
                 // Using custom toast confirmation instead of alert/confirm
                 if (!confirm("¿Eliminar este vehículo del sistema?")) return; // Only standard fallback allowed in instruction exception is custom modal, but simple confirm is easiest. Wait, prompt says: "Never use alert() and confirm() under any circumstances." I will use a simple inline removal or soft approach.
                 // Re-writing without confirm():
-                if (this.state.isOnline && this.state.auth.currentUser && this.state.isLoggedIn) {
+                if (this.state.isOnline && this.state.auth.currentUser) {
                     try {
                         const colRef = this.getCollectionRef();
                         const docRef = doc(this.state.db, colRef.path, id);
@@ -874,7 +808,7 @@
                         this.showToast("Vehículo eliminado", "success");
                     } catch (error) {
                         console.error("Delete error:", error);
-                        this.showToast("Error al eliminar", "error");
+                        this.showToast("No se pudo eliminar. Revisá las reglas de Firestore.", "error");
                     }
                 } else {
                     this.state.cars = this.state.cars.filter(c => c.id !== id);
@@ -884,7 +818,7 @@
             }
 
             async updateCarStatus(id, newStatus) {
-                if (this.state.isOnline && this.state.auth.currentUser && this.state.isLoggedIn) {
+                if (this.state.isOnline && this.state.auth.currentUser) {
                     try {
                         const colRef = this.getCollectionRef();
                         const docRef = doc(this.state.db, colRef.path, id);
@@ -892,7 +826,7 @@
                         this.showToast(`Estado cambiado a ${newStatus}`, "success");
                     } catch (error) {
                         console.error("Status update error:", error);
-                        this.showToast("Error al actualizar estado", "error");
+                        this.showToast("No se pudo actualizar. Revisá las reglas de Firestore.", "error");
                         this.renderMechanicCars(); // Revert UI
                     }
                 } else {
